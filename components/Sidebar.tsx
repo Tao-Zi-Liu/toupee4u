@@ -1,9 +1,15 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { KB_CATEGORIES } from '../constants';
-import { Home, Users, BookOpen, Crown, Plus, MessageSquare, Microscope, FlaskConical } from 'lucide-react';
+import { Home, Users, BookOpen, Crown, Plus, MessageSquare, Microscope, FlaskConical, Shield, Scale, Newspaper } from 'lucide-react';
 
-export const Sidebar: React.FC<{ isOpen: boolean; toggle: () => void }> = ({ isOpen, toggle }) => {
+interface SidebarProps {
+  isOpen: boolean;
+  toggle: () => void;
+  highlightGovernance?: boolean;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, highlightGovernance }) => {
   const baseClasses = `fixed inset-y-0 left-0 z-50 w-64 bg-dark-900 text-slate-400 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`;
   const translateClass = isOpen ? 'translate-x-0' : '-translate-x-full';
 
@@ -20,10 +26,10 @@ export const Sidebar: React.FC<{ isOpen: boolean; toggle: () => void }> = ({ isO
 
       <div className="p-4 flex-1 overflow-y-auto space-y-8">
         
-        <button className="w-full bg-gradient-to-r from-brand-blue to-blue-600 hover:to-blue-500 text-white font-semibold py-3 px-4 rounded-xl shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2">
+        <Link to="/forum/new" className="w-full bg-gradient-to-r from-brand-blue to-blue-600 hover:to-blue-500 text-white font-semibold py-3 px-4 rounded-xl shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2">
             <Plus className="w-5 h-5" />
             New Post
-        </button>
+        </Link>
 
         <div>
           <p className="px-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
@@ -40,6 +46,17 @@ export const Sidebar: React.FC<{ isOpen: boolean; toggle: () => void }> = ({ isO
             >
               <Home className="mr-3 h-5 w-5" />
               Overview
+            </NavLink>
+            <NavLink
+              to="/news"
+              className={({ isActive }) =>
+                `flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  isActive ? 'bg-dark-800 text-brand-blue' : 'text-slate-400 hover:bg-dark-800 hover:text-white'
+                }`
+              }
+            >
+              <Newspaper className="mr-3 h-5 w-5" />
+              Industry News
             </NavLink>
             <NavLink
               to="/lab"
@@ -74,6 +91,22 @@ export const Sidebar: React.FC<{ isOpen: boolean; toggle: () => void }> = ({ isO
             >
               <Microscope className="mr-3 h-5 w-5" />
               Research Team
+            </NavLink>
+            <NavLink
+              to="/governance"
+              className={({ isActive }) =>
+                `flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-300 ${
+                  isActive ? 'bg-dark-800 text-brand-blue' : 'text-slate-400 hover:bg-dark-800 hover:text-white'
+                } ${highlightGovernance ? 'bg-brand-blue/20 text-white ring-2 ring-brand-blue shadow-[0_0_15px_rgba(59,130,246,0.5)] scale-105' : ''}`
+              }
+            >
+              <Scale className="mr-3 h-5 w-5" />
+              <span className="flex-1">Governance</span>
+              {highlightGovernance && (
+                <span className="ml-2 text-[10px] font-bold bg-brand-blue text-white px-1.5 py-0.5 rounded animate-pulse">
+                    HERE
+                </span>
+              )}
             </NavLink>
           </nav>
         </div>
@@ -128,6 +161,20 @@ export const Sidebar: React.FC<{ isOpen: boolean; toggle: () => void }> = ({ isO
               Membership Tiers
             </NavLink>
           </nav>
+        </div>
+
+        <div className="mt-8 pt-6 border-t border-dark-700">
+           <NavLink
+              to="/admin"
+              className={({ isActive }) =>
+                `flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  isActive ? 'bg-dark-800 text-slate-200' : 'text-slate-500 hover:text-white'
+                }`
+              }
+            >
+              <Shield className="mr-3 h-5 w-5" />
+              Admin Panel
+            </NavLink>
         </div>
       </div>
     </aside>

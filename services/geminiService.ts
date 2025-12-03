@@ -51,3 +51,40 @@ export const askTheTruthEngine = async (query: string): Promise<string> => {
     return "The Truth Engine is currently experiencing high entropy (technical difficulty). Please try again later.";
   }
 };
+
+export const generateArticleFromVideo = async (videoData: { title: string; channel: string; description: string; comments: string[] }): Promise<string> => {
+  try {
+    const model = 'gemini-2.5-flash';
+    
+    const prompt = `
+      I need you to act as the Senior Technical Editor for Toupee4U. 
+      I have scraped a YouTube video and its top comments. 
+      
+      Your task: Transform this raw video data into a structured, scientific Knowledge Base article formatted in HTML.
+      
+      Video Title: ${videoData.title}
+      Channel: ${videoData.channel}
+      Context/Description: ${videoData.description}
+      Top User Comments/Questions: ${videoData.comments.join('; ')}
+
+      Article Requirements:
+      1. **Title:** Create a more scientific/academic title based on the video topic.
+      2. **Structure:** Use <h3> for headers. Use <ul> or <ol> for steps.
+      3. **Tone:** "Physics of Hair". Use terms like "adhesion", "refraction", "tensile strength". Remove any "Hey guys, welcome back to my channel" fluff.
+      4. **Community Insight:** Incorporate the user comments as "Common Observations" or "Field Data".
+      5. **Format:** Return ONLY the HTML body content (no <html> or <body> tags).
+
+      Generate the HTML content now.
+    `;
+
+    const response = await ai.models.generateContent({
+      model: model,
+      contents: prompt,
+    });
+
+    return response.text || "<p>Failed to synthesize data.</p>";
+  } catch (error) {
+    console.error("Gemini Generation Error:", error);
+    return "<p>Error: High entropy in the generation matrix.</p>";
+  }
+};

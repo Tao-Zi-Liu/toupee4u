@@ -1,19 +1,19 @@
 import React from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
-import { EXPERTS, KB_CATEGORIES } from '../constants';
+import { useData } from '../contexts/DataContext';
 import { CheckCircle, Clock, Star, MessageSquare, Video, ArrowLeft, FlaskConical, PenTool, Award, Briefcase, Instagram, Facebook, Youtube, Linkedin, Twitter } from 'lucide-react';
 
 export const ExpertProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const expert = EXPERTS.find(e => e.id === id);
+  const { experts, categories } = useData();
+  const expert = experts.find(e => e.id === id);
 
   if (!expert) {
     return <Navigate to="/experts" />;
   }
 
-  // Mock finding articles by this expert (in a real app, articles would have author IDs)
-  // For demo, just grabbing some random articles from KB
-  const expertArticles = KB_CATEGORIES[0].articles.concat(KB_CATEGORIES[1].articles).slice(0, 3);
+  // Use categories from context
+  const expertArticles = categories[0].articles.concat(categories[1].articles).slice(0, 3);
 
   const getThemeColor = (theme: string) => {
      switch(theme) {
@@ -26,7 +26,7 @@ export const ExpertProfilePage: React.FC = () => {
   };
 
   const getCategoryId = (categoryName: string) => {
-      const cat = KB_CATEGORIES.find(c => c.name === categoryName);
+      const cat = categories.find(c => c.name === categoryName);
       return cat ? cat.id : 'foundations';
   };
 

@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { EXPERTS } from '../constants';
+import { useData } from '../contexts/DataContext';
 import { Search, Filter, ArrowUpRight, Star, Hexagon } from 'lucide-react';
 
 export const ExpertsPage: React.FC = () => {
+  const { experts } = useData();
   const [filter, setFilter] = useState('All');
 
   const filteredExperts = filter === 'All' 
-    ? EXPERTS 
-    : EXPERTS.filter(e => e.role.includes(filter) || e.specialties.some(s => s.includes(filter)));
+    ? experts 
+    : experts.filter(e => e.role.includes(filter) || e.specialties.some(s => s.includes(filter)));
 
   const getGradient = (theme: string) => {
     switch(theme) {

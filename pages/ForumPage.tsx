@@ -1,5 +1,6 @@
-import React from 'react';
-import { MessageSquare, ThumbsUp, Clock, Hash, MoreHorizontal, Filter } from 'lucide-react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { MessageSquare, ThumbsUp, Clock, Hash, MoreHorizontal, Filter, X, Check, Flame, ArrowDownUp } from 'lucide-react';
 
 const TOPICS = [
     {
@@ -49,26 +50,109 @@ const TOPICS = [
 ];
 
 export const ForumPage: React.FC = () => {
+  const [showFilters, setShowFilters] = useState(false);
+  const [activeTag, setActiveTag] = useState('All');
+  const [activeSort, setActiveSort] = useState('Newest');
+
+  const tags = ['All', 'Troubleshooting', 'Poly Skin', 'Adhesives', 'Lifestyle', 'Review'];
+  const sorts = ['Newest', 'Hottest', 'Most Replied'];
+
+  const filteredTopics = activeTag === 'All' ? TOPICS : TOPICS.filter(t => t.tag === activeTag);
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-end gap-4 border-b border-dark-700 pb-8">
         <div>
             <h1 className="text-3xl font-bold text-white mb-2">Community Forum</h1>
             <p className="text-slate-400">Join the "Quantum State" collective. Real talk, no judgment.</p>
         </div>
         <div className="flex gap-3">
-             <button className="flex items-center gap-2 px-4 py-2 bg-dark-800 border border-dark-700 rounded-lg text-slate-300 hover:text-white hover:border-brand-blue transition-colors text-sm">
-                <Filter className="w-4 h-4" />
-                Filter
+             <button 
+                onClick={() => setShowFilters(!showFilters)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-all border ${showFilters ? 'bg-brand-blue text-white border-brand-blue' : 'bg-dark-800 border-dark-700 text-slate-300 hover:border-slate-500 hover:text-white'}`}
+             >
+                {showFilters ? <X className="w-4 h-4" /> : <Filter className="w-4 h-4" />}
+                {showFilters ? 'Close Filters' : 'Filter'}
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-brand-blue text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium">
+            <Link 
+                to="/forum/new"
+                className="flex items-center gap-2 px-4 py-2 bg-brand-blue text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium shadow-lg shadow-blue-500/20"
+            >
                 Start Discussion
-            </button>
+            </Link>
         </div>
       </div>
 
+      {/* Filter Control Panel */}
+      {showFilters && (
+        <div className="bg-dark-800 rounded-2xl border border-dark-700 p-6 animate-in slide-in-from-top-4 duration-300 shadow-xl">
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
+              {/* Signal Type (Tags) */}
+              <div>
+                 <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <Hash className="w-3 h-3" /> Signal Type
+                 </h3>
+                 <div className="flex flex-wrap gap-2">
+                    {tags.map(tag => (
+                       <button
+                          key={tag}
+                          onClick={() => setActiveTag(tag)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
+                             activeTag === tag
+                                ? 'bg-brand-blue text-white border-brand-blue'
+                                : 'bg-dark-900 text-slate-400 border-dark-600 hover:border-brand-blue/50 hover:text-white'
+                          }`}
+                       >
+                          {tag}
+                       </button>
+                    ))}
+                 </div>
+              </div>
+
+              {/* Sort Frequency */}
+              <div>
+                 <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <ArrowDownUp className="w-3 h-3" /> Sort Frequency
+                 </h3>
+                 <div className="flex flex-wrap gap-2">
+                    {sorts.map(sort => (
+                       <button
+                          key={sort}
+                          onClick={() => setActiveSort(sort)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border flex items-center gap-2 ${
+                             activeSort === sort
+                                ? 'bg-brand-purple text-white border-brand-purple'
+                                : 'bg-dark-900 text-slate-400 border-dark-600 hover:border-brand-purple/50 hover:text-white'
+                          }`}
+                       >
+                          {sort === 'Hottest' && <Flame className="w-3 h-3" />}
+                          {sort}
+                       </button>
+                    ))}
+                 </div>
+              </div>
+
+           </div>
+           
+           {/* Active Filters Summary */}
+           <div className="mt-6 pt-4 border-t border-dark-700 flex items-center justify-between">
+              <div className="text-xs text-slate-500">
+                 Showing <span className="text-white font-bold">{filteredTopics.length}</span> active signals for <span className="text-brand-blue font-bold">{activeTag}</span>
+              </div>
+              <button 
+                onClick={() => { setActiveTag('All'); setActiveSort('Newest'); }}
+                className="text-xs text-slate-400 hover:text-white underline"
+              >
+                 Reset Parameters
+              </button>
+           </div>
+        </div>
+      )}
+
+      {/* Discussion List */}
       <div className="space-y-4">
-        {TOPICS.map((topic) => (
+        {filteredTopics.map((topic) => (
             <div key={topic.id} className="bg-dark-800 rounded-xl p-5 border border-dark-700 hover:border-brand-blue/50 transition cursor-pointer group">
                 <div className="flex justify-between items-start mb-2">
                     <div className="flex items-center gap-3">
@@ -89,7 +173,7 @@ export const ForumPage: React.FC = () => {
                     </div>
                     {topic.isHot && (
                          <span className="text-xs text-brand-purple bg-brand-purple/10 px-2 py-1 rounded border border-brand-purple/20 flex items-center gap-1">
-                            <Hash className="w-3 h-3" /> Hot
+                            <Flame className="w-3 h-3" /> Hot
                         </span>
                     )}
                 </div>
@@ -112,6 +196,12 @@ export const ForumPage: React.FC = () => {
                 </div>
             </div>
         ))}
+
+        {filteredTopics.length === 0 && (
+           <div className="p-8 text-center text-slate-500 bg-dark-800 rounded-xl border border-dark-700 border-dashed">
+              No frequencies found matching these parameters.
+           </div>
+        )}
       </div>
       
       <div className="flex justify-center pt-4">

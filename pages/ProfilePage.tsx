@@ -1,6 +1,7 @@
 import React from 'react';
 import { UserTier } from '../types';
-import { Shield, Zap, Crown, Settings, Edit3, Droplet, Layers, Scissors, Activity, Award } from 'lucide-react';
+import { Shield, Zap, Crown, Settings, Edit3, Droplet, Layers, Scissors, Activity, Award, LogOut } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 // Mock User Data - In a real app, this comes from context/API
 const MOCK_USER = {
@@ -103,9 +104,12 @@ export const ProfilePage: React.FC = () => {
                   <div className="text-lg font-bold text-white">{user.stats.posts}</div>
                   <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Posts</div>
                </div>
-               <button className="h-full px-4 bg-dark-700 text-slate-300 rounded-2xl hover:bg-dark-600 border border-dark-600 transition-colors">
+               <button className="h-full px-4 bg-dark-700 text-slate-300 rounded-2xl hover:bg-dark-600 border border-dark-600 transition-colors" title="Settings">
                   <Settings className="w-5 h-5" />
                </button>
+               <Link to="/login" className="h-full px-4 bg-dark-900 text-red-400 rounded-2xl border border-dark-700 hover:border-red-500/50 hover:bg-red-500/10 transition-colors flex items-center justify-center" title="Logout">
+                  <LogOut className="w-5 h-5" />
+               </Link>
             </div>
           </div>
 
