@@ -48,4 +48,11 @@ export interface Expert {
   };
   availability: 'Available' | 'Booked Until Nov';
   colorTheme: string; // tailwind color class prefix (e.g., 'blue', 'purple')
+  socials?: {
+    instagram?: string;
+    facebook?: string;
+    youtube?: string;
+    linkedin?: string;
+    twitter?: string;
+  };
 }

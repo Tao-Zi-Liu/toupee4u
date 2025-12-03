@@ -50,7 +50,8 @@ export const Sidebar: React.FC<{ isOpen: boolean; toggle: () => void }> = ({ isO
               }
             >
               <FlaskConical className="mr-3 h-5 w-5" />
-              The Lab
+              <span className="flex-1">The Lab</span>
+              <span className="ml-2 text-[10px] font-bold uppercase bg-brand-purple/20 text-brand-purple px-1.5 py-0.5 rounded border border-brand-purple/30">Beta</span>
             </NavLink>
             <NavLink
               to="/forum"

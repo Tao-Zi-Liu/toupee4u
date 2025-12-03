@@ -12,7 +12,12 @@ export const EXPERTS: Expert[] = [
     methodology: "My approach is purely data-driven. We test tensile strength, water solubility, and dermal reaction. If a glue claims to be waterproof but dissolves in sweat (saline), I will expose it.",
     stats: { experience: "15 Years", consultations: 1240, rating: 4.9 },
     availability: 'Available',
-    colorTheme: 'blue'
+    colorTheme: 'blue',
+    socials: {
+      linkedin: "https://linkedin.com",
+      twitter: "https://twitter.com",
+      youtube: "https://youtube.com"
+    }
   },
   {
     id: 'elena-vance',
@@ -24,7 +29,12 @@ export const EXPERTS: Expert[] = [
     methodology: "I treat a hair system like a raw canvas. I use single-knot ventilation needles to graduate the hairline and razor-cutting techniques to remove the 'wall of hair' effect found in stock pieces.",
     stats: { experience: "12 Years", consultations: 850, rating: 5.0 },
     availability: 'Booked Until Nov',
-    colorTheme: 'purple'
+    colorTheme: 'purple',
+    socials: {
+      instagram: "https://instagram.com",
+      youtube: "https://youtube.com",
+      facebook: "https://facebook.com"
+    }
   },
   {
     id: 'mark-knot',
@@ -36,7 +46,11 @@ export const EXPERTS: Expert[] = [
     methodology: "Preservation is key. I advocate for low-tension removal techniques and specific knot sealers that prevent shedding without creating a shiny scalp appearance.",
     stats: { experience: "20 Years", consultations: 2100, rating: 4.8 },
     availability: 'Available',
-    colorTheme: 'teal'
+    colorTheme: 'teal',
+    socials: {
+      youtube: "https://youtube.com",
+      facebook: "https://facebook.com"
+    }
   },
   {
     id: 'sarah-jenkins',
@@ -48,7 +62,11 @@ export const EXPERTS: Expert[] = [
     methodology: "Health first, aesthetics second. I develop patch-test protocols and prescribe rotation schedules to let the scalp breathe and recover between bonds.",
     stats: { experience: "8 Years", consultations: 400, rating: 4.9 },
     availability: 'Available',
-    colorTheme: 'pink'
+    colorTheme: 'pink',
+    socials: {
+      linkedin: "https://linkedin.com",
+      instagram: "https://instagram.com"
+    }
   }
 ];
 

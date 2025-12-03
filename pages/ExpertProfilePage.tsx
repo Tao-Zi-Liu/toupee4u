@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { EXPERTS, KB_CATEGORIES } from '../constants';
-import { CheckCircle, Clock, Star, MessageSquare, Video, ArrowLeft, FlaskConical, PenTool, Award, Briefcase } from 'lucide-react';
+import { CheckCircle, Clock, Star, MessageSquare, Video, ArrowLeft, FlaskConical, PenTool, Award, Briefcase, Instagram, Facebook, Youtube, Linkedin, Twitter } from 'lucide-react';
 
 export const ExpertProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -23,6 +23,11 @@ export const ExpertProfilePage: React.FC = () => {
        case 'pink': return 'text-pink-500 bg-pink-500/10 border-pink-500/20';
        default: return 'text-slate-500 bg-slate-500/10 border-slate-500/20';
      }
+  };
+
+  const getCategoryId = (categoryName: string) => {
+      const cat = KB_CATEGORIES.find(c => c.name === categoryName);
+      return cat ? cat.id : 'foundations';
   };
 
   return (
@@ -72,6 +77,37 @@ export const ExpertProfilePage: React.FC = () => {
               <p className="mt-3 text-xs text-slate-500">
                  {expert.availability === 'Available' ? 'Currently accepting new clients' : 'Currently booked solid'}
               </p>
+
+              {/* Social Links */}
+              {expert.socials && (
+                 <div className="flex justify-center gap-4 mt-8 pt-6 border-t border-dark-700 w-full">
+                    {expert.socials.instagram && (
+                       <a href={expert.socials.instagram} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-pink-500 transition-colors p-2 rounded-full hover:bg-dark-900">
+                          <Instagram className="w-5 h-5" />
+                       </a>
+                    )}
+                    {expert.socials.facebook && (
+                       <a href={expert.socials.facebook} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-blue-500 transition-colors p-2 rounded-full hover:bg-dark-900">
+                          <Facebook className="w-5 h-5" />
+                       </a>
+                    )}
+                    {expert.socials.youtube && (
+                       <a href={expert.socials.youtube} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-red-500 transition-colors p-2 rounded-full hover:bg-dark-900">
+                          <Youtube className="w-5 h-5" />
+                       </a>
+                    )}
+                    {expert.socials.linkedin && (
+                       <a href={expert.socials.linkedin} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-blue-400 transition-colors p-2 rounded-full hover:bg-dark-900">
+                          <Linkedin className="w-5 h-5" />
+                       </a>
+                    )}
+                    {expert.socials.twitter && (
+                       <a href={expert.socials.twitter} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-sky-500 transition-colors p-2 rounded-full hover:bg-dark-900">
+                          <Twitter className="w-5 h-5" />
+                       </a>
+                    )}
+                 </div>
+              )}
            </div>
 
            {/* Skills Matrix */}
@@ -132,7 +168,7 @@ export const ExpertProfilePage: React.FC = () => {
 
               <div className="grid gap-4">
                  {expertArticles.map((article, idx) => (
-                    <Link to={`/kb/${article.category.toLowerCase()}`} key={article.id} className="bg-dark-800 rounded-xl p-5 border border-dark-700 hover:border-brand-blue transition-all group flex items-start gap-4">
+                    <Link to={`/kb/${getCategoryId(article.category)}/${article.id}`} key={article.id} className="bg-dark-800 rounded-xl p-5 border border-dark-700 hover:border-brand-blue transition-all group flex items-start gap-4">
                         <div className="hidden sm:flex flex-col items-center justify-center w-16 h-16 rounded-lg bg-dark-900 border border-dark-700 text-slate-500">
                            <span className="text-xs font-bold uppercase">Oct</span>
                            <span className="text-xl font-bold text-white">{12 - idx}</span>

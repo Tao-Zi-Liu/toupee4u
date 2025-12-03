@@ -18,7 +18,10 @@ export const LabPage: React.FC = () => {
               </div>
               <h4 className="text-xs font-bold text-brand-purple uppercase tracking-widest">Experimental Diagnostics</h4>
            </div>
-           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">The Quantum Lab</h1>
+           <div className="flex items-center gap-4 mb-4">
+             <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight">The Quantum Lab</h1>
+             <span className="px-3 py-1 rounded-full bg-brand-purple/20 text-brand-purple border border-brand-purple/30 text-xs font-bold uppercase tracking-wider">Beta</span>
+           </div>
            <p className="text-slate-400 text-lg max-w-2xl leading-relaxed">
              Welcome to the engineering deck. Use these tools to calculate entropy, simulate adhesive bonds, and analyze material physics before you apply them to your scalp.
            </p>

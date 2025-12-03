@@ -3,6 +3,7 @@ import { HashRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { Sidebar } from './components/Sidebar';
 import { Home } from './pages/Home';
 import { CategoryPage } from './pages/CategoryPage';
+import { ArticlePage } from './pages/ArticlePage';
 import { ConsultationsPage } from './pages/ConsultationsPage';
 import { MembershipPage } from './pages/MembershipPage';
 import { ForumPage } from './pages/ForumPage';
@@ -84,6 +85,7 @@ const App: React.FC = () => {
           <Route path="/forum" element={<ForumPage />} />
           <Route path="/lab" element={<LabPage />} />
           <Route path="/kb/:categoryId" element={<CategoryPage />} />
+          <Route path="/kb/:categoryId/:articleId" element={<ArticlePage />} />
           <Route path="/consultations" element={<ConsultationsPage />} />
           <Route path="/membership" element={<MembershipPage />} />
           <Route path="/profile" element={<ProfilePage />} />
