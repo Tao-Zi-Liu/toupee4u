@@ -1,4 +1,4 @@
-import { UserTier, Category, Consultation, Expert } from './types';
+import { UserTier, Category, Consultation, Expert, GlossaryTerm } from './types';
 import { BookOpen, Layers, Zap, PenTool, Activity, ShieldCheck, Microscope, Droplet } from 'lucide-react';
 
 export const EXPERTS: Expert[] = [
@@ -513,4 +513,24 @@ export const INDUSTRY_NEWS = [
     link: "#",
     category: "Market Trend"
   }
+];
+
+export const GLOSSARY_TERMS: GlossaryTerm[] = [
+  { id: '1', term: 'Poly (Polyurethane)', definition: 'A skin-like material used for the base of hair systems. It is durable, easy to clean, and non-porous.', category: 'Materials' },
+  { id: '2', term: 'French Lace', definition: 'A durable, yet undetectable mesh base material. It is more robust than Swiss Lace but slightly more visible.', category: 'Materials' },
+  { id: '3', term: 'Swiss Lace', definition: 'The finest, most undetectable lace available. It is very fragile and typically used for front hairlines.', category: 'Materials' },
+  { id: '4', term: 'V-Loop', definition: 'A ventilation technique where hair is looped through the base in a V-shape without knots, offering a very natural appearance but lower durability.', category: 'Anatomy' },
+  { id: '5', term: 'Bleached Knots', definition: 'A chemical process applied to the root knots of dark hair to remove pigment, making them invisible against the scalp.', category: 'Maintenance' },
+  { id: '6', term: 'Graduated Hairline', definition: 'A styling technique where density increases gradually from the front edge backwards, mimicking natural growth patterns.', category: 'Styling' },
+  { id: '7', term: 'Remys Hair', definition: 'Human hair collected with the cuticle layer intact and aligned in one direction to prevent tangling.', category: 'Materials' },
+  { id: '8', term: 'Ghost Bond', definition: 'A popular water-based white adhesive that turns clear when dry. Known for being safe on lace and skin.', category: 'Adhesives' },
+  { id: '9', term: 'Walker Tape', definition: 'A brand synonymous with double-sided adhesive tapes used for perimeter bonding.', category: 'Adhesives' },
+  { id: '10', term: 'Denier', definition: 'A unit of measure for the linear mass density of fibers. Lower denier generally means finer, more natural looking hair.', category: 'Materials' },
+  { id: '11', term: 'Base Contour', definition: 'The curvature shape of the hair system base (e.g., A, AA, C, CC) designed to match the user\'s skull shape.', category: 'Anatomy' },
+  { id: '12', term: 'Oxidation', definition: 'The chemical reaction of hair pigment with oxygen and UV light, causing color to fade or turn brassy/red over time.', category: 'Maintenance' },
+  { id: '13', term: 'Ventilation', definition: 'The manual process of tying or injecting individual hair strands into the base material.', category: 'Anatomy' },
+  { id: '14', term: 'C-22 Solvent', definition: 'A citrus-based adhesive remover effective for cleaning lace and skin but requires washing off to prevent oily residue.', category: 'Maintenance' },
+  { id: '15', term: 'Cuticle', definition: 'The outermost layer of the hair shaft. Intact cuticles provide shine and protection but require alignment (Remy) to prevent matting.', category: 'Anatomy' },
+  { id: '16', term: 'Iso-Propyl Alcohol', definition: 'Often used as a scalp cleanser or positioning spray. Must be 99% pure for cleaning, 70% for positioning.', category: 'Chemistry' },
+  { id: '17', term: 'Knot Sealer', definition: 'A spray applied to the underside of a lace system to secure knots and reduce shedding.', category: 'Maintenance' },
 ];

@@ -56,3 +56,10 @@ export interface Expert {
     twitter?: string;
   };
 }
+
+export interface GlossaryTerm {
+  id: string;
+  term: string;
+  definition: string;
+  category: 'Materials' | 'Anatomy' | 'Adhesives' | 'Maintenance' | 'Styling' | 'Chemistry';
+}

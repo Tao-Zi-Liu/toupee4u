@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { KB_CATEGORIES } from '../constants';
-import { Home, Users, Plus, MessageSquare, Microscope, FlaskConical, Shield, Scale, Newspaper, ChevronLeft, ChevronRight, Crown, Menu } from 'lucide-react';
+import { Home, Users, Plus, MessageSquare, Microscope, FlaskConical, Shield, Scale, Newspaper, ChevronLeft, ChevronRight, Crown, Menu, BookA } from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -89,6 +89,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, highlightGover
                 isCollapsed={isCollapsed} 
               />
             ))}
+            <NavItem to="/kb/glossary" icon={BookA} label="Glossary" isCollapsed={isCollapsed} />
           </nav>
         </div>
 

@@ -18,6 +18,7 @@ import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { KnowledgeMapPage } from './pages/KnowledgeMapPage';
 import { IndustryNewsPage } from './pages/IndustryNewsPage';
+import { GlossaryPage } from './pages/GlossaryPage';
 import { GovernanceModal } from './components/GovernanceModal';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminExperts } from './pages/admin/AdminExperts';
@@ -157,6 +158,7 @@ const AppRoutes = () => {
       <Route path="/lab" element={<LabPage />} />
       <Route path="/news" element={<IndustryNewsPage />} />
       <Route path="/knowledge-map" element={<KnowledgeMapPage />} />
+      <Route path="/kb/glossary" element={<GlossaryPage />} />
       <Route path="/kb/:categoryId" element={<CategoryPage />} />
       <Route path="/kb/:categoryId/:articleId" element={<ArticlePage />} />
       <Route path="/consultations" element={<ConsultationsPage />} />
