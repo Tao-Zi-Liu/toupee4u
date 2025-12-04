@@ -72,7 +72,7 @@ export const AdminArticles: React.FC = () => {
         readTime: formData.readTime,
         tier: formData.tier,
         category: categoryName
-      } as Article);
+      } as Partial<Article>);
     } else {
       // Create
       const newArticle: Article = {

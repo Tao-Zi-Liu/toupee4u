@@ -46,79 +46,75 @@ export const CategoryPage: React.FC = () => {
       {/* Articles Container - Zig Zag Layout */}
       <div className="space-y-16">
         {category.articles.map((article, index) => {
-          const isImageLeft = index % 2 === 0;
+            const isImageLeft = index % 2 === 0;
 
-          return (
-            <Link 
-                key={article.id} 
-                to={`/kb/${category.id}/${article.id}`}
-                className="group block"
-            >
-                <div className={`flex flex-col md:flex-row gap-8 md:gap-16 items-center ${!isImageLeft ? 'md:flex-row-reverse' : ''}`}>
-                    
-                    {/* Visual Side */}
-                    <div className="w-full md:w-1/2 relative">
-                        <div className="aspect-[4/3] rounded-3xl overflow-hidden border border-dark-700 group-hover:border-brand-blue/50 group-hover:shadow-[0_0_30px_rgba(59,130,246,0.1)] transition-all duration-500 relative bg-dark-800">
-                            <div className="absolute inset-0 bg-gradient-to-tr from-brand-blue/20 to-brand-purple/20 opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none"></div>
-                            
-                            {/* Abstract Geometric Decoration */}
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-                                <img 
-                                    src={getPlaceholderImage(index, article.title)} 
-                                    alt={article.title}
-                                    className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700"
-                                />
+            return (
+                <Link 
+                    key={article.id} 
+                    to={`/kb/${category.id}/${article.id}`}
+                    className="group block"
+                >
+                    <div className={`flex flex-col md:flex-row gap-8 md:gap-16 items-center ${!isImageLeft ? 'md:flex-row-reverse' : ''}`}>
+                        
+                        {/* Visual Side */}
+                        <div className="w-full md:w-1/2 relative">
+                            <div className="aspect-[4/3] rounded-3xl overflow-hidden border border-dark-700 group-hover:border-brand-blue/50 group-hover:shadow-[0_0_30px_rgba(59,130,246,0.1)] transition-all duration-500 relative bg-dark-800">
+                                <div className="absolute inset-0 bg-gradient-to-tr from-brand-blue/20 to-brand-purple/20 opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none"></div>
+                                
+                                {/* Abstract Geometric Decoration */}
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                                    <img 
+                                        src={getPlaceholderImage(index, article.title)} 
+                                        alt={article.title}
+                                        className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700"
+                                    />
+                                </div>
+
+                                {/* Tier Badge Floating */}
+                                {article.tier !== 'Observer' && (
+                                    <div className="absolute top-4 right-4 z-20">
+                                        <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider backdrop-blur-md shadow-lg ${
+                                            article.tier === 'Quantum State' 
+                                                ? 'bg-brand-purple/90 text-white border border-brand-purple/50' 
+                                                : 'bg-brand-blue/90 text-white border border-brand-blue/50'
+                                        }`}>
+                                            {article.tier === 'Quantum State' ? <Lock className="w-3 h-3" /> : <Sparkles className="w-3 h-3" />}
+                                            {article.tier}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
+                        </div>
 
-                            {/* Tier Badge Floating */}
-                            {article.tier !== 'Observer' && (
-                                <div className="absolute top-4 right-4 z-20">
-                                    <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider backdrop-blur-md shadow-lg ${
-                                        article.tier === 'Quantum State' 
-                                            ? 'bg-brand-purple/90 text-white border border-brand-purple/50' 
-                                            : 'bg-brand-blue/90 text-white border border-brand-blue/50'
-                                    }`}>
-                                        {article.tier === 'Quantum State' ? <Lock className="w-3 h-3" /> : <Sparkles className="w-3 h-3" />}
-                                        {article.tier}
+                        {/* Content Side */}
+                        <div className="w-full md:w-1/2">
+                            <div className="flex flex-col gap-5">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <span className="text-xs font-bold text-brand-blue flex items-center gap-1 bg-brand-blue/10 px-2 py-0.5 rounded-full border border-brand-blue/20">
+                                        <Clock className="w-3 h-3" /> {article.readTime}
                                     </span>
                                 </div>
-                            )}
-                        </div>
-                    </div>
 
-                    {/* Content Side */}
-                    <div className="w-full md:w-1/2">
-                        <div className="flex flex-col gap-5">
-                            <div className="flex items-center gap-3">
-                                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-                                    <div className="w-8 h-[1px] bg-slate-600"></div>
-                                    {article.category}
-                                </span>
-                                <span className="text-xs font-bold text-brand-blue flex items-center gap-1 bg-brand-blue/10 px-2 py-0.5 rounded-full border border-brand-blue/20">
-                                    <Clock className="w-3 h-3" /> {article.readTime}
-                                </span>
-                            </div>
+                                <h3 className="text-3xl md:text-4xl font-bold text-white leading-tight group-hover:text-brand-blue transition-colors">
+                                    {article.title}
+                                </h3>
 
-                            <h3 className="text-3xl md:text-4xl font-bold text-white leading-tight group-hover:text-brand-blue transition-colors">
-                                {article.title}
-                            </h3>
+                                <p className="text-slate-400 text-lg leading-relaxed line-clamp-3">
+                                    {getExcerpt(article.content)}
+                                </p>
 
-                            <p className="text-slate-400 text-lg leading-relaxed line-clamp-3">
-                                {getExcerpt(article.content)}
-                            </p>
-
-                            <div className="pt-4">
-                                <span className="inline-flex items-center text-sm font-bold text-white group-hover:text-brand-blue transition-colors gap-2 border-b-2 border-transparent group-hover:border-brand-blue pb-0.5">
-                                    Access Protocol <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                                </span>
+                                <div className="pt-4">
+                                    <span className="inline-flex items-center text-sm font-bold text-white group-hover:text-brand-blue transition-colors gap-2 border-b-2 border-transparent group-hover:border-brand-blue pb-0.5">
+                                        Access Protocol <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                </div>
-            </Link>
-          );
+                    </div>
+                </Link>
+            );
         })}
       </div>
     </div>

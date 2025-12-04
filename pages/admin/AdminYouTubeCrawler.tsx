@@ -105,7 +105,7 @@ export const AdminYouTubeCrawler: React.FC = () => {
         content: generatedHtml,
         category: categories.find(c => c.id === targetCategory)?.name || 'General',
         readTime: '6 min', // estimated
-        tier: UserTier.KINETIC // Default for AI content
+        tier: UserTier.KINETIC, // Default for AI content
     };
 
     addArticle(targetCategory, newArticle);
