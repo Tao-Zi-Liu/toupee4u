@@ -4,6 +4,7 @@ import { DataProvider } from './contexts/DataContext';
 import { Sidebar } from './components/Sidebar';
 import { Home } from './pages/Home';
 import { CategoryPage } from './pages/CategoryPage';
+import { TopicPage } from './pages/TopicPage';
 import { ArticlePage } from './pages/ArticlePage';
 import { ConsultationsPage } from './pages/ConsultationsPage';
 import { MembershipPage } from './pages/MembershipPage';
@@ -159,8 +160,12 @@ const AppRoutes = () => {
       <Route path="/news" element={<IndustryNewsPage />} />
       <Route path="/knowledge-map" element={<KnowledgeMapPage />} />
       <Route path="/kb/glossary" element={<GlossaryPage />} />
+      
+      {/* Updated KB Routes */}
       <Route path="/kb/:categoryId" element={<CategoryPage />} />
-      <Route path="/kb/:categoryId/:articleId" element={<ArticlePage />} />
+      <Route path="/kb/:categoryId/:topicId" element={<TopicPage />} />
+      <Route path="/kb/:categoryId/:topicId/:articleId" element={<ArticlePage />} />
+      
       <Route path="/consultations" element={<ConsultationsPage />} />
       <Route path="/membership" element={<MembershipPage />} />
       <Route path="/profile" element={<ProfilePage />} />

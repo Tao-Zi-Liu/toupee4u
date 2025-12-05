@@ -67,7 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, highlightGover
             <NavItem to="/news" icon={Newspaper} label="Industry News" isCollapsed={isCollapsed} />
             <NavItem to="/lab" icon={FlaskConical} label="The Lab" isCollapsed={isCollapsed} badge="Beta" />
             <NavItem to="/forum" icon={MessageSquare} label="Forums" isCollapsed={isCollapsed} />
-            <NavItem to="/experts" icon={Microscope} label="Research Team" isCollapsed={isCollapsed} />
+            <NavItem to="/experts" icon={Microscope} label="Contributing Experts" isCollapsed={isCollapsed} />
             <NavItem to="/governance" icon={Scale} label="Governance" isCollapsed={isCollapsed} highlight={highlightGovernance} />
           </nav>
         </div>

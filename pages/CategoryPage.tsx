@@ -1,12 +1,13 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { KB_CATEGORIES } from '../constants';
-import { Clock, ArrowRight, Layers, Lock, Sparkles } from 'lucide-react';
+import { useData } from '../contexts/DataContext';
+import { Clock, ArrowRight, Layers, Lock, Sparkles, Book } from 'lucide-react';
 
 export const CategoryPage: React.FC = () => {
   const { categoryId } = useParams<{ categoryId: string }>();
+  const { categories } = useData();
   
-  const category = KB_CATEGORIES.find(c => c.id === categoryId);
+  const category = categories.find(c => c.id === categoryId);
 
   if (!category) {
     return <div className="p-8 text-white">Category not found</div>;
@@ -43,15 +44,15 @@ export const CategoryPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Articles Container - Zig Zag Layout */}
+      {/* Topics Container - Zig Zag Layout */}
       <div className="space-y-16">
-        {category.articles.map((article, index) => {
+        {category.topics.map((topic, index) => {
             const isImageLeft = index % 2 === 0;
 
             return (
                 <Link 
-                    key={article.id} 
-                    to={`/kb/${category.id}/${article.id}`}
+                    key={topic.id} 
+                    to={`/kb/${category.id}/${topic.id}`}
                     className="group block"
                 >
                     <div className={`flex flex-col md:flex-row gap-8 md:gap-16 items-center ${!isImageLeft ? 'md:flex-row-reverse' : ''}`}>
@@ -65,22 +66,22 @@ export const CategoryPage: React.FC = () => {
                                 <div className="absolute inset-0 flex items-center justify-center">
                                     <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
                                     <img 
-                                        src={getPlaceholderImage(index, article.title)} 
-                                        alt={article.title}
+                                        src={getPlaceholderImage(index, topic.title)} 
+                                        alt={topic.title}
                                         className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700"
                                     />
                                 </div>
 
                                 {/* Tier Badge Floating */}
-                                {article.tier !== 'Observer' && (
+                                {topic.tier !== 'Observer' && (
                                     <div className="absolute top-4 right-4 z-20">
                                         <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider backdrop-blur-md shadow-lg ${
-                                            article.tier === 'Quantum State' 
+                                            topic.tier === 'Quantum State' 
                                                 ? 'bg-brand-purple/90 text-white border border-brand-purple/50' 
                                                 : 'bg-brand-blue/90 text-white border border-brand-blue/50'
                                         }`}>
-                                            {article.tier === 'Quantum State' ? <Lock className="w-3 h-3" /> : <Sparkles className="w-3 h-3" />}
-                                            {article.tier}
+                                            {topic.tier === 'Quantum State' ? <Lock className="w-3 h-3" /> : <Sparkles className="w-3 h-3" />}
+                                            {topic.tier}
                                         </span>
                                     </div>
                                 )}
@@ -92,21 +93,24 @@ export const CategoryPage: React.FC = () => {
                             <div className="flex flex-col gap-5">
                                 <div className="flex flex-wrap items-center gap-2">
                                     <span className="text-xs font-bold text-brand-blue flex items-center gap-1 bg-brand-blue/10 px-2 py-0.5 rounded-full border border-brand-blue/20">
-                                        <Clock className="w-3 h-3" /> {article.readTime}
+                                        <Clock className="w-3 h-3" /> {topic.readTime}
+                                    </span>
+                                    <span className="text-xs font-bold text-slate-500 flex items-center gap-1 bg-dark-900 px-2 py-0.5 rounded-full border border-dark-600">
+                                        <Book className="w-3 h-3" /> {topic.articles.length} Modules
                                     </span>
                                 </div>
 
                                 <h3 className="text-3xl md:text-4xl font-bold text-white leading-tight group-hover:text-brand-blue transition-colors">
-                                    {article.title}
+                                    {topic.title}
                                 </h3>
 
                                 <p className="text-slate-400 text-lg leading-relaxed line-clamp-3">
-                                    {getExcerpt(article.content)}
+                                    {getExcerpt(topic.description)}
                                 </p>
 
                                 <div className="pt-4">
                                     <span className="inline-flex items-center text-sm font-bold text-white group-hover:text-brand-blue transition-colors gap-2 border-b-2 border-transparent group-hover:border-brand-blue pb-0.5">
-                                        Access Protocol <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                                        Open Topic <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                                     </span>
                                 </div>
                             </div>

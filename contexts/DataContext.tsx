@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { EXPERTS, KB_CATEGORIES, CONSULTATIONS } from '../constants';
-import { Expert, Category, Consultation, Article } from '../types';
+import { Expert, Category, Consultation, Article, Topic } from '../types';
 
 interface DataContextType {
   experts: Expert[];
@@ -9,9 +9,10 @@ interface DataContextType {
   addExpert: (expert: Expert) => void;
   deleteExpert: (id: string) => void;
   updateExpert: (id: string, updates: Partial<Expert>) => void;
-  addArticle: (categoryId: string, article: Article) => void;
-  updateArticle: (categoryId: string, articleId: string, updates: Partial<Article>) => void;
-  deleteArticle: (categoryId: string, articleId: string) => void;
+  addTopic: (categoryId: string, topic: Topic) => void;
+  updateTopic: (categoryId: string, topicId: string, updates: Partial<Topic>) => void;
+  deleteTopic: (categoryId: string, topicId: string) => void;
+  addArticle: (categoryId: string, topicId: string, article: Article) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -34,22 +35,22 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setExperts(experts.map(e => e.id === id ? { ...e, ...updates } : e));
   };
 
-  const addArticle = (categoryId: string, article: Article) => {
+  const addTopic = (categoryId: string, topic: Topic) => {
     setCategories(categories.map(cat => {
       if (cat.id === categoryId) {
-        return { ...cat, articles: [...cat.articles, article] };
+        return { ...cat, topics: [...cat.topics, topic] };
       }
       return cat;
     }));
   };
 
-  const updateArticle = (categoryId: string, articleId: string, updates: Partial<Article>) => {
+  const updateTopic = (categoryId: string, topicId: string, updates: Partial<Topic>) => {
     setCategories(categories.map(cat => {
       if (cat.id === categoryId) {
         return {
           ...cat,
-          articles: cat.articles.map(art => 
-            art.id === articleId ? { ...art, ...updates } : art
+          topics: cat.topics.map(t => 
+            t.id === topicId ? { ...t, ...updates } : t
           )
         };
       }
@@ -57,16 +58,33 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }));
   };
 
-  const deleteArticle = (categoryId: string, articleId: string) => {
+  const deleteTopic = (categoryId: string, topicId: string) => {
     setCategories(categories.map(cat => {
       if (cat.id === categoryId) {
         return {
           ...cat,
-          articles: cat.articles.filter(art => art.id !== articleId)
+          topics: cat.topics.filter(t => t.id !== topicId)
         };
       }
       return cat;
     }));
+  };
+
+  const addArticle = (categoryId: string, topicId: string, article: Article) => {
+      setCategories(categories.map(cat => {
+          if (cat.id === categoryId) {
+              return {
+                  ...cat,
+                  topics: cat.topics.map(topic => {
+                      if (topic.id === topicId) {
+                          return { ...topic, articles: [...topic.articles, article] };
+                      }
+                      return topic;
+                  })
+              };
+          }
+          return cat;
+      }));
   };
 
   return (
@@ -77,9 +95,10 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       addExpert,
       deleteExpert,
       updateExpert,
-      addArticle,
-      updateArticle,
-      deleteArticle
+      addTopic,
+      updateTopic,
+      deleteTopic,
+      addArticle
     }}>
       {children}
     </DataContext.Provider>

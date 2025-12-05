@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { generateArticleFromVideo } from '../../services/geminiService';
 import { useData } from '../../contexts/DataContext';
-import { Article, UserTier } from '../../types';
+import { Topic, UserTier } from '../../types';
 import { Youtube, Search, ArrowRight, Loader, FileText, CheckCircle, Play, MessageSquare, AlertCircle, Save } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -46,7 +46,7 @@ const MOCK_VIDEOS = [
 ];
 
 export const AdminYouTubeCrawler: React.FC = () => {
-  const { categories, addArticle } = useData();
+  const { categories, addTopic } = useData();
   const navigate = useNavigate();
 
   // State
@@ -99,16 +99,17 @@ export const AdminYouTubeCrawler: React.FC = () => {
   const handlePublish = () => {
     if (!generatedHtml || !articleTitle) return;
 
-    const newArticle: Article = {
+    const newTopic: Topic = {
         id: `auto-${Date.now()}`,
         title: articleTitle,
-        content: generatedHtml,
+        description: generatedHtml,
         category: categories.find(c => c.id === targetCategory)?.name || 'General',
         readTime: '6 min', // estimated
         tier: UserTier.KINETIC, // Default for AI content
+        articles: []
     };
 
-    addArticle(targetCategory, newArticle);
+    addTopic(targetCategory, newTopic);
     alert('Article Published Successfully');
     navigate('/admin/articles');
   };

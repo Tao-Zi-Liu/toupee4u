@@ -9,10 +9,19 @@ export enum UserTier {
 export interface Article {
   id: string;
   title: string;
-  category: string;
   content: string; // HTML or Markdown string
   readTime: string;
   tier: UserTier;
+}
+
+export interface Topic {
+  id: string;
+  title: string;
+  category: string; // Display name of parent category
+  description: string; // The "Overview" content (previously the article content)
+  readTime: string; // Aggregate read time
+  tier: UserTier;
+  articles: Article[]; // The new 3rd level
 }
 
 export interface Category {
@@ -21,7 +30,7 @@ export interface Category {
   description: string;
   icon: LucideIcon;
   physicsTheme: string;
-  articles: Article[];
+  topics: Topic[]; // Renamed from articles to topics
 }
 
 export interface Consultation {
