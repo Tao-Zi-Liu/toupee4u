@@ -13,6 +13,7 @@ import { CreateDiscussionPage } from './pages/CreateDiscussionPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { ExpertsPage } from './pages/ExpertsPage';
 import { ExpertProfilePage } from './pages/ExpertProfilePage';
+import { ExpertApplicationPage } from './pages/ExpertApplicationPage';
 import { LabPage } from './pages/LabPage';
 import { GovernancePage } from './pages/GovernancePage';
 import { LoginPage } from './pages/LoginPage';
@@ -170,6 +171,7 @@ const AppRoutes = () => {
       <Route path="/membership" element={<MembershipPage />} />
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/experts" element={<ExpertsPage />} />
+      <Route path="/experts/apply" element={<ExpertApplicationPage />} />
       <Route path="/experts/:id" element={<ExpertProfilePage />} />
       <Route path="/governance" element={<GovernancePage />} />
       

@@ -1,158 +1,178 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
-import { Search, Filter, ArrowUpRight, Star, Hexagon, Zap, Clock, ShieldCheck, Calendar } from 'lucide-react';
+import { Search, MapPin, Users, Star, MessageCircle, Filter, CheckCircle, Briefcase } from 'lucide-react';
 
 export const ExpertsPage: React.FC = () => {
   const { experts } = useData();
   const [filter, setFilter] = useState('All');
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredExperts = filter === 'All' 
-    ? experts 
-    : experts.filter(e => e.role.includes(filter) || e.specialties.some(s => s.includes(filter)));
+  const filteredExperts = experts.filter(e => {
+    const matchesFilter = filter === 'All' || e.role.includes(filter) || e.specialties.some(s => s.includes(filter));
+    const matchesSearch = e.name.toLowerCase().includes(searchTerm.toLowerCase()) || e.role.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesFilter && matchesSearch;
+  });
 
   const getGradient = (theme: string) => {
     switch(theme) {
-      case 'purple': return 'from-purple-500 to-indigo-600';
-      case 'blue': return 'from-blue-500 to-cyan-600';
-      case 'teal': return 'from-teal-500 to-emerald-600';
-      case 'pink': return 'from-pink-500 to-rose-600';
-      default: return 'from-slate-500 to-slate-600';
-    }
-  };
-
-  const getThemeTextColor = (theme: string) => {
-    switch(theme) {
-      case 'purple': return 'text-purple-400';
-      case 'blue': return 'text-blue-400';
-      case 'teal': return 'text-teal-400';
-      case 'pink': return 'text-pink-400';
-      default: return 'text-slate-400';
+      case 'purple': return 'from-indigo-600 to-purple-600';
+      case 'blue': return 'from-blue-600 to-cyan-600';
+      case 'teal': return 'from-teal-600 to-emerald-600';
+      case 'pink': return 'from-rose-600 to-pink-600';
+      default: return 'from-slate-600 to-slate-500';
     }
   };
 
   return (
-    <div className="space-y-12">
-      {/* Header with improved typography and spacing */}
-      <div className="relative border-b border-dark-700 pb-8 overflow-hidden">
-         <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
-            <Hexagon className="w-64 h-64 text-brand-blue" strokeWidth={0.5} />
-         </div>
-         <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-3">
-               <span className="px-3 py-1 rounded-full bg-brand-blue/10 text-brand-blue border border-brand-blue/20 text-[10px] font-bold uppercase tracking-widest">
-                  Scientific Directorate
-               </span>
-            </div>
-            <h1 className="text-5xl font-bold text-white mb-4 tracking-tight">Contributing Experts</h1>
-            <p className="text-slate-400 max-w-2xl text-lg leading-relaxed">
-               Access specialized intelligence. Our network consists of verified chemists, engineers, and master stylists dedicated to the physics of hair replacement.
-            </p>
-         </div>
-      </div>
-
-      {/* Filter Bar - Tech Style */}
-      <div className="flex flex-wrap gap-2">
-         {['All', 'Chemist', 'Stylist', 'Ventilation', 'Dermatologist'].map(role => (
-           <button
-              key={role}
-              onClick={() => setFilter(role)}
-              className={`px-6 py-3 rounded-xl text-sm font-bold transition-all relative overflow-hidden group ${
-                filter === role 
-                  ? 'bg-white text-dark-900 shadow-[0_0_20px_rgba(255,255,255,0.2)]' 
-                  : 'bg-dark-800 text-slate-400 border border-dark-700 hover:border-slate-500 hover:text-white'
-              }`}
-           >
-             <span className="relative z-10">{role}</span>
-             {filter === role && <div className="absolute bottom-0 left-0 w-full h-1 bg-brand-blue"></div>}
-           </button>
-         ))}
-      </div>
-
-      {/* Modern Dossier Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {filteredExperts.map(expert => (
-          <Link 
-            to={`/experts/${expert.id}`} 
-            key={expert.id}
-            className="group relative bg-dark-800 rounded-3xl border border-dark-700 overflow-hidden hover:border-brand-blue/50 transition-all duration-500 hover:shadow-2xl hover:shadow-brand-blue/10 flex flex-col sm:flex-row min-h-[220px]"
-          >
-            {/* Left: Visual Identity */}
-            <div className="w-full sm:w-1/3 bg-dark-900/50 p-6 flex flex-col items-center justify-center border-b sm:border-b-0 sm:border-r border-dark-700 relative">
-               <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20"></div>
-               
-               <div className="relative w-24 h-24 mb-4 group-hover:scale-105 transition-transform duration-500">
-                  <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${getGradient(expert.colorTheme)} opacity-20 group-hover:opacity-40 transition-opacity blur-xl`}></div>
-                  <img src={expert.image} alt={expert.name} className="w-full h-full rounded-2xl object-cover border border-dark-600 relative z-10 bg-dark-900" />
-                  {expert.availability === 'Available' && (
-                      <div className="absolute -bottom-1 -right-1 z-20 bg-dark-900 border border-dark-600 rounded-full p-1" title="Available Now">
-                          <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></div>
-                      </div>
-                  )}
-               </div>
-               
-               <div className="text-center relative z-10">
-                   <div className="flex items-center justify-center gap-1 mb-1">
-                       <Star className="w-3 h-3 text-yellow-500 fill-current" />
-                       <span className="text-white font-bold text-sm">{expert.stats.rating}</span>
-                   </div>
-                   <div className="text-[10px] text-slate-500 font-mono uppercase tracking-wider">{expert.stats.consultations} Consults</div>
-               </div>
-            </div>
-
-            {/* Right: Data & Bio */}
-            <div className="flex-1 p-6 flex flex-col">
-                <div className="flex justify-between items-start mb-2">
-                    <div>
-                        <h3 className="text-xl font-bold text-white group-hover:text-brand-blue transition-colors">{expert.name}</h3>
-                        <p className={`text-xs font-bold uppercase tracking-wider mt-1 ${getThemeTextColor(expert.colorTheme)}`}>{expert.role}</p>
-                    </div>
-                    <ArrowUpRight className="w-5 h-5 text-slate-600 group-hover:text-white transition-colors" />
+    <div className="max-w-6xl mx-auto pb-12">
+        {/* Header Section (LinkedIn Style Container) */}
+        <div className="bg-dark-800 rounded-xl border border-dark-700 p-6 mb-8 shadow-sm">
+             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <div>
+                    <h1 className="text-2xl font-bold text-white mb-1">Expert Network</h1>
+                    <p className="text-slate-400 text-sm">Connect with verified professionals in hair replacement science.</p>
                 </div>
-
-                <p className="text-slate-400 text-sm leading-relaxed mb-6 line-clamp-2">
-                    {expert.bio}
-                </p>
-
-                {/* Specialties "Chips" */}
-                <div className="flex flex-wrap gap-2 mb-6">
-                    {expert.specialties.slice(0, 3).map((spec, i) => (
-                        <span key={i} className="text-[10px] font-bold bg-dark-900 border border-dark-600 text-slate-300 px-2 py-1 rounded-md">
-                            {spec}
-                        </span>
+                {/* Stats Pill */}
+                <div className="inline-flex items-center gap-2 bg-dark-900 px-4 py-2 rounded-lg border border-dark-600 text-xs text-slate-300">
+                    <Users className="w-4 h-4 text-brand-blue" />
+                    <span className="font-bold text-white">{experts.length}</span> Verified Experts
+                </div>
+             </div>
+             
+             {/* Search & Filter Bar */}
+             <div className="flex flex-col md:flex-row gap-4">
+                <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                    <input 
+                        type="text" 
+                        placeholder="Search by name, role, or specialty..." 
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2.5 bg-dark-900 border border-dark-600 rounded-lg text-white text-sm focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue transition-all" 
+                    />
+                </div>
+                <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 hide-scrollbar items-center">
+                    <Filter className="w-4 h-4 text-slate-500 mr-2 flex-shrink-0" />
+                    {['All', 'Chemist', 'Stylist', 'Ventilation', 'Dermatologist'].map(role => (
+                        <button
+                            key={role}
+                            onClick={() => setFilter(role)}
+                            className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap border transition-all ${
+                                filter === role 
+                                ? 'bg-brand-blue text-white border-brand-blue shadow-lg shadow-blue-500/20' 
+                                : 'bg-dark-900 text-slate-400 border-dark-600 hover:border-slate-400 hover:text-white'
+                            }`}
+                        >
+                            {role}
+                        </button>
                     ))}
-                    {expert.specialties.length > 3 && (
-                        <span className="text-[10px] font-bold bg-dark-900 border border-dark-600 text-slate-500 px-2 py-1 rounded-md">
-                            +{expert.specialties.length - 3}
-                        </span>
-                    )}
                 </div>
-
-                <div className="mt-auto pt-4 border-t border-dark-700/50 flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs text-slate-500">
-                        <Clock className="w-3 h-3" />
-                        <span>{expert.stats.experience} Exp</span>
-                    </div>
-                    <span className="text-xs font-bold text-white group-hover:underline flex items-center gap-1">
-                        View Dossier
-                    </span>
-                </div>
-            </div>
-          </Link>
-        ))}
-
-        {/* Recruitment Card */}
-        <div className="bg-dark-800/50 rounded-3xl border border-dashed border-dark-600 p-6 flex flex-col items-center justify-center text-center hover:bg-dark-800 transition-colors group cursor-pointer min-h-[220px]">
-            <div className="w-16 h-16 rounded-2xl bg-dark-900 border border-dark-700 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg">
-                <Search className="w-6 h-6 text-slate-500 group-hover:text-white transition-colors" />
-            </div>
-            <h3 className="text-lg font-bold text-white mb-2">Join the Directorate</h3>
-            <p className="text-slate-400 text-sm max-w-xs mx-auto mb-4">
-                Are you a qualified professional in dermatology, chemistry, or cosmetology?
-            </p>
-            <span className="text-xs font-bold text-brand-blue uppercase tracking-wider group-hover:underline">Apply for Verification</span>
+             </div>
         </div>
-      </div>
+
+        {/* Directory Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredExperts.map(expert => (
+                <div key={expert.id} className="bg-dark-800 rounded-xl border border-dark-700 overflow-hidden flex flex-col hover:shadow-xl transition-shadow duration-300 group">
+                    {/* Cover Photo Area */}
+                    <div className={`h-24 bg-gradient-to-r ${getGradient(expert.colorTheme)} relative overflow-hidden`}>
+                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
+                        <div className="absolute top-3 right-3">
+                            <button className="bg-black/20 hover:bg-black/40 text-white/80 p-1.5 rounded-full backdrop-blur-sm transition-colors">
+                                <MessageCircle className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+                    
+                    {/* Profile Section */}
+                    <div className="px-5 pb-5 flex-1 flex flex-col items-center -mt-12 text-center relative">
+                         {/* Avatar */}
+                         <Link to={`/experts/${expert.id}`} className="relative mb-3 group/avatar inline-block">
+                             <div className="w-24 h-24 rounded-full p-1 bg-dark-800 relative z-10">
+                                <img 
+                                    src={expert.image} 
+                                    alt={expert.name} 
+                                    className="w-full h-full rounded-full object-cover border-2 border-dark-600 group-hover/avatar:border-brand-blue transition-colors bg-dark-900" 
+                                />
+                             </div>
+                             {expert.availability === 'Available' && (
+                                 <div className="absolute bottom-2 right-2 w-5 h-5 bg-green-500 border-4 border-dark-800 rounded-full z-20" title="Available for Consult"></div>
+                             )}
+                         </Link>
+
+                         {/* Basic Info */}
+                         <Link to={`/experts/${expert.id}`} className="group-hover:text-brand-blue transition-colors">
+                             <h3 className="text-lg font-bold text-white flex items-center justify-center gap-1.5">
+                                 {expert.name}
+                                 <CheckCircle className="w-4 h-4 text-brand-blue fill-current text-dark-800" />
+                             </h3>
+                         </Link>
+                         <p className="text-sm text-slate-400 mb-2 font-medium">{expert.role}</p>
+                         
+                         {/* Social Proof Stats */}
+                         <div className="text-xs text-slate-500 flex items-center gap-3 mb-4 bg-dark-900/50 py-1.5 px-3 rounded-full border border-dark-700">
+                             <span className="flex items-center gap-1"><Star className="w-3 h-3 text-yellow-500 fill-current" /> <span className="text-slate-300 font-bold">{expert.stats.rating}</span></span>
+                             <span className="w-0.5 h-3 bg-dark-600"></span>
+                             <span><span className="text-slate-300 font-bold">{expert.stats.consultations}</span> Consults</span>
+                         </div>
+
+                         {/* Bio Snippet */}
+                         <p className="text-xs text-slate-400 line-clamp-2 mb-4 px-2 leading-relaxed">
+                             {expert.bio}
+                         </p>
+
+                         {/* Specialty Tags */}
+                         <div className="flex flex-wrap justify-center gap-1.5 mb-6">
+                             {expert.specialties.slice(0, 3).map((s, i) => (
+                                 <span key={i} className="px-2 py-1 bg-dark-900 border border-dark-600 rounded text-[10px] text-slate-400 font-medium">
+                                     {s}
+                                 </span>
+                             ))}
+                             {expert.specialties.length > 3 && (
+                                 <span className="px-2 py-1 bg-dark-900 border border-dark-600 rounded text-[10px] text-slate-500 font-medium">+{expert.specialties.length - 3}</span>
+                             )}
+                         </div>
+
+                         {/* Actions */}
+                         <div className="mt-auto w-full flex flex-col gap-2">
+                             <Link to={`/experts/${expert.id}`} className="w-full py-2 rounded-full bg-brand-blue hover:bg-blue-600 text-white text-sm font-bold transition-all shadow-lg shadow-blue-500/10 border border-transparent">
+                                 View Profile
+                             </Link>
+                             <button className="w-full py-2 rounded-full border border-brand-blue text-brand-blue hover:bg-brand-blue/10 text-sm font-bold transition-colors">
+                                 Book Consultation
+                             </button>
+                         </div>
+                    </div>
+                </div>
+            ))}
+
+            {/* "Join Us" Card - Styled as a Profile Card but for recruitment */}
+            <Link to="/experts/apply" className="bg-dark-800/50 rounded-xl border border-dashed border-dark-600 flex flex-col hover:bg-dark-800 hover:border-dark-500 transition-colors group cursor-pointer">
+                 <div className="h-24 bg-dark-900/50 relative overflow-hidden flex items-center justify-center">
+                    <div className="absolute inset-0 bg-slate-800/20"></div>
+                 </div>
+                 <div className="px-5 pb-5 flex-1 flex flex-col items-center -mt-12 text-center relative">
+                    <div className="w-24 h-24 rounded-full p-1 bg-dark-800 relative z-10 mb-3">
+                         <div className="w-full h-full rounded-full bg-dark-900 border-2 border-dashed border-dark-600 flex items-center justify-center group-hover:border-slate-500 transition-colors">
+                             <Briefcase className="w-8 h-8 text-slate-500 group-hover:text-white transition-colors" />
+                         </div>
+                    </div>
+                    
+                    <h3 className="text-lg font-bold text-white mb-1">Are you an expert?</h3>
+                    <p className="text-sm text-slate-400 mb-4 font-medium">Join the Directorate</p>
+                    <p className="text-xs text-slate-500 line-clamp-3 mb-6 px-4">
+                        We are looking for qualified chemical engineers, dermatologists, and master stylists to contribute to the knowledge base.
+                    </p>
+
+                    <div className="mt-auto w-full">
+                         <span className="block w-full py-2 rounded-full bg-dark-700 hover:bg-dark-600 text-slate-300 hover:text-white text-sm font-bold transition-colors border border-dark-600">
+                             Apply for Verification
+                         </span>
+                    </div>
+                 </div>
+            </Link>
+        </div>
     </div>
   );
 };

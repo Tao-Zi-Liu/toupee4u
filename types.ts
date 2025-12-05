@@ -12,6 +12,7 @@ export interface Article {
   content: string; // HTML or Markdown string
   readTime: string;
   tier: UserTier;
+  category?: string;
 }
 
 export interface Topic {

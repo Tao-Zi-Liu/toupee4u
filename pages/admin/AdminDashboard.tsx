@@ -7,7 +7,9 @@ export const AdminDashboard: React.FC = () => {
   const { experts, categories, consultations } = useData();
   const navigate = useNavigate();
 
-  const totalArticles = categories.reduce((acc, cat) => acc + cat.articles.length, 0);
+  const totalArticles = categories.reduce((acc, cat) => {
+    return acc + cat.topics.reduce((tAcc, topic) => tAcc + topic.articles.length, 0);
+  }, 0);
 
   const StatCard = ({ icon: Icon, label, value, color }: any) => (
     <div className="bg-dark-800 p-6 rounded-2xl border border-dark-700 flex items-center justify-between">

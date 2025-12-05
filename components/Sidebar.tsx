@@ -63,7 +63,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, highlightGover
             </p>
           )}
           <nav className="space-y-1">
-            <NavItem to="/" icon={Home} label="Overview" isCollapsed={isCollapsed} />
+            <NavItem to="/" icon={Home} label="Toupee For You" isCollapsed={isCollapsed} />
             <NavItem to="/news" icon={Newspaper} label="Industry News" isCollapsed={isCollapsed} />
             <NavItem to="/lab" icon={FlaskConical} label="The Lab" isCollapsed={isCollapsed} badge="Beta" />
             <NavItem to="/forum" icon={MessageSquare} label="Forums" isCollapsed={isCollapsed} />

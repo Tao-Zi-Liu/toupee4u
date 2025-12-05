@@ -88,3 +88,33 @@ export const generateArticleFromVideo = async (videoData: { title: string; chann
     return "<p>Error: High entropy in the generation matrix.</p>";
   }
 };
+
+export const findNearbyShops = async (lat: number, lng: number): Promise<{ text: string, chunks: any[] }> => {
+  try {
+    const model = 'gemini-2.5-flash';
+    const response = await ai.models.generateContent({
+      model: model,
+      contents: "Find shops offering men's haircuts and wigs/hair systems within a 5-mile radius of my current location. STRICTLY filter results to only include shops with a Google Shop Review rating of 4.5 or higher. List them.",
+      config: {
+        tools: [{ googleMaps: {} }],
+        toolConfig: {
+          retrievalConfig: {
+            latLng: {
+              latitude: lat,
+              longitude: lng
+            }
+          }
+        }
+      }
+    });
+
+    // Check for grounding chunks (Google Maps results)
+    const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+    const text = response.text || "No highly-rated styling protocols found in your immediate sector.";
+
+    return { text, chunks };
+  } catch (error) {
+    console.error("Gemini Location Error:", error);
+    return { text: "Signal interference detected. Unable to retrieve geospatial data.", chunks: [] };
+  }
+};

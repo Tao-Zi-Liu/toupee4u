@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { INDUSTRY_NEWS } from '../constants';
-import { ArrowRight, ShieldCheck, Zap, Users, Star, MessageSquare, ThumbsUp, PenTool, Award, Sparkles, ChevronLeft, ChevronRight, Clock, PlayCircle, Film, Check, Send, Newspaper, ExternalLink, Globe } from 'lucide-react';
+import { findNearbyShops } from '../services/geminiService';
+import { ArrowRight, ShieldCheck, Zap, Users, Star, MessageSquare, ThumbsUp, PenTool, Award, Sparkles, ChevronLeft, ChevronRight, Clock, PlayCircle, Film, Check, Send, Newspaper, ExternalLink, Globe, MapPin, Navigation, RefreshCw, AlertTriangle, CheckCircle } from 'lucide-react';
 
 const EXPERT_POSTS = [
   {
@@ -254,6 +255,13 @@ export const Home: React.FC = () => {
   const [requestTopic, setRequestTopic] = useState('');
   const [requestSubmitted, setRequestSubmitted] = useState(false);
 
+  // Location / Map State
+  const [locationState, setLocationState] = useState<{
+    status: 'idle' | 'loading' | 'success' | 'error',
+    data: { text: string, chunks: any[] } | null,
+    coords: { lat: number, lng: number } | null
+  }>({ status: 'idle', data: null, coords: null });
+
   // Expert Carousel Logic (3D Scroll Left / Horizontal Flip)
   useEffect(() => {
     if (isExpertPaused) return;
@@ -349,6 +357,26 @@ export const Home: React.FC = () => {
         setRequestSubmitted(false);
         setRequestTopic('');
     }, 3000);
+  };
+
+  const handleLocate = () => {
+    setLocationState({ ...locationState, status: 'loading' });
+    if (!navigator.geolocation) {
+        setLocationState({ ...locationState, status: 'error' });
+        return;
+    }
+    navigator.geolocation.getCurrentPosition(async (position) => {
+        const { latitude, longitude } = position.coords;
+        const result = await findNearbyShops(latitude, longitude);
+        setLocationState({
+            status: 'success',
+            data: result,
+            coords: { lat: latitude, lng: longitude }
+        });
+    }, (err) => {
+        console.error(err);
+        setLocationState({ ...locationState, status: 'error' });
+    });
   };
 
   const activePost = EXPERT_POSTS[expertIndex];
@@ -730,6 +758,133 @@ export const Home: React.FC = () => {
                 </form>
             )}
         </div>
+      </section>
+
+      {/* --- NEW LOCAL NETWORK / MAP SECTION --- */}
+      <section className="bg-dark-800 rounded-2xl border border-dark-700 p-1 relative overflow-hidden">
+         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+         <div className="relative z-10 bg-gradient-to-b from-dark-900/50 to-dark-800 p-6 md:p-8">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                <div>
+                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                        <MapPin className="w-5 h-5 text-brand-blue" /> Local Network
+                    </h2>
+                    <p className="text-sm text-slate-400">
+                        Find hair replacement specialists rated 4.5+ within a 5-mile radius.
+                    </p>
+                </div>
+                {locationState.status === 'success' && (
+                    <div className="text-xs text-brand-blue font-mono bg-brand-blue/10 px-2 py-1 rounded border border-brand-blue/20 flex items-center gap-2">
+                        <Navigation className="w-3 h-3" />
+                        LAT: {locationState.coords?.lat.toFixed(4)} • LNG: {locationState.coords?.lng.toFixed(4)}
+                    </div>
+                )}
+            </div>
+
+            {/* Map Interaction Area */}
+            <div className="bg-dark-900 rounded-xl border border-dark-600 overflow-hidden relative min-h-[300px] flex flex-col">
+                
+                {/* Initial State */}
+                {locationState.status === 'idle' && (
+                    <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[url('https://www.transparenttextures.com/patterns/shattered-island.png')] bg-cover">
+                        <div className="p-4 bg-dark-800/90 rounded-full border border-dark-600 mb-4 shadow-xl backdrop-blur-sm">
+                            <Navigation className="w-8 h-8 text-slate-400" />
+                        </div>
+                        <h3 className="text-lg font-bold text-white mb-2">Enable Location Services</h3>
+                        <p className="text-sm text-slate-400 max-w-xs mb-6">
+                            Allow access to your coordinates to triangulate verified salons nearby.
+                        </p>
+                        <button 
+                            onClick={handleLocate}
+                            className="px-6 py-3 bg-brand-blue hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 flex items-center gap-2 transition-all"
+                        >
+                            <MapPin className="w-4 h-4" /> Find Shops Near Me
+                        </button>
+                    </div>
+                )}
+
+                {/* Loading State */}
+                {locationState.status === 'loading' && (
+                    <div className="flex-1 flex flex-col items-center justify-center p-8">
+                        <RefreshCw className="w-8 h-8 text-brand-blue animate-spin mb-4" />
+                        <p className="text-sm text-slate-400 animate-pulse">Triangulating position via Truth Engine...</p>
+                    </div>
+                )}
+
+                {/* Error State */}
+                {locationState.status === 'error' && (
+                    <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+                        <div className="p-3 bg-red-500/10 rounded-full border border-red-500/20 mb-4">
+                            <AlertTriangle className="w-6 h-6 text-red-500" />
+                        </div>
+                        <h3 className="text-lg font-bold text-white mb-2">Signal Lost</h3>
+                        <p className="text-sm text-slate-400 max-w-xs mb-4">
+                            Unable to retrieve geolocation data. Please ensure location services are enabled in your browser.
+                        </p>
+                        <button 
+                            onClick={() => setLocationState({...locationState, status: 'idle'})}
+                            className="text-sm text-brand-blue hover:underline"
+                        >
+                            Try Again
+                        </button>
+                    </div>
+                )}
+
+                {/* Success State */}
+                {locationState.status === 'success' && locationState.data && (
+                    <div className="flex flex-col md:flex-row h-full">
+                        {/* Results List */}
+                        <div className="w-full md:w-1/2 p-6 border-b md:border-b-0 md:border-r border-dark-700 bg-dark-900/50 overflow-y-auto max-h-[400px]">
+                            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <CheckCircle className="w-3 h-3 text-green-500" /> Verified Locations
+                            </h4>
+                            
+                            {locationState.data.chunks.length > 0 ? (
+                                <div className="space-y-3">
+                                    {locationState.data.chunks.map((chunk, idx) => (
+                                        <a 
+                                            key={idx}
+                                            href={chunk.web?.uri || chunk.maps?.sourceConfig?.placeId ? `https://www.google.com/maps/place/?q=place_id:${chunk.maps?.sourceConfig?.placeId}` : '#'}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="block bg-dark-800 p-4 rounded-xl border border-dark-600 hover:border-brand-blue transition-all group"
+                                        >
+                                            <div className="flex justify-between items-start">
+                                                <h5 className="font-bold text-white text-sm group-hover:text-brand-blue transition-colors">
+                                                    {chunk.web?.title || chunk.maps?.title || "Verified Salon"}
+                                                </h5>
+                                                <ExternalLink className="w-3 h-3 text-slate-600 group-hover:text-brand-blue" />
+                                            </div>
+                                            <div className="mt-2 flex items-center gap-1 text-xs text-yellow-500">
+                                                <Star className="w-3 h-3 fill-current" />
+                                                <span className="font-bold">4.5+</span>
+                                                <span className="text-slate-500 ml-1">(Google Verified)</span>
+                                            </div>
+                                        </a>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-sm text-slate-400 italic">
+                                    No specific Google Maps entities returned in this sector. 
+                                </div>
+                            )}
+                        </div>
+
+                        {/* AI Summary */}
+                        <div className="w-full md:w-1/2 p-6 bg-brand-blue/5">
+                            <h4 className="text-xs font-bold text-brand-blue uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <Sparkles className="w-3 h-3" /> Intel Brief
+                            </h4>
+                            <div className="prose prose-sm prose-invert text-slate-300">
+                                <p className="leading-relaxed">
+                                    {locationState.data.text}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+         </div>
       </section>
     </div>
   );
