@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Save, RefreshCw, Database, Terminal, Shield, Power } from 'lucide-react';
+import { Save, RefreshCw, Database, Terminal } from 'lucide-react';
+import { Shield, Power } from 'lucide-react';
 
 export const AdminSettings: React.FC = () => {
   const [siteName, setSiteName] = useState('Toupee4U');

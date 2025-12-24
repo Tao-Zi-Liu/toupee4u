@@ -1,8 +1,11 @@
+
 import React, { useState } from 'react';
 import { generateArticleFromVideo } from '../../services/geminiService';
 import { useData } from '../../contexts/DataContext';
 import { Topic, UserTier } from '../../types';
-import { Youtube, Search, ArrowRight, Loader, FileText, CheckCircle, Play, MessageSquare, AlertCircle, Save } from 'lucide-react';
+import { Youtube, Search, ArrowRight, Loader, FileText, CheckCircle } from 'lucide-react';
+import { Play, MessageSquare, AlertCircle, Save } from 'lucide-react';
+// Fixing react-router-dom named imports
 import { Link, useNavigate } from 'react-router-dom';
 
 // Mock data to simulate YouTube API response since we don't have a real API key in this env

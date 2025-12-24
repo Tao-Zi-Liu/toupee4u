@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MessageSquare, ThumbsUp, Clock, Hash, MoreHorizontal, Filter, X, Check, Flame, ArrowDownUp } from 'lucide-react';
+import { MessageSquare, ThumbsUp, Clock, Hash, MoreHorizontal } from 'lucide-react';
+import { Filter, X, Check, Flame, ArrowDownUp } from 'lucide-react';
 
 const TOPICS = [
     {

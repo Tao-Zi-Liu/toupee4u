@@ -1,10 +1,9 @@
+
 import React, { useState } from 'react';
+// Fixing react-router-dom named imports
 import { Link, useNavigate } from 'react-router-dom';
-import { 
-  CheckCircle, Upload, Briefcase, GraduationCap, 
-  Linkedin, Globe, ArrowRight, ShieldCheck, 
-  AlertCircle, FileText, User
-} from 'lucide-react';
+import { CheckCircle, Upload, Briefcase, GraduationCap, Linkedin, Globe } from 'lucide-react';
+import { ArrowRight, ShieldCheck, AlertCircle, FileText, User } from 'lucide-react';
 
 export const ExpertApplicationPage: React.FC = () => {
   const navigate = useNavigate();
@@ -265,7 +264,7 @@ export const ExpertApplicationPage: React.FC = () => {
               <div className="pt-4 border-t border-dark-700 flex justify-end">
                  <button 
                     type="submit"
-                    className="px-8 py-3 bg-brand-blue hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 flex items-center gap-2 transition-all"
+                    className="px-8 py-3 bg-brand-blue hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 transition-all"
                  >
                     Submit Application <ArrowRight className="w-4 h-4" />
                  </button>

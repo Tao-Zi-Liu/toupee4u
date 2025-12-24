@@ -1,7 +1,10 @@
+
 import React from 'react';
 import { useData } from '../../contexts/DataContext';
+// Fixing react-router-dom named imports
 import { Link, useNavigate } from 'react-router-dom';
-import { Users, FileText, Activity, Shield, Settings, ArrowRight, Youtube } from 'lucide-react';
+import { Users, FileText, Activity, Shield, Settings } from 'lucide-react';
+import { ArrowRight, Youtube } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
   const { experts, categories, consultations } = useData();

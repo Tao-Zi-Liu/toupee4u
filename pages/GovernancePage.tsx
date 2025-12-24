@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Shield, Users, Bot, Scale, ChevronDown, ChevronUp, ShieldAlert, MessageSquare, Crown, Clock } from 'lucide-react';
+import { Shield, Users, Bot, Scale, ChevronDown, ChevronUp } from 'lucide-react';
+import { ShieldAlert, MessageSquare, Crown, Clock } from 'lucide-react';
 
 export const GovernancePage: React.FC = () => {
   const [openSection, setOpenSection] = useState<string | null>('rules');

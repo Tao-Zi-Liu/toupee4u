@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useData } from '../../contexts/DataContext';
-import { Plus, Trash2, Search, X, Edit3, FileText, Layers, Clock, Shield, Folder } from 'lucide-react';
+import { Plus, Trash2, Search, X, Edit3, FileText } from 'lucide-react';
+import { Layers, Clock, Shield, Folder } from 'lucide-react';
 import { Topic, UserTier } from '../../types';
 
 export const AdminArticles: React.FC = () => {

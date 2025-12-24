@@ -1,5 +1,7 @@
+
 import { UserTier, Category, Consultation, Expert, GlossaryTerm } from './types';
-import { BookOpen, Layers, Zap, PenTool, Activity, ShieldCheck, Microscope, Droplet } from 'lucide-react';
+import { BookOpen, Layers, Zap, PenTool, Activity } from 'lucide-react';
+import { ShieldCheck, Microscope, Droplet } from 'lucide-react';
 
 export const EXPERTS: Expert[] = [
   {
@@ -66,6 +68,21 @@ export const EXPERTS: Expert[] = [
     socials: {
       linkedin: "https://linkedin.com",
       instagram: "https://instagram.com"
+    }
+  },
+  {
+    id: 'test-expert',
+    name: "Dr. Test Account",
+    role: "System Validator",
+    image: "https://placehold.co/400x400/10b981/FFF?text=TEST",
+    specialties: ["System Diagnostics", "Protocol Verification"],
+    bio: "Official testing account for the Toupee4U platform. Used to validate secure login protocols and expert dashboard functionality.",
+    methodology: "Binary validation of truth states.",
+    stats: { experience: "N/A", consultations: 0, rating: 5.0 },
+    availability: 'Available',
+    colorTheme: 'green',
+    socials: {
+      twitter: "https://twitter.com"
     }
   }
 ];

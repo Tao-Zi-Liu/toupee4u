@@ -1,10 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { KB_CATEGORIES } from '../constants';
 
-// Initialize Gemini
-// NOTE: Process.env.API_KEY is handled by the build environment
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
 const SYSTEM_INSTRUCTION = `
 You are the "Toupee4U Truth Engine", an expert AI consultant for men's hair replacement systems.
 Your goal is to provide unbiased, scientific, and actionable advice to "Aspiring DIYers".
@@ -20,15 +16,19 @@ If a user asks about something dangerous (like using superglue), warn them immed
 Keep responses concise (under 200 words) unless asked for a detailed guide.
 `;
 
+/**
+ * Ask the Truth Engine AI a question grounded in the Knowledge Base context.
+ */
 export const askTheTruthEngine = async (query: string): Promise<string> => {
   try {
-    const model = 'gemini-2.5-flash';
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const modelName = 'gemini-3-flash-preview';
     
-    // Construct a context string from our local KB constants to ground the AI
-    // In a real app, this would use RAG (Retrieval Augmented Generation)
-    const contextSummary = KB_CATEGORIES.map(cat => 
-      `${cat.name} (${cat.physicsTheme}): ${cat.description}`
-    ).join('\n');
+    let contextSummary = '';
+    for (let i = 0; i < KB_CATEGORIES.length; i++) {
+        const cat = KB_CATEGORIES[i];
+        contextSummary += cat.name + " (" + cat.physicsTheme + "): " + cat.description + "\n";
+    }
 
     const fullPrompt = `
       Context from Knowledge Base:
@@ -38,10 +38,10 @@ export const askTheTruthEngine = async (query: string): Promise<string> => {
     `;
 
     const response = await ai.models.generateContent({
-      model: model,
+      model: modelName,
       contents: fullPrompt,
       config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
+        systemInstruction: SYSTEM_INSTRUCTION
       }
     });
 
@@ -52,11 +52,20 @@ export const askTheTruthEngine = async (query: string): Promise<string> => {
   }
 };
 
+/**
+ * Transforms video metadata into a structured article.
+ */
 export const generateArticleFromVideo = async (videoData: { title: string; channel: string; description: string; comments: string[] }): Promise<string> => {
   try {
-    const model = 'gemini-2.5-flash';
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const modelName = 'gemini-3-flash-preview';
     
-    const prompt = `
+    let commentsStr = '';
+    for (let j = 0; j < videoData.comments.length; j++) {
+        commentsStr += videoData.comments[j] + '; ';
+    }
+
+    const promptText = `
       I need you to act as the Senior Technical Editor for Toupee4U. 
       I have scraped a YouTube video and its top comments. 
       
@@ -65,7 +74,7 @@ export const generateArticleFromVideo = async (videoData: { title: string; chann
       Video Title: ${videoData.title}
       Channel: ${videoData.channel}
       Context/Description: ${videoData.description}
-      Top User Comments/Questions: ${videoData.comments.join('; ')}
+      Top User Comments/Questions: ${commentsStr}
 
       Article Requirements:
       1. **Title:** Create a more scientific/academic title based on the video topic.
@@ -78,43 +87,13 @@ export const generateArticleFromVideo = async (videoData: { title: string; chann
     `;
 
     const response = await ai.models.generateContent({
-      model: model,
-      contents: prompt,
+      model: modelName,
+      contents: promptText
     });
 
     return response.text || "<p>Failed to synthesize data.</p>";
   } catch (error) {
     console.error("Gemini Generation Error:", error);
     return "<p>Error: High entropy in the generation matrix.</p>";
-  }
-};
-
-export const findNearbyShops = async (lat: number, lng: number): Promise<{ text: string, chunks: any[] }> => {
-  try {
-    const model = 'gemini-2.5-flash';
-    const response = await ai.models.generateContent({
-      model: model,
-      contents: "Find shops offering men's haircuts and wigs/hair systems within a 5-mile radius of my current location. STRICTLY filter results to only include shops with a Google Shop Review rating of 4.5 or higher. List them.",
-      config: {
-        tools: [{ googleMaps: {} }],
-        toolConfig: {
-          retrievalConfig: {
-            latLng: {
-              latitude: lat,
-              longitude: lng
-            }
-          }
-        }
-      }
-    });
-
-    // Check for grounding chunks (Google Maps results)
-    const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
-    const text = response.text || "No highly-rated styling protocols found in your immediate sector.";
-
-    return { text, chunks };
-  } catch (error) {
-    console.error("Gemini Location Error:", error);
-    return { text: "Signal interference detected. Unable to retrieve geospatial data.", chunks: [] };
   }
 };

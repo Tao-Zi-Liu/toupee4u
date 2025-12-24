@@ -1,7 +1,21 @@
 import React, { useState } from 'react';
-import { NavLink, Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { KB_CATEGORIES } from '../constants';
-import { Home, Users, Plus, MessageSquare, Microscope, FlaskConical, Shield, Scale, Newspaper, ChevronLeft, ChevronRight, Crown, Menu, BookA } from 'lucide-react';
+import { 
+  Home, 
+  Users, 
+  Plus, 
+  MessageSquare, 
+  Microscope,
+  FlaskConical, 
+  Shield, 
+  Scale, 
+  Newspaper, 
+  ChevronLeft,
+  ChevronRight, 
+  Crown, 
+  BookA 
+} from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -12,13 +26,7 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, highlightGovernance }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  // Mobile: fixed full width/height logic controlled by isOpen
-  // Desktop: sticky height logic controlled by isCollapsed
   const baseClasses = `fixed inset-y-0 left-0 z-50 bg-dark-900 text-slate-400 transform transition-all duration-300 ease-in-out border-r border-dark-700 flex flex-col`;
-  
-  // Logic: 
-  // Mobile: Translate based on isOpen. Always w-64.
-  // Desktop (lg): Always translate-0. Width depends on isCollapsed. Sticky.
   const mobileClasses = `${isOpen ? 'translate-x-0' : '-translate-x-full'} w-64`;
   const desktopClasses = `lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen ${isCollapsed ? 'lg:w-20' : 'lg:w-64'}`;
 
@@ -26,9 +34,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, highlightGover
     setIsCollapsed(!isCollapsed);
   };
 
+  const renderKbNav = () => {
+    const items = [];
+    for (let i = 0; i < KB_CATEGORIES.length; i++) {
+      const category = KB_CATEGORIES[i];
+      items.push(
+        <NavItem 
+          key={category.id}
+          to={`/kb/${category.id}`} 
+          icon={category.icon} 
+          label={category.name} 
+          isCollapsed={isCollapsed} 
+        />
+      );
+    }
+    return items;
+  };
+
   return (
     <aside className={`${baseClasses} ${mobileClasses} ${desktopClasses}`}>
-      {/* Header / Logo */}
       <div className={`h-16 flex items-center ${isCollapsed ? 'justify-center px-0' : 'px-6'} border-b border-dark-700 transition-all duration-300`}>
         <div className="flex items-center gap-2 font-bold text-xl tracking-tight text-white overflow-hidden whitespace-nowrap">
           <div className="w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center text-brand-blue">
@@ -40,10 +64,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, highlightGover
         </div>
       </div>
 
-      {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-6 custom-scrollbar">
-        
-        {/* New Post Button */}
         <Link 
           to="/forum/new" 
           className={`w-full bg-gradient-to-r from-brand-blue to-blue-600 hover:to-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2 overflow-hidden whitespace-nowrap ${isCollapsed ? 'p-3 aspect-square' : 'py-3 px-4'}`}
@@ -55,7 +76,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, highlightGover
             </span>
         </Link>
 
-        {/* Section: Community */}
         <div>
           {!isCollapsed && (
             <p className="px-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 animate-in fade-in duration-300">
@@ -72,7 +92,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, highlightGover
           </nav>
         </div>
 
-        {/* Section: Knowledge Base */}
         <div>
           {!isCollapsed && (
             <p className="px-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 animate-in fade-in duration-300">
@@ -80,20 +99,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, highlightGover
             </p>
           )}
           <nav className="space-y-1">
-            {KB_CATEGORIES.map((category) => (
-              <NavItem 
-                key={category.id}
-                to={`/kb/${category.id}`} 
-                icon={category.icon} 
-                label={category.name} 
-                isCollapsed={isCollapsed} 
-              />
-            ))}
+            {renderKbNav()}
             <NavItem to="/kb/glossary" icon={BookA} label="Glossary" isCollapsed={isCollapsed} />
           </nav>
         </div>
 
-        {/* Section: Premium */}
         <div>
           {!isCollapsed && (
             <p className="px-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 animate-in fade-in duration-300">
@@ -106,13 +116,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, highlightGover
           </nav>
         </div>
 
-        {/* Admin Link */}
         <div className={`pt-4 border-t border-dark-700 ${isCollapsed ? 'flex justify-center' : ''}`}>
            <NavItem to="/admin" icon={Shield} label="Admin Panel" isCollapsed={isCollapsed} />
         </div>
       </div>
 
-      {/* Collapse Toggle (Desktop Only) */}
       <div className="hidden lg:flex p-4 border-t border-dark-700">
         <button 
           onClick={toggleCollapse}
@@ -125,7 +133,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, highlightGover
   );
 };
 
-// Helper Component for consistent Nav Items
 const NavItem: React.FC<{ 
   to: string; 
   icon: React.ElementType; 

@@ -1,6 +1,9 @@
+
 import React, { useState } from 'react';
+// Fixing react-router-dom named imports
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send, Image as ImageIcon, Hash, AlertCircle, Type, Paperclip, X } from 'lucide-react';
+import { ArrowLeft, Send, Image as ImageIcon, Hash } from 'lucide-react';
+import { AlertCircle, Type, Paperclip, X } from 'lucide-react';
 
 export const CreateDiscussionPage: React.FC = () => {
   const navigate = useNavigate();

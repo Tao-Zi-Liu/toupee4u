@@ -1,8 +1,36 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Mail, Lock, ArrowRight, ShieldCheck, Hexagon } from 'lucide-react';
+
+import React, { useState } from 'react';
+// Fixing react-router-dom named imports
+import { Link, useNavigate } from 'react-router-dom';
+import { Mail, Lock, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Hexagon, AlertCircle } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+
+    // Simulate API delay
+    setTimeout(() => {
+        if (email === '123@456.com' && password === 'lztzn1314') {
+            setIsLoading(false);
+            // Store session state
+            localStorage.setItem('toupee_auth', 'expert');
+            navigate('/profile');
+        } else {
+            setIsLoading(false);
+            setError('Access Denied: Invalid authentication protocols.');
+        }
+    }, 800);
+  };
+
   return (
     <div className="min-h-screen bg-dark-900 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background Decor */}
@@ -22,8 +50,16 @@ export const LoginPage: React.FC = () => {
           <p className="text-slate-400 text-sm">Access the Truth Engine and your personal lab.</p>
         </div>
 
+        {/* Error Message */}
+        {error && (
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-3 text-sm text-red-400 animate-in fade-in slide-in-from-top-2">
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <span>{error}</span>
+            </div>
+        )}
+
         {/* Form */}
-        <form className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-4">
           <div className="space-y-1">
             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Email Address</label>
             <div className="relative group">
@@ -31,6 +67,8 @@ export const LoginPage: React.FC = () => {
               <input 
                 type="email" 
                 placeholder="doctor@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-dark-900 border border-dark-600 rounded-xl py-3 pl-10 pr-4 text-white placeholder-slate-600 focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue transition-all"
               />
             </div>
@@ -46,14 +84,26 @@ export const LoginPage: React.FC = () => {
               <input 
                 type="password" 
                 placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="w-full bg-dark-900 border border-dark-600 rounded-xl py-3 pl-10 pr-4 text-white placeholder-slate-600 focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue transition-all"
               />
             </div>
           </div>
 
-          <button className="w-full bg-brand-blue hover:bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2 group">
-            Sign In to Protocol
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          <button 
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-brand-blue hover:bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? (
+                <>Processing...</>
+            ) : (
+                <>
+                    Sign In to Protocol
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </>
+            )}
           </button>
         </form>
 

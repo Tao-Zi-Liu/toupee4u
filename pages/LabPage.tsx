@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { FlaskConical, Droplet, Activity, Layers, ArrowRight, Zap, RefreshCw, Thermometer, Brain, Calculator, AlertTriangle, Check } from 'lucide-react';
+import { FlaskConical, Droplet, Activity, Layers, ArrowRight } from 'lucide-react';
+import { Zap, RefreshCw, Thermometer, Brain, Calculator, AlertTriangle, Check } from 'lucide-react';
 
 export const LabPage: React.FC = () => {
   const [activeTool, setActiveTool] = useState<'adhesive' | 'entropy' | null>('adhesive');

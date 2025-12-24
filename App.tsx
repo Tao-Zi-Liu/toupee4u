@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { HashRouter, Routes, Route, Navigate, Link, Outlet } from 'react-router-dom';
+
+import React, { useState, useEffect } from 'react';
+// Fixing react-router-dom named imports
+import { HashRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { DataProvider } from './contexts/DataContext';
 import { Sidebar } from './components/Sidebar';
 import { Home } from './pages/Home';
@@ -34,27 +36,46 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showGovernanceModal, setShowGovernanceModal] = useState(true);
   const [highlightGovernance, setHighlightGovernance] = useState(false);
+  const [userProfile, setUserProfile] = useState({
+      name: "Alex Mercer",
+      handle: "@amercer_diy",
+      avatar: "https://placehold.co/100x100/333/fff?text=ME",
+      isExpert: false
+  });
+
+  useEffect(() => {
+      const userType = localStorage.getItem('toupee_auth');
+      if (userType === 'expert') {
+          setUserProfile({
+              name: "Dr. Test Account",
+              handle: "@sys_validator",
+              avatar: "https://placehold.co/100x100/10b981/fff?text=TEST",
+              isExpert: true
+          });
+      }
+  }, []);
 
   const handleCloseGovernance = () => {
     setShowGovernanceModal(false);
-    // Open sidebar on mobile so they can see the highlight
     setIsSidebarOpen(true);
-    // Trigger highlight animation
     setHighlightGovernance(true);
-    // Remove highlight after 3 seconds
     setTimeout(() => setHighlightGovernance(false), 3000);
+  };
+
+  const handleLogout = () => {
+      localStorage.removeItem('toupee_auth');
+      window.location.href = '#/login';
+      window.location.reload();
   };
 
   return (
     <div className="min-h-screen bg-dark-900 flex text-slate-300 font-sans">
-      {/* Sidebar */}
       <Sidebar 
         isOpen={isSidebarOpen} 
         toggle={() => setIsSidebarOpen(!isSidebarOpen)} 
         highlightGovernance={highlightGovernance}
       />
       
-      {/* Overlay for mobile sidebar */}
       {isSidebarOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -62,14 +83,11 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         />
       )}
 
-      {/* Governance Modal Overlay */}
       {showGovernanceModal && (
         <GovernanceModal onClose={handleCloseGovernance} />
       )}
 
-      {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Header */}
         <header className="h-16 bg-dark-900 border-b border-dark-700 flex items-center justify-between px-6 sticky top-0 z-30">
           <div className="flex items-center gap-4">
             <button 
@@ -94,30 +112,26 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <span className="absolute top-0 right-0 w-2 h-2 bg-brand-blue rounded-full border-2 border-dark-900"></span>
             </button>
             
-            {/* User Dropdown Menu */}
             <div className="relative group py-2">
                 <button className="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-blue to-brand-purple p-[2px] cursor-pointer hover:scale-105 transition-transform block">
                     <div className="w-full h-full rounded-full bg-dark-900 flex items-center justify-center overflow-hidden">
-                        <img src="https://placehold.co/100x100/333/fff?text=ME" alt="Profile" className="w-full h-full object-cover" />
+                        <img src={userProfile.avatar} alt="Profile" className="w-full h-full object-cover" />
                     </div>
                 </button>
 
-                {/* Dropdown Content */}
                 <div className="absolute right-0 top-full mt-0 pt-2 w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                     <div className="bg-dark-800 border border-dark-700 rounded-xl shadow-2xl overflow-hidden ring-1 ring-black ring-opacity-5">
                         <div className="p-4 border-b border-dark-700 bg-dark-900/50">
                             <div className="flex items-center justify-between mb-2">
-                                <p className="text-white font-bold text-sm">Alex Mercer</p>
-                                <p className="text-slate-500 text-xs">@amercer_diy</p>
+                                <p className="text-white font-bold text-sm">{userProfile.name}</p>
+                                <p className="text-slate-500 text-xs">{userProfile.handle}</p>
                             </div>
                             <div className="flex flex-wrap gap-2">
-                                {/* Subscription Badge */}
                                 <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-brand-purple/10 border border-brand-purple/20 text-[10px] font-bold text-brand-purple uppercase tracking-wider">
                                     <Crown className="w-3 h-3" /> Quantum
                                 </div>
-                                {/* Forum Level Badge */}
                                 <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-yellow-500/10 border border-yellow-500/20 text-[10px] font-bold text-yellow-500 uppercase tracking-wider">
-                                    <Rocket className="w-3 h-3" /> Lvl 3
+                                    <Rocket className="w-3 h-3" /> Lvl {userProfile.isExpert ? '99' : '3'}
                                 </div>
                             </div>
                         </div>
@@ -125,13 +139,15 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                             <Link to="/profile" className="flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:bg-dark-700 hover:text-white rounded-lg transition-colors">
                                 <User className="w-4 h-4" /> My Profile
                             </Link>
-                            <Link to="/login" className="flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:bg-dark-700 hover:text-white rounded-lg transition-colors">
-                                <LogIn className="w-4 h-4" /> Login
-                            </Link>
+                            {!userProfile.isExpert && (
+                                <Link to="/login" className="flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:bg-dark-700 hover:text-white rounded-lg transition-colors">
+                                    <LogIn className="w-4 h-4" /> Switch Account
+                                </Link>
+                            )}
                             <div className="h-px bg-dark-700 my-1"></div>
-                            <Link to="/login" className="flex items-center gap-3 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-lg transition-colors">
+                            <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-lg transition-colors">
                                 <LogOut className="w-4 h-4" /> Logout
-                            </Link>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -139,7 +155,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </div>
         </header>
 
-        {/* Scrollable Content */}
         <main className="flex-1 overflow-auto p-6 md:p-8 max-w-7xl mx-auto w-full">
           {children}
         </main>
@@ -150,7 +165,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   );
 };
 
-// Extracted App Routes for cleanliness and Layout wrapping
 const AppRoutes = () => {
   return (
     <Routes>
@@ -161,12 +175,9 @@ const AppRoutes = () => {
       <Route path="/news" element={<IndustryNewsPage />} />
       <Route path="/knowledge-map" element={<KnowledgeMapPage />} />
       <Route path="/kb/glossary" element={<GlossaryPage />} />
-      
-      {/* Updated KB Routes */}
       <Route path="/kb/:categoryId" element={<CategoryPage />} />
       <Route path="/kb/:categoryId/:topicId" element={<TopicPage />} />
       <Route path="/kb/:categoryId/:topicId/:articleId" element={<ArticlePage />} />
-      
       <Route path="/consultations" element={<ConsultationsPage />} />
       <Route path="/membership" element={<MembershipPage />} />
       <Route path="/profile" element={<ProfilePage />} />
@@ -174,14 +185,11 @@ const AppRoutes = () => {
       <Route path="/experts/apply" element={<ExpertApplicationPage />} />
       <Route path="/experts/:id" element={<ExpertProfilePage />} />
       <Route path="/governance" element={<GovernancePage />} />
-      
-      {/* Admin Routes */}
       <Route path="/admin" element={<AdminDashboard />} />
       <Route path="/admin/experts" element={<AdminExperts />} />
       <Route path="/admin/articles" element={<AdminArticles />} />
       <Route path="/admin/settings" element={<AdminSettings />} />
       <Route path="/admin/youtube-crawler" element={<AdminYouTubeCrawler />} />
-
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
@@ -192,11 +200,8 @@ const App: React.FC = () => {
     <HashRouter>
       <DataProvider>
         <Routes>
-          {/* Public Routes (No Layout) */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-
-          {/* Protected/App Routes (Wrapped in Layout) */}
           <Route path="/*" element={
             <Layout>
               <AppRoutes />

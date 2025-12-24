@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Shield, Users, Bot, Scale, ChevronDown, ChevronUp, ShieldAlert, MessageSquare, Crown, Clock, X, Check } from 'lucide-react';
+import { Shield, Users, Bot, Scale, ChevronDown, ChevronUp } from 'lucide-react';
+import { ShieldAlert, MessageSquare, Crown, Clock, X, Check } from 'lucide-react';
 
 export const GovernanceModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [openSection, setOpenSection] = useState<string | null>('rules');

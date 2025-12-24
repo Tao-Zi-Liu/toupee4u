@@ -1,5 +1,7 @@
+
 import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+// Fixing react-router-dom named imports
+import { Link, useParams } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { ArticleView } from '../components/ArticleView';
 import { ArrowLeft } from 'lucide-react';
