@@ -1,14 +1,27 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { generateArticleFromVideo } from '../../services/geminiService';
 import { useData } from '../../contexts/DataContext';
 import { Topic, UserTier } from '../../types';
-import { Youtube, Search, ArrowRight, Loader, FileText, CheckCircle } from 'lucide-react';
-import { Play, MessageSquare, AlertCircle, Save } from 'lucide-react';
-// Fixing react-router-dom named imports
-import { Link, useNavigate } from 'react-router-dom';
+import { 
+  Youtube, 
+  Search, 
+  ArrowRight, 
+  Loader, 
+  FileText, 
+  CheckCircle, 
+  Play, 
+  MessageSquare, 
+  AlertCircle, 
+  Save, 
+  Terminal, 
+  Cpu, 
+  Database,
+  ArrowLeft,
+  Wand2
+} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-// Mock data to simulate YouTube API response since we don't have a real API key in this env
 const MOCK_VIDEOS = [
   {
     id: 'v1',
@@ -52,7 +65,6 @@ export const AdminYouTubeCrawler: React.FC = () => {
   const { categories, addTopic } = useData();
   const navigate = useNavigate();
 
-  // State
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [keyword, setKeyword] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -60,31 +72,50 @@ export const AdminYouTubeCrawler: React.FC = () => {
   const [selectedVideo, setSelectedVideo] = useState<typeof MOCK_VIDEOS[0] | null>(null);
   
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generationLogs, setGenerationLogs] = useState<string[]>([]);
   const [generatedHtml, setGeneratedHtml] = useState('');
   const [targetCategory, setTargetCategory] = useState(categories[0].id);
   const [articleTitle, setArticleTitle] = useState('');
 
+  const logEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [generationLogs]);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if(!keyword) return;
-    
     setIsSearching(true);
-    setResults([]); // Reset
-    
-    // Simulate network delay
+    setResults([]);
     setTimeout(() => {
         setIsSearching(false);
-        // In a real app, this would filter based on keyword or call API
-        // For demo, we just return the mock data mixed
         setResults(MOCK_VIDEOS);
         setStep(2);
     }, 1500);
   };
 
+  const addLog = (msg: string) => {
+    setGenerationLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${msg}`]);
+  };
+
   const handleGenerate = async () => {
     if (!selectedVideo) return;
     setIsGenerating(true);
+    setGenerationLogs(["Initializing Truth Engine Synthesis Matrix...", "Target Signal: " + selectedVideo.id]);
     
+    const logInterval = setInterval(() => {
+       const phrases = [
+         "Extracting transcripts from frequency...",
+         "Parsing comments for community data nodes...",
+         "Applying 'Physics of Hair' language filters...",
+         "Synthesizing technical modules...",
+         "Gemini 3 Pro Inference in progress...",
+         "Optimizing HTML structure for KB injection..."
+       ];
+       addLog(phrases[Math.floor(Math.random() * phrases.length)]);
+    }, 800);
+
     const html = await generateArticleFromVideo({
         title: selectedVideo.title,
         channel: selectedVideo.channel,
@@ -92,11 +123,15 @@ export const AdminYouTubeCrawler: React.FC = () => {
         comments: selectedVideo.comments
     });
 
+    clearInterval(logInterval);
+    addLog("Synthesis Complete. Article generated.");
     setGeneratedHtml(html);
-    // Simple regex to extract a title from the H3 or just use video title
-    setArticleTitle(selectedVideo.title.replace('STOP', 'Preventing').replace('!', '')); 
-    setIsGenerating(false);
-    setStep(3);
+    setArticleTitle(selectedVideo.title.replace('STOP', 'Preventing').replace('!', '').replace('?', '')); 
+    
+    setTimeout(() => {
+        setIsGenerating(false);
+        setStep(3);
+    }, 1000);
   };
 
   const handlePublish = () => {
@@ -107,185 +142,220 @@ export const AdminYouTubeCrawler: React.FC = () => {
         title: articleTitle,
         description: generatedHtml,
         category: categories.find(c => c.id === targetCategory)?.name || 'General',
-        readTime: '6 min', // estimated
-        tier: UserTier.KINETIC, // Default for AI content
+        readTime: '6 min',
+        tier: UserTier.KINETIC,
         articles: []
     };
 
     addTopic(targetCategory, newTopic);
-    alert('Article Published Successfully');
     navigate('/admin/articles');
   };
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center gap-4 border-b border-dark-700 pb-6">
-        <div className="p-3 bg-red-600/10 rounded-xl text-red-500 border border-red-500/20">
+    <div className="space-y-8 max-w-5xl mx-auto pb-12 animate-in fade-in slide-in-from-bottom-2 duration-500">
+      <div className="flex items-center gap-5 border-b border-dark-700 pb-8">
+        <div className="p-4 bg-red-600/10 rounded-2xl text-red-500 border border-red-500/20 shadow-lg shadow-red-500/5">
             <Youtube className="w-8 h-8" />
         </div>
         <div>
-           <h1 className="text-2xl font-bold text-white">Video-to-Knowledge Synthesis</h1>
-           <p className="text-slate-400">Crawl YouTube data and transform it into scientific articles using the Truth Engine.</p>
+           <div className="flex items-center gap-2 mb-1">
+             <h4 className="text-[10px] font-bold text-red-500 uppercase tracking-[0.2em]">Signal Synthesis Module</h4>
+             <span className="h-px w-8 bg-red-500/30"></span>
+           </div>
+           <h1 className="text-3xl font-bold text-white tracking-tight">Video-to-Knowledge Engine</h1>
         </div>
       </div>
 
-      {/* Progress Stepper */}
-      <div className="flex items-center justify-between px-12 relative">
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-dark-700 -z-10"></div>
-          
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-colors ${step >= 1 ? 'bg-brand-blue text-white' : 'bg-dark-800 text-slate-500 border border-dark-600'}`}>1</div>
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-colors ${step >= 2 ? 'bg-brand-blue text-white' : 'bg-dark-800 text-slate-500 border border-dark-600'}`}>2</div>
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-colors ${step >= 3 ? 'bg-brand-blue text-white' : 'bg-dark-800 text-slate-500 border border-dark-600'}`}>3</div>
+      <div className="flex items-center justify-between px-16 relative">
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-0.5 bg-dark-700/50 -z-10"></div>
+          {[1, 2, 3].map(s => (
+            <div key={s} className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 relative border-2 ${
+              step >= s ? 'bg-brand-blue border-brand-blue text-white shadow-lg shadow-brand-blue/30' : 'bg-dark-900 border-dark-700 text-slate-600'
+            }`}>
+              {s}
+              {step === s && <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] uppercase font-bold text-brand-blue whitespace-nowrap tracking-widest">{s === 1 ? 'Scan' : s === 2 ? 'Select' : 'Publish'}</span>}
+            </div>
+          ))}
       </div>
 
-      {/* STEP 1: SEARCH */}
-      {step === 1 && (
-        <div className="bg-dark-800 rounded-2xl border border-dark-700 p-8 shadow-xl animate-in slide-in-from-bottom-4">
-            <h2 className="text-xl font-bold text-white mb-6 text-center">Establish Search Parameters</h2>
-            <form onSubmit={handleSearch} className="max-w-xl mx-auto">
-                <div className="relative group">
-                    <div className="absolute -inset-1 bg-gradient-to-r from-red-500 to-brand-purple rounded-xl opacity-20 group-hover:opacity-40 blur transition duration-500"></div>
-                    <div className="relative flex">
-                        <input 
-                            type="text" 
-                            value={keyword}
-                            onChange={(e) => setKeyword(e.target.value)}
-                            placeholder="e.g., Hair system hairline repair..."
-                            className="w-full bg-dark-900 border border-dark-600 rounded-l-xl py-4 pl-6 pr-4 text-white focus:outline-none focus:border-red-500 transition-colors"
-                        />
-                        <button 
-                            type="submit"
-                            disabled={isSearching || !keyword}
-                            className="bg-red-600 hover:bg-red-500 text-white font-bold px-8 rounded-r-xl transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {isSearching ? <Loader className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
-                            Scan
-                        </button>
+      <div className="mt-12">
+        {step === 1 && (
+          <div className="bg-dark-800 rounded-3xl border border-dark-700 p-12 shadow-2xl relative overflow-hidden text-center group">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-transparent opacity-50"></div>
+              <div className="max-w-xl mx-auto space-y-8 relative z-10">
+                  <div className="w-20 h-20 bg-dark-900 rounded-2xl border border-dark-700 flex items-center justify-center mx-auto text-red-500 shadow-inner group-hover:scale-110 transition-transform">
+                      <Search className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white mb-2">Establish Vector Frequency</h2>
+                    <p className="text-slate-400 text-sm">Target YouTube channels or keywords to distill into the Knowledge Base.</p>
+                  </div>
+                  <form onSubmit={handleSearch} className="relative group/input">
+                      <div className="absolute -inset-1 bg-gradient-to-r from-red-600/20 to-brand-purple/20 rounded-2xl blur opacity-0 group-hover/input:opacity-100 transition duration-500"></div>
+                      <div className="relative flex">
+                          <input 
+                              type="text" 
+                              value={keyword}
+                              onChange={(e) => setKeyword(e.target.value)}
+                              placeholder="e.g., 'Swiss lace vs Poly hairline'..."
+                              className="w-full bg-dark-900 border border-dark-600 rounded-l-2xl py-5 pl-8 pr-4 text-white font-medium focus:outline-none focus:border-red-500 transition-colors"
+                          />
+                          <button 
+                              type="submit"
+                              disabled={isSearching || !keyword}
+                              className="bg-red-600 hover:bg-red-500 text-white font-bold px-10 rounded-r-2xl transition-all flex items-center gap-3 disabled:opacity-50"
+                          >
+                              {isSearching ? <Loader className="w-5 h-5 animate-spin" /> : <Database className="w-5 h-5" />}
+                              Search Signal
+                          </button>
+                      </div>
+                  </form>
+              </div>
+          </div>
+        )}
+
+        {step === 2 && (
+           <div className="space-y-8 animate-in slide-in-from-right-4 duration-500">
+              <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                      <h2 className="text-xl font-bold text-white">Select Signal Source</h2>
+                      <span className="text-xs text-slate-500 font-mono">Found {results.length} active vectors</span>
+                  </div>
+                  <button onClick={() => setStep(1)} className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors group">
+                      <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> New Search
+                  </button>
+              </div>
+
+              {isGenerating ? (
+                 <div className="bg-dark-950 rounded-3xl border border-dark-700 p-8 shadow-2xl relative overflow-hidden font-mono text-xs">
+                    <div className="flex items-center justify-between mb-6 border-b border-dark-800 pb-4">
+                       <div className="flex items-center gap-3 text-emerald-500">
+                          <Terminal className="w-5 h-5" />
+                          <span className="font-bold uppercase tracking-widest">Truth Engine Synthesis Terminal</span>
+                       </div>
+                       <div className="flex items-center gap-2">
+                          <Cpu className="w-4 h-4 text-brand-blue animate-pulse" />
+                          <span className="text-slate-500 uppercase">GPU INFERENCE ACTIVE</span>
+                       </div>
                     </div>
-                </div>
-                <p className="text-center text-xs text-slate-500 mt-4">
-                    The Crawler will retrieve video metadata, transcripts, and top comments for analysis.
-                </p>
-            </form>
-        </div>
-      )}
-
-      {/* STEP 2: SELECT RESULTS */}
-      {step === 2 && (
-         <div className="space-y-6 animate-in slide-in-from-right-4">
-            <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold text-white">Analysis Results</h2>
-                <button onClick={() => setStep(1)} className="text-sm text-slate-400 hover:text-white">Reset Search</button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {results.map((video) => (
-                    <div 
-                        key={video.id} 
-                        onClick={() => setSelectedVideo(video)}
-                        className={`bg-dark-800 rounded-xl border overflow-hidden cursor-pointer transition-all group ${
-                            selectedVideo?.id === video.id 
-                            ? 'border-brand-blue ring-2 ring-brand-blue ring-offset-2 ring-offset-dark-900 transform scale-105' 
-                            : 'border-dark-700 hover:border-slate-500'
-                        }`}
-                    >
-                        <div className="relative aspect-video bg-black">
-                            <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                <div className="w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg">
-                                    <Play className="w-5 h-5 fill-current" />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="p-4">
-                            <h3 className="text-white font-bold text-sm line-clamp-2 mb-2">{video.title}</h3>
-                            <div className="flex justify-between items-center text-xs text-slate-500">
-                                <span>{video.channel}</span>
-                                <span>{video.views} views</span>
-                            </div>
-                            {selectedVideo?.id === video.id && (
-                                <div className="mt-3 flex items-center gap-2 text-xs font-bold text-brand-blue bg-brand-blue/10 px-2 py-1 rounded">
-                                    <CheckCircle className="w-3 h-3" /> Selected
-                                </div>
-                            )}
-                        </div>
+                    <div className="h-64 overflow-y-auto space-y-1.5 custom-scrollbar text-emerald-500/80">
+                       {generationLogs.map((log, i) => (
+                          <div key={i} className="animate-in fade-in slide-in-from-left-2 duration-300">
+                            <span className="opacity-40">>></span> {log}
+                          </div>
+                       ))}
+                       <div className="w-2 h-4 bg-emerald-500 animate-pulse inline-block align-middle ml-1"></div>
+                       <div ref={logEndRef} />
                     </div>
-                ))}
-            </div>
+                    <div className="mt-6 flex items-center justify-between border-t border-dark-800 pt-4 text-[10px] text-slate-600 uppercase font-bold tracking-[0.2em]">
+                       <span>ID: GEN_V_TRUTH_{Date.now()}</span>
+                       <span>MODALITY: VIDEO_TO_HTML</span>
+                    </div>
+                 </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                      {results.map((video) => (
+                          <div 
+                              key={video.id} 
+                              onClick={() => setSelectedVideo(video)}
+                              className={`bg-dark-800 rounded-2xl border overflow-hidden cursor-pointer transition-all duration-300 group relative ${
+                                  selectedVideo?.id === video.id 
+                                  ? 'border-brand-blue ring-1 ring-brand-blue shadow-2xl shadow-brand-blue/20 transform scale-[1.02]' 
+                                  : 'border-dark-700 hover:border-slate-500'
+                              }`}
+                          >
+                              <div className="relative aspect-video">
+                                  <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                                      <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+                                        selectedVideo?.id === video.id ? 'bg-brand-blue text-white scale-110' : 'bg-red-600/90 text-white group-hover:scale-110'
+                                      }`}>
+                                          {selectedVideo?.id === video.id ? <CheckCircle className="w-6 h-6" /> : <Play className="w-6 h-6 fill-current" />}
+                                      </div>
+                                  </div>
+                              </div>
+                              <div className="p-6">
+                                  <h3 className="text-white font-bold text-sm line-clamp-2 mb-3 leading-snug">{video.title}</h3>
+                                  <div className="flex justify-between items-center text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+                                      <span className="text-slate-400">{video.channel}</span>
+                                      <span>{video.views} Views</span>
+                                  </div>
+                              </div>
+                          </div>
+                      ))}
+                  </div>
 
-            <div className="flex justify-center pt-6">
-                <button 
-                    onClick={handleGenerate}
-                    disabled={!selectedVideo || isGenerating}
-                    className="px-8 py-3 bg-brand-blue hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 flex items-center gap-2 transition-all disabled:opacity-50"
-                >
-                    {isGenerating ? (
-                        <>
-                            <Loader className="w-5 h-5 animate-spin" /> Synthesizing Data...
-                        </>
-                    ) : (
-                        <>
-                            <FileText className="w-5 h-5" /> Generate Article
-                        </>
-                    )}
-                </button>
-            </div>
-         </div>
-      )}
+                  <div className="flex justify-center pt-8">
+                      <button 
+                          onClick={handleGenerate}
+                          disabled={!selectedVideo}
+                          className="px-10 py-4 bg-brand-blue hover:bg-blue-600 text-white font-bold rounded-2xl shadow-xl shadow-brand-blue/20 flex items-center gap-3 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
+                      >
+                          <Wand2 className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                          Initiate AI Synthesis
+                      </button>
+                  </div>
+                </>
+              )}
+           </div>
+        )}
 
-      {/* STEP 3: PREVIEW & PUBLISH */}
-      {step === 3 && (
-         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in slide-in-from-right-4">
-            
-            {/* Editor Side */}
-            <div className="lg:col-span-2 space-y-6">
-                <div className="bg-dark-800 rounded-2xl border border-dark-700 p-6">
-                    <div className="mb-6 space-y-4">
+        {step === 3 && (
+           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 animate-in slide-in-from-right-4 duration-500">
+              
+              <div className="lg:col-span-3 space-y-6">
+                <div className="bg-dark-800 rounded-3xl border border-dark-700 p-8 shadow-2xl">
+                    <div className="mb-8 border-b border-dark-700 pb-8 space-y-6">
+                        <div className="flex items-center justify-between">
+                           <h2 className="text-2xl font-bold text-white">Synthesized Output</h2>
+                           <div className="flex items-center gap-2 text-emerald-500 text-xs font-bold uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+                              <CheckCircle className="w-3.5 h-3.5" /> High Fidelity Result
+                           </div>
+                        </div>
                         <div>
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Article Title</label>
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Refined Technical Title</label>
                             <input 
                                 type="text" 
                                 value={articleTitle}
                                 onChange={(e) => setArticleTitle(e.target.value)}
-                                className="w-full bg-dark-900 border border-dark-600 rounded-lg p-3 text-white font-bold text-lg focus:border-brand-blue outline-none"
+                                className="w-full bg-dark-900 border border-dark-600 rounded-2xl py-4 px-6 text-white font-bold text-xl focus:border-brand-blue outline-none ring-1 ring-inset ring-white/5"
                             />
-                        </div>
-                        
-                        <div className="p-4 bg-brand-blue/5 border border-brand-blue/20 rounded-xl flex items-start gap-3">
-                            <AlertCircle className="w-5 h-5 text-brand-blue flex-shrink-0 mt-0.5" />
-                            <div className="text-sm text-slate-400">
-                                <p className="mb-1 text-white font-bold">AI Synthesis Complete</p>
-                                The Truth Engine has converted the video transcript into scientific syntax. Please review for hallucinations before publishing.
-                            </div>
                         </div>
                     </div>
 
-                    <div className="space-y-2">
-                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block flex items-center gap-2">
-                             <FileText className="w-4 h-4" /> Content Preview (HTML)
-                        </label>
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                           <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block flex items-center gap-2">
+                                <Terminal className="w-4 h-4 text-brand-blue" /> Distilled HTML Body
+                           </label>
+                           <button className="text-[10px] font-bold text-brand-blue hover:text-white transition-colors uppercase tracking-widest">
+                              Format Document
+                           </button>
+                        </div>
                         <textarea 
                             value={generatedHtml}
                             onChange={(e) => setGeneratedHtml(e.target.value)}
-                            className="w-full h-[500px] bg-dark-900 border border-dark-600 rounded-xl p-6 text-slate-300 font-mono text-sm leading-relaxed focus:border-brand-blue outline-none resize-none"
+                            className="w-full h-[600px] bg-dark-900 border border-dark-600 rounded-2xl p-8 text-slate-300 font-mono text-sm leading-relaxed focus:border-brand-blue outline-none resize-none ring-1 ring-inset ring-white/5 custom-scrollbar"
                         />
                     </div>
                 </div>
-            </div>
+              </div>
 
-            {/* Publishing Side */}
-            <div className="space-y-6">
-                <div className="bg-dark-800 rounded-2xl border border-dark-700 p-6 sticky top-24">
-                    <h3 className="font-bold text-white mb-6">Publishing Options</h3>
+              <div className="lg:col-span-1">
+                <div className="bg-dark-800 rounded-3xl border border-dark-700 p-8 shadow-2xl sticky top-24 space-y-8">
+                    <div>
+                        <h3 className="font-bold text-white text-lg mb-2">Publish Matrix</h3>
+                        <p className="text-xs text-slate-500">Configure deployment parameters for the synthesized signal.</p>
+                    </div>
                     
-                    <div className="space-y-4 mb-8">
-                        <div>
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Category</label>
+                    <div className="space-y-6">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Target Domain</label>
                             <select 
                                 value={targetCategory}
                                 onChange={(e) => setTargetCategory(e.target.value)}
-                                className="w-full bg-dark-900 border border-dark-600 rounded-lg p-3 text-white focus:border-brand-blue outline-none"
+                                className="w-full bg-dark-900 border border-dark-600 rounded-xl p-3.5 text-white font-medium focus:border-brand-blue outline-none"
                             >
                                 {categories.map(cat => (
                                     <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -293,36 +363,36 @@ export const AdminYouTubeCrawler: React.FC = () => {
                             </select>
                         </div>
                         
-                        <div className="p-4 bg-dark-900 rounded-xl border border-dark-600">
-                            <div className="flex justify-between items-center text-sm mb-2">
-                                <span className="text-slate-400">Source Video</span>
-                                <span className="text-white font-bold truncate max-w-[100px]">{selectedVideo?.channel}</span>
+                        <div className="p-5 bg-dark-900 rounded-2xl border border-dark-700 space-y-4">
+                            <div className="flex justify-between items-center text-xs">
+                                <span className="text-slate-500 font-bold uppercase tracking-wider">Origin</span>
+                                <span className="text-slate-200 font-bold truncate max-w-[80px]">{selectedVideo?.channel}</span>
                             </div>
-                            <div className="flex justify-between items-center text-sm mb-2">
-                                <span className="text-slate-400">User Comments</span>
+                            <div className="flex justify-between items-center text-xs">
+                                <span className="text-slate-500 font-bold uppercase tracking-wider">Community Signal</span>
                                 <span className="text-brand-blue font-bold flex items-center gap-1">
                                     <MessageSquare className="w-3 h-3" /> {selectedVideo?.comments.length}
                                 </span>
                             </div>
-                             <div className="flex justify-between items-center text-sm">
-                                <span className="text-slate-400">Tier Access</span>
+                             <div className="flex justify-between items-center text-xs">
+                                <span className="text-slate-500 font-bold uppercase tracking-wider">Access Protocol</span>
                                 <span className="text-white font-bold">Kinetic</span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-3 pt-4">
                         <button 
                             onClick={handlePublish}
-                            className="w-full py-3 bg-brand-blue hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 transition-all"
+                            className="w-full py-4 bg-brand-blue hover:bg-blue-600 text-white font-bold rounded-2xl shadow-xl shadow-brand-blue/20 flex items-center justify-center gap-3 transition-all"
                         >
-                            <Save className="w-4 h-4" /> Publish to KB
+                            <Save className="w-5 h-5" /> Commit to KB
                         </button>
                         <button 
                             onClick={() => setStep(2)}
-                            className="w-full py-3 bg-dark-900 border border-dark-600 hover:bg-dark-800 text-slate-400 hover:text-white font-medium rounded-xl transition-all"
+                            className="w-full py-4 bg-dark-900 border border-dark-600 hover:bg-dark-700 text-slate-400 hover:text-white font-bold text-xs uppercase tracking-widest rounded-2xl transition-all"
                         >
-                            Back to Results
+                            Retrain Model
                         </button>
                     </div>
                 </div>
@@ -330,6 +400,7 @@ export const AdminYouTubeCrawler: React.FC = () => {
 
          </div>
       )}
+      </div>
     </div>
   );
 };

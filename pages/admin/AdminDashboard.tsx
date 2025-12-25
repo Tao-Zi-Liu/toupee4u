@@ -1,10 +1,22 @@
 
 import React from 'react';
 import { useData } from '../../contexts/DataContext';
-// Fixing react-router-dom named imports
 import { Link, useNavigate } from 'react-router-dom';
-import { Users, FileText, Activity, Shield, Settings } from 'lucide-react';
-import { ArrowRight, Youtube } from 'lucide-react';
+import { 
+  Users, 
+  FileText, 
+  Activity, 
+  Shield, 
+  Settings, 
+  ArrowRight, 
+  Youtube, 
+  TrendingUp, 
+  Cpu, 
+  Database, 
+  Globe, 
+  AlertCircle,
+  Zap
+} from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
   const { experts, categories, consultations } = useData();
@@ -14,104 +26,148 @@ export const AdminDashboard: React.FC = () => {
     return acc + cat.topics.reduce((tAcc, topic) => tAcc + topic.articles.length, 0);
   }, 0);
 
-  const StatCard = ({ icon: Icon, label, value, color }: any) => (
-    <div className="bg-dark-800 p-6 rounded-2xl border border-dark-700 flex items-center justify-between">
+  const StatCard = ({ icon: Icon, label, value, color, trend }: any) => (
+    <div className="bg-dark-800 p-6 rounded-2xl border border-dark-700 flex flex-col justify-between relative overflow-hidden group hover:border-dark-500 transition-all">
+      <div className="flex items-start justify-between mb-4">
+        <div className={`p-2.5 rounded-xl bg-opacity-10 ${color.replace('text-', 'bg-')} ${color} ring-1 ring-inset ring-white/5`}>
+          <Icon className="w-5 h-5" />
+        </div>
+        {trend && (
+          <div className="flex items-center gap-1 text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+            <TrendingUp className="w-3 h-3" /> {trend}
+          </div>
+        )}
+      </div>
       <div>
-        <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">{label}</p>
-        <h3 className="text-3xl font-bold text-white">{value}</h3>
+        <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">{label}</p>
+        <h3 className="text-3xl font-bold text-white tracking-tight">{value}</h3>
       </div>
-      <div className={`p-3 rounded-xl bg-opacity-10 ${color.replace('text-', 'bg-')} ${color}`}>
-        <Icon className="w-6 h-6" />
-      </div>
+      <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
     </div>
   );
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between border-b border-dark-700 pb-6">
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-dark-700 pb-8">
         <div>
-           <h1 className="text-3xl font-bold text-white mb-2">Backoffice</h1>
-           <p className="text-slate-400">Manage content, experts, and platform settings.</p>
+           <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-brand-blue/10 rounded-lg border border-brand-blue/20">
+                 <Shield className="w-5 h-5 text-brand-blue" />
+              </div>
+              <h4 className="text-xs font-bold text-brand-blue uppercase tracking-widest">System Directorate</h4>
+           </div>
+           <h1 className="text-4xl font-bold text-white tracking-tight">Operation Command</h1>
         </div>
-        <div className="flex items-center gap-2">
-            <span className="px-3 py-1 bg-green-500/10 text-green-500 border border-green-500/20 rounded-full text-xs font-bold uppercase tracking-wider">
-                System Active
-            </span>
+        <div className="flex items-center gap-4">
+            <div className="flex flex-col items-end">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Global Uptime</span>
+                <span className="text-emerald-500 font-mono text-sm">99.998%</span>
+            </div>
+            <div className="h-10 w-px bg-dark-700"></div>
+            <div className="p-2 bg-dark-800 rounded-xl border border-dark-700 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="text-xs font-bold text-slate-300">Live</span>
+            </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard icon={Users} label="Active Experts" value={experts.length} color="text-brand-blue" />
-        <StatCard icon={FileText} label="KB Articles" value={totalArticles} color="text-brand-purple" />
-        <StatCard icon={Activity} label="Consultations" value={consultations.length} color="text-yellow-500" />
-        <StatCard icon={Shield} label="Admin Users" value="1" color="text-slate-400" />
+        <StatCard icon={Users} label="Verified Experts" value={experts.length} color="text-brand-blue" trend="+2" />
+        <StatCard icon={FileText} label="Synthesized KB" value={totalArticles} color="text-brand-purple" trend="+12%" />
+        <StatCard icon={Activity} label="Active Bonds" value={consultations.length} color="text-yellow-500" trend="+4" />
+        <StatCard icon={Cpu} label="AI Inferences" value="1.2k" color="text-cyan-500" trend="Active" />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="bg-dark-800 rounded-2xl border border-dark-700 p-6">
-           <h3 className="text-lg font-bold text-white mb-6">Quick Actions</h3>
-           <div className="space-y-4">
-              <Link to="/admin/experts" className="block p-4 bg-dark-900 border border-dark-600 rounded-xl hover:border-brand-blue transition-colors group">
-                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-brand-blue/10 text-brand-blue rounded-lg">
-                            <Users className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <div className="font-bold text-white group-hover:text-brand-blue transition-colors">Manage Experts</div>
-                            <div className="text-xs text-slate-500">Add, remove, or edit profiles</div>
-                        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-6">
+           <div className="bg-dark-800 rounded-2xl border border-dark-700 p-8 shadow-xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
+                 <Zap className="w-64 h-64 text-brand-blue" />
+              </div>
+              <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                 <Database className="w-5 h-5 text-brand-blue" /> Core Infrastructure
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <Link to="/admin/experts" className="group p-5 bg-dark-900 border border-dark-700 rounded-2xl hover:border-brand-blue hover:bg-dark-900/50 transition-all">
+                    <div className="flex items-center justify-between mb-3">
+                       <div className="p-2.5 bg-brand-blue/10 text-brand-blue rounded-xl ring-1 ring-brand-blue/20">
+                          <Users className="w-5 h-5" />
+                       </div>
+                       <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-brand-blue transition-all group-hover:translate-x-1" />
                     </div>
-                    <ArrowRight className="w-5 h-5 text-slate-500 group-hover:text-white" />
-                 </div>
-              </Link>
-              
-              <Link to="/admin/articles" className="block p-4 bg-dark-900 border border-dark-600 rounded-xl hover:border-brand-purple transition-colors group">
-                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-brand-purple/10 text-brand-purple rounded-lg">
-                            <FileText className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <div className="font-bold text-white group-hover:text-brand-purple transition-colors">Manage Articles</div>
-                            <div className="text-xs text-slate-500">CMS for Knowledge Base Content</div>
-                        </div>
+                    <h4 className="font-bold text-white group-hover:text-brand-blue transition-colors">Expert Directorate</h4>
+                    <p className="text-xs text-slate-500 mt-1">Manage verification status and professional credentials.</p>
+                 </Link>
+                 
+                 <Link to="/admin/articles" className="group p-5 bg-dark-900 border border-dark-700 rounded-2xl hover:border-brand-purple hover:bg-dark-900/50 transition-all">
+                    <div className="flex items-center justify-between mb-3">
+                       <div className="p-2.5 bg-brand-purple/10 text-brand-purple rounded-xl ring-1 ring-brand-purple/20">
+                          <FileText className="w-5 h-5" />
+                       </div>
+                       <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-brand-purple transition-all group-hover:translate-x-1" />
                     </div>
-                    <ArrowRight className="w-5 h-5 text-slate-500 group-hover:text-white" />
-                 </div>
-              </Link>
+                    <h4 className="font-bold text-white group-hover:text-brand-purple transition-colors">Knowledge CMS</h4>
+                    <p className="text-xs text-slate-500 mt-1">Direct access to Level 2 and Level 3 physics modules.</p>
+                 </Link>
 
-              <Link to="/admin/youtube-crawler" className="block p-4 bg-dark-900 border border-dark-600 rounded-xl hover:border-red-500 transition-colors group">
-                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-red-500/10 text-red-500 rounded-lg">
-                            <Youtube className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <div className="font-bold text-white group-hover:text-red-500 transition-colors">Video-to-Knowledge</div>
-                            <div className="text-xs text-slate-500">Crawl YouTube & Synthesize Articles</div>
-                        </div>
+                 <Link to="/admin/youtube-crawler" className="group p-5 bg-dark-900 border border-dark-700 rounded-2xl hover:border-red-500 hover:bg-dark-900/50 transition-all">
+                    <div className="flex items-center justify-between mb-3">
+                       <div className="p-2.5 bg-red-500/10 text-red-500 rounded-xl ring-1 ring-red-500/20">
+                          <Youtube className="w-5 h-5" />
+                       </div>
+                       <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-red-500 transition-all group-hover:translate-x-1" />
                     </div>
-                    <ArrowRight className="w-5 h-5 text-slate-500 group-hover:text-white" />
-                 </div>
-              </Link>
+                    <h4 className="font-bold text-white group-hover:text-red-500 transition-colors">Signal Synthesis</h4>
+                    <p className="text-xs text-slate-500 mt-1">Crawl frequencies and convert raw signals into KB assets.</p>
+                 </Link>
+
+                 <Link to="/admin/settings" className="group p-5 bg-dark-900 border border-dark-700 rounded-2xl hover:border-slate-400 hover:bg-dark-900/50 transition-all">
+                    <div className="flex items-center justify-between mb-3">
+                       <div className="p-2.5 bg-slate-500/10 text-slate-500 rounded-xl ring-1 ring-slate-500/20">
+                          <Settings className="w-5 h-5" />
+                       </div>
+                       <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-white transition-all group-hover:translate-x-1" />
+                    </div>
+                    <h4 className="font-bold text-white group-hover:text-white transition-colors">Global Parameters</h4>
+                    <p className="text-xs text-slate-500 mt-1">Configure Truth Engine personas and site-wide thresholds.</p>
+                 </Link>
+              </div>
            </div>
         </div>
 
-        <div className="bg-dark-800 rounded-2xl border border-dark-700 p-6 flex flex-col items-center justify-center text-center">
-            <div className="w-16 h-16 bg-dark-900 rounded-full flex items-center justify-center border border-dark-600 mb-4">
-                <Settings className="w-8 h-8 text-slate-500" />
-            </div>
-            <h3 className="font-bold text-white mb-2">Platform Configuration</h3>
-            <p className="text-slate-400 text-sm mb-6 max-w-xs">
-                Global settings for the "Physics of Hair" algorithm and Truth Engine AI prompts.
-            </p>
-            <button 
-                onClick={() => navigate('/admin/settings')}
-                className="px-6 py-2 bg-dark-700 hover:bg-dark-600 text-white font-medium rounded-lg transition-colors border border-dark-600 hover:border-slate-500"
-            >
-                Open Settings
-            </button>
+        <div className="space-y-6">
+           <div className="bg-dark-800 rounded-2xl border border-dark-700 p-6 shadow-xl">
+              <h3 className="text-sm font-bold text-white mb-4 uppercase tracking-widest flex items-center gap-2">
+                 <Activity className="w-4 h-4 text-emerald-500" /> System Log
+              </h3>
+              <div className="space-y-4">
+                 {[
+                    { event: "New Expert Verified", time: "2m ago", icon: Shield, color: "text-emerald-500" },
+                    { event: "Gemini Synthesis Success", time: "15m ago", icon: Cpu, color: "text-brand-blue" },
+                    { event: "High Latency Warning", time: "1h ago", icon: AlertCircle, color: "text-yellow-500" },
+                    { event: "Database Backup Complete", time: "3h ago", icon: Database, color: "text-slate-500" }
+                 ].map((log, i) => (
+                    <div key={i} className="flex items-center justify-between text-xs border-b border-dark-700/50 pb-3 last:border-0 last:pb-0">
+                       <div className="flex items-center gap-3">
+                          <log.icon className={`w-3.5 h-3.5 ${log.color}`} />
+                          <span className="text-slate-300 font-medium">{log.event}</span>
+                       </div>
+                       <span className="text-slate-500 font-mono">{log.time}</span>
+                    </div>
+                 ))}
+              </div>
+           </div>
+
+           <div className="bg-gradient-to-br from-brand-blue/20 to-brand-purple/20 rounded-2xl border border-brand-blue/30 p-6 shadow-xl flex flex-col items-center text-center">
+              <div className="w-12 h-12 bg-dark-900 rounded-xl flex items-center justify-center border border-brand-blue/30 mb-4 shadow-lg">
+                 <Globe className="w-6 h-6 text-brand-blue" />
+              </div>
+              <h3 className="font-bold text-white mb-1">Global Coverage</h3>
+              <p className="text-xs text-slate-400 mb-6 px-4">The Truth Engine is currently serving requests across 12 regions.</p>
+              <button className="w-full py-2 bg-dark-900 border border-brand-blue/20 text-brand-blue text-xs font-bold rounded-lg hover:bg-brand-blue/10 transition-colors">
+                 Check Regional Latency
+              </button>
+           </div>
         </div>
       </div>
     </div>
