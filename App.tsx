@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-// Fixing react-router-dom named imports
-import { HashRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { DataProvider } from './contexts/DataContext';
 import { Sidebar } from './components/Sidebar';
 import { Home } from './pages/Home';
@@ -30,14 +29,32 @@ import { AdminArticles } from './pages/admin/AdminArticles';
 import { AdminSettings } from './pages/admin/AdminSettings';
 import { AdminYouTubeCrawler } from './pages/admin/AdminYouTubeCrawler';
 import { AdminDeployment } from './pages/admin/AdminDeployment';
+import { AdminPortal } from './pages/admin/AdminPortal';
+import { AdminAnalytics } from './pages/admin/AdminAnalytics';
+import { AdminUsers } from './pages/admin/AdminUsers';
 import { AiAssistant } from './components/AiAssistant';
 import { AccessGate } from './components/AccessGate';
-import { Menu, Search, Bell, User, LogIn, LogOut, Crown, Rocket } from 'lucide-react';
+import { Menu, Search, Bell, User, LogIn, LogOut, Crown, Rocket, ShieldAlert } from 'lucide-react';
+
+// SECRET URL FOR STAFF ONLY
+const SECRET_ADMIN_URL = "/terminal/x92-quantum-override";
+
+// STAFF GATE PROTECTION
+const StaffGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const isStaff = localStorage.getItem('staff_session_token') === 'authorized_master';
+  
+  if (!isStaff) {
+    return <Navigate to={SECRET_ADMIN_URL} replace />;
+  }
+
+  return <AdminPortal>{children}</AdminPortal>;
+};
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showGovernanceModal, setShowGovernanceModal] = useState(true);
   const [highlightGovernance, setHighlightGovernance] = useState(false);
+  const location = useLocation();
   const [userProfile, setUserProfile] = useState({
       name: "Alex Mercer",
       handle: "@amercer_diy",
@@ -69,6 +86,11 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       window.location.href = '#/login';
       window.location.reload();
   };
+
+  // If it's an admin route, we completely bypass this public layout
+  if (location.pathname.startsWith('/admin')) {
+      return <>{children}</>;
+  }
 
   return (
     <div className="min-h-screen bg-dark-900 flex text-slate-300 font-sans">
@@ -187,12 +209,17 @@ const AppRoutes = () => {
       <Route path="/experts/apply" element={<ExpertApplicationPage />} />
       <Route path="/experts/:id" element={<ExpertProfilePage />} />
       <Route path="/governance" element={<GovernancePage />} />
-      <Route path="/admin" element={<AdminDashboard />} />
-      <Route path="/admin/experts" element={<AdminExperts />} />
-      <Route path="/admin/articles" element={<AdminArticles />} />
-      <Route path="/admin/settings" element={<AdminSettings />} />
-      <Route path="/admin/youtube-crawler" element={<AdminYouTubeCrawler />} />
-      <Route path="/admin/deployment" element={<AdminDeployment />} />
+      
+      {/* PROTECTED ADMIN ROUTES */}
+      <Route path="/admin" element={<StaffGate><AdminDashboard /></StaffGate>} />
+      <Route path="/admin/experts" element={<StaffGate><AdminExperts /></StaffGate>} />
+      <Route path="/admin/articles" element={<StaffGate><AdminArticles /></StaffGate>} />
+      <Route path="/admin/settings" element={<StaffGate><AdminSettings /></StaffGate>} />
+      <Route path="/admin/youtube-crawler" element={<StaffGate><AdminYouTubeCrawler /></StaffGate>} />
+      <Route path="/admin/deployment" element={<StaffGate><AdminDeployment /></StaffGate>} />
+      <Route path="/admin/analytics" element={<StaffGate><AdminAnalytics /></StaffGate>} />
+      <Route path="/admin/users" element={<StaffGate><AdminUsers /></StaffGate>} />
+      
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
@@ -206,6 +233,10 @@ const App: React.FC = () => {
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            
+            {/* SECRET LOGIN PATH */}
+            <Route path="/terminal/x92-quantum-override" element={<LoginPage isStaffTerminal={true} />} />
+
             <Route path="/*" element={
               <Layout>
                 <AppRoutes />

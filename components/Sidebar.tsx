@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { KB_CATEGORIES } from '../constants';
@@ -116,9 +117,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, highlightGover
           </nav>
         </div>
 
-        <div className={`pt-4 border-t border-dark-700 ${isCollapsed ? 'flex justify-center' : ''}`}>
-           <NavItem to="/admin" icon={Shield} label="Admin Panel" isCollapsed={isCollapsed} />
-        </div>
+        {/* ADMIN PANEL LINK REMOVED FOR SECURITY */}
       </div>
 
       <div className="hidden lg:flex p-4 border-t border-dark-700">
