@@ -15,7 +15,8 @@ import {
   Database, 
   Globe, 
   AlertCircle,
-  Zap
+  Zap,
+  Rocket
 } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
@@ -64,10 +65,10 @@ export const AdminDashboard: React.FC = () => {
                 <span className="text-emerald-500 font-mono text-sm">99.998%</span>
             </div>
             <div className="h-10 w-px bg-dark-700"></div>
-            <div className="p-2 bg-dark-800 rounded-xl border border-dark-700 flex items-center gap-2">
+            <Link to="/admin/deployment" className="p-2 bg-dark-800 rounded-xl border border-dark-700 flex items-center gap-2 hover:border-brand-blue transition-colors group">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span className="text-xs font-bold text-slate-300">Live</span>
-            </div>
+                <span className="text-xs font-bold text-slate-300 group-hover:text-white">Live State</span>
+            </Link>
         </div>
       </div>
 
@@ -121,15 +122,15 @@ export const AdminDashboard: React.FC = () => {
                     <p className="text-xs text-slate-500 mt-1">Crawl frequencies and convert raw signals into KB assets.</p>
                  </Link>
 
-                 <Link to="/admin/settings" className="group p-5 bg-dark-900 border border-dark-700 rounded-2xl hover:border-slate-400 hover:bg-dark-900/50 transition-all">
+                 <Link to="/admin/deployment" className="group p-5 bg-dark-900 border border-dark-700 rounded-2xl hover:border-emerald-500 hover:bg-dark-900/50 transition-all">
                     <div className="flex items-center justify-between mb-3">
-                       <div className="p-2.5 bg-slate-500/10 text-slate-500 rounded-xl ring-1 ring-slate-500/20">
-                          <Settings className="w-5 h-5" />
+                       <div className="p-2.5 bg-emerald-500/10 text-emerald-500 rounded-xl ring-1 ring-emerald-500/20">
+                          <Rocket className="w-5 h-5" />
                        </div>
-                       <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-white transition-all group-hover:translate-x-1" />
+                       <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-emerald-500 transition-all group-hover:translate-x-1" />
                     </div>
-                    <h4 className="font-bold text-white group-hover:text-white transition-colors">Global Parameters</h4>
-                    <p className="text-xs text-slate-500 mt-1">Configure Truth Engine personas and site-wide thresholds.</p>
+                    <h4 className="font-bold text-white group-hover:text-emerald-500 transition-colors">Launch Console</h4>
+                    <p className="text-xs text-slate-500 mt-1">Execute global deployments and manage platform uptime.</p>
                  </Link>
               </div>
            </div>

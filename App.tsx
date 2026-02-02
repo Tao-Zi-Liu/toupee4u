@@ -29,7 +29,9 @@ import { AdminExperts } from './pages/admin/AdminExperts';
 import { AdminArticles } from './pages/admin/AdminArticles';
 import { AdminSettings } from './pages/admin/AdminSettings';
 import { AdminYouTubeCrawler } from './pages/admin/AdminYouTubeCrawler';
+import { AdminDeployment } from './pages/admin/AdminDeployment';
 import { AiAssistant } from './components/AiAssistant';
+import { AccessGate } from './components/AccessGate';
 import { Menu, Search, Bell, User, LogIn, LogOut, Crown, Rocket } from 'lucide-react';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -190,6 +192,7 @@ const AppRoutes = () => {
       <Route path="/admin/articles" element={<AdminArticles />} />
       <Route path="/admin/settings" element={<AdminSettings />} />
       <Route path="/admin/youtube-crawler" element={<AdminYouTubeCrawler />} />
+      <Route path="/admin/deployment" element={<AdminDeployment />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
@@ -199,15 +202,17 @@ const App: React.FC = () => {
   return (
     <HashRouter>
       <DataProvider>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/*" element={
-            <Layout>
-              <AppRoutes />
-            </Layout>
-          } />
-        </Routes>
+        <AccessGate>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/*" element={
+              <Layout>
+                <AppRoutes />
+              </Layout>
+            } />
+          </Routes>
+        </AccessGate>
       </DataProvider>
     </HashRouter>
   );
