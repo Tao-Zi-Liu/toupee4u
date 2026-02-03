@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 // Fixing react-router-dom named imports
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send, Image as ImageIcon, Hash } from 'lucide-react';
+import { ArrowLeft, Send, ImageIcon as ImageIcon, Hash } from 'lucide-react';
 import { AlertCircle, Type, Paperclip, X } from 'lucide-react';
 
 export const CreateDiscussionPage: React.FC = () => {
@@ -25,13 +25,13 @@ export const CreateDiscussionPage: React.FC = () => {
       <div className="flex items-center gap-4">
         <Link 
           to="/forum" 
-          className="p-2 rounded-lg bg-dark-800 border border-dark-700 text-slate-400 hover:text-white hover:border-dark-500 transition-colors"
+          className="p-2 rounded-lg bg-dark-800 border border-dark-700 text-slate-300 hover:text-white hover:border-dark-500 transition-colors"
         >
            <ArrowLeft className="w-5 h-5" />
         </Link>
         <div>
            <h1 className="text-2xl font-bold text-white">Initiate New Sequence</h1>
-           <p className="text-slate-400 text-sm">Open a frequency for community analysis.</p>
+           <p className="text-slate-300 text-sm">Open a frequency for community analysis.</p>
         </div>
       </div>
 
@@ -68,7 +68,7 @@ export const CreateDiscussionPage: React.FC = () => {
                           className={`px-4 py-2 rounded-lg text-sm font-medium transition-all border ${
                              category === cat 
                                ? 'bg-brand-blue/10 border-brand-blue text-brand-blue' 
-                               : 'bg-dark-900 border-dark-600 text-slate-400 hover:border-slate-500 hover:text-white'
+                               : 'bg-dark-900 border-dark-600 text-slate-300 hover:border-slate-500 hover:text-white'
                           }`}
                        >
                           {cat}
@@ -90,10 +90,10 @@ export const CreateDiscussionPage: React.FC = () => {
                         className="w-full h-64 bg-dark-900 border border-dark-600 rounded-xl p-4 text-white placeholder-slate-600 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none transition-all resize-none"
                     />
                     <div className="absolute bottom-4 left-4 flex gap-2">
-                       <button type="button" className="p-2 bg-dark-800 rounded-lg text-slate-400 hover:text-white border border-dark-600 hover:border-brand-blue transition-colors" title="Attach Image">
+                       <button type="button" className="p-2 bg-dark-800 rounded-lg text-slate-300 hover:text-white border border-dark-600 hover:border-brand-blue transition-colors" title="Attach Image">
                           <ImageIcon className="w-4 h-4" />
                        </button>
-                       <button type="button" className="p-2 bg-dark-800 rounded-lg text-slate-400 hover:text-white border border-dark-600 hover:border-brand-blue transition-colors" title="Attach File">
+                       <button type="button" className="p-2 bg-dark-800 rounded-lg text-slate-300 hover:text-white border border-dark-600 hover:border-brand-blue transition-colors" title="Attach File">
                           <Paperclip className="w-4 h-4" />
                        </button>
                     </div>
@@ -105,7 +105,7 @@ export const CreateDiscussionPage: React.FC = () => {
                  <button 
                     type="button" 
                     onClick={() => navigate('/forum')}
-                    className="px-6 py-3 rounded-xl font-medium text-slate-400 hover:text-white hover:bg-dark-700 transition-colors"
+                    className="px-6 py-3 rounded-xl font-medium text-slate-300 hover:text-white hover:bg-dark-700 transition-colors"
                  >
                     Abort
                  </button>
@@ -129,7 +129,7 @@ export const CreateDiscussionPage: React.FC = () => {
                  </div>
                  <h3 className="font-bold text-white mt-1">Protocol Guidelines</h3>
               </div>
-              <ul className="space-y-3 text-sm text-slate-400 list-disc pl-4">
+              <ul className="space-y-3 text-sm text-slate-300 list-disc pl-4">
                  <li>
                     <strong className="text-slate-300">Be Specific:</strong> Mention your base type (Lace vs Poly) and adhesive brand.
                  </li>

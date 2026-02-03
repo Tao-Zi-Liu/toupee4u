@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { INDUSTRY_NEWS } from '../constants';
 import { Newspaper, Search, Globe, ArrowUpRight } from 'lucide-react';
@@ -27,7 +28,7 @@ export const IndustryNewsPage: React.FC = () => {
               <h4 className="text-xs font-bold text-blue-400 uppercase tracking-widest">Market Intelligence</h4>
            </div>
            <h1 className="text-4xl font-bold text-white mb-2">Industry News</h1>
-           <p className="text-slate-400 max-w-2xl">
+           <p className="text-slate-300 max-w-2xl">
              Stay updated with the latest supply chain shifts, product launches, and dermatological breakthroughs in the hair replacement sector.
            </p>
         </div>
@@ -53,7 +54,7 @@ export const IndustryNewsPage: React.FC = () => {
                       className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all border ${
                           filter === cat 
                           ? 'bg-brand-blue text-white border-brand-blue' 
-                          : 'bg-dark-800 text-slate-400 border border-dark-700 hover:border-slate-500 hover:text-white'
+                          : 'bg-dark-800 text-slate-300 border border-dark-700 hover:border-slate-500 hover:text-white'
                       }`}
                   >
                       {cat}
@@ -86,7 +87,7 @@ export const IndustryNewsPage: React.FC = () => {
                     {news.title}
                 </h3>
                 
-                <p className="text-sm text-slate-400 line-clamp-3 mb-6 flex-1">
+                <p className="text-sm text-slate-300 line-clamp-3 mb-6 flex-1">
                     {news.snippet}
                 </p>
                 

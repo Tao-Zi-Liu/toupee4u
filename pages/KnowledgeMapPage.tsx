@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { KB_CATEGORIES } from '../constants';
@@ -12,7 +13,7 @@ export const KnowledgeMapPage: React.FC = () => {
             <Brain className="w-8 h-8" />
         </div>
         <h1 className="text-4xl md:text-5xl font-bold text-white mb-6 tracking-tight">The Knowledge Architecture</h1>
-        <p className="text-lg text-slate-400 leading-relaxed">
+        <p className="text-lg text-slate-300 leading-relaxed">
           Toupee4U isn't just a list of tips. It's a structured curriculum designed to take you from a novice understanding of hair systems to mastery of the physics involved.
         </p>
       </div>
@@ -48,7 +49,7 @@ export const KnowledgeMapPage: React.FC = () => {
                           <h2 className="text-2xl font-bold text-white mb-3 group-hover:text-brand-blue transition-colors">
                             {category.name}
                           </h2>
-                          <p className="text-slate-400 mb-6">
+                          <p className="text-slate-300 mb-6">
                             {category.description}
                           </p>
                           <div className="flex items-center text-sm font-bold text-white gap-2">
@@ -77,7 +78,7 @@ export const KnowledgeMapPage: React.FC = () => {
       <div className="bg-gradient-to-br from-dark-800 to-dark-900 rounded-3xl p-12 text-center border border-dark-700 relative overflow-hidden mt-12">
          <div className="relative z-10">
             <h2 className="text-2xl font-bold text-white mb-4">Ready to engineer your look?</h2>
-            <p className="text-slate-400 mb-8 max-w-xl mx-auto">
+            <p className="text-slate-300 mb-8 max-w-xl mx-auto">
                 Start with Phase 1 to understand the fundamentals of cap construction, or jump to specific modules if you are troubleshooting an active system.
             </p>
             <Link to="/kb/foundations" className="inline-flex items-center px-8 py-4 bg-brand-blue text-white font-bold rounded-xl hover:bg-blue-600 transition-all shadow-lg shadow-blue-500/25">

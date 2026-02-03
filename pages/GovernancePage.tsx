@@ -15,7 +15,7 @@ export const GovernancePage: React.FC = () => {
             <Shield className="w-10 h-10" />
         </div>
         <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 tracking-tight">Community Governance</h1>
-        <p className="text-slate-400 text-lg max-w-2xl mx-auto leading-relaxed">
+        <p className="text-slate-300 text-lg max-w-2xl mx-auto leading-relaxed">
             Fostering an ecosystem of trust, growth, and constructive discourse through transparent protocols.
         </p>
       </div>
@@ -32,7 +32,7 @@ export const GovernancePage: React.FC = () => {
             isOpen={openSection === 'rules'} 
             toggle={toggle}
         >
-            <p className="text-sm text-slate-400 mb-6 border-l-2 border-brand-blue pl-4">
+            <p className="text-sm text-slate-300 mb-6 border-l-2 border-brand-blue pl-4">
                 Our governance philosophy is built on two tiers: absolute Safety Guardrails and the promotion of a Supportive Tone.
             </p>
             <div className="bg-dark-900 rounded-xl overflow-hidden border border-dark-700 shadow-inner">
@@ -79,7 +79,7 @@ export const GovernancePage: React.FC = () => {
             isOpen={openSection === 'hierarchy'} 
             toggle={toggle}
         >
-            <p className="text-sm text-slate-400 mb-8 max-w-3xl">
+            <p className="text-sm text-slate-300 mb-8 max-w-3xl">
                 Progress through our 5-Level Hierarchy to unlock advanced features and governance input. Each level represents a verifiable commitment to the collective knowledge base.
             </p>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -100,7 +100,7 @@ export const GovernancePage: React.FC = () => {
             isOpen={openSection === 'ai'} 
             toggle={toggle}
         >
-            <p className="text-sm text-slate-400 mb-8">
+            <p className="text-sm text-slate-300 mb-8">
                 Our LLM (Large Language Model) runs continuous analysis, classifying content severity into two distinct pathways to ensure rapid and fair enforcement.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -109,7 +109,7 @@ export const GovernancePage: React.FC = () => {
                     <div className="text-brand-blue font-bold text-lg mb-3 flex items-center justify-center gap-2">
                         <MessageSquare className="w-5 h-5" /> Path A: Potential Violations
                     </div>
-                    <p className="text-sm text-slate-400 mb-6 min-h-[40px]">
+                    <p className="text-sm text-slate-300 mb-6 min-h-[40px]">
                         Content flagged for Supportive Tone issues or low-severity rule breaches.
                     </p>
                     <div className="text-2xl text-slate-600 mb-4 animate-bounce">⬇️</div>
@@ -123,7 +123,7 @@ export const GovernancePage: React.FC = () => {
                     <div className="text-red-500 font-bold text-lg mb-3 flex items-center justify-center gap-2">
                         <ShieldAlert className="w-5 h-5" /> Path B: Zero-Tolerance
                     </div>
-                    <p className="text-sm text-slate-400 mb-6 min-h-[40px]">
+                    <p className="text-sm text-slate-300 mb-6 min-h-[40px]">
                         Content flagged for Safety Guardrails breaches (threats, hate speech).
                     </p>
                     <div className="text-2xl text-slate-600 mb-4 animate-bounce">⬇️</div>
@@ -143,7 +143,7 @@ export const GovernancePage: React.FC = () => {
             isOpen={openSection === 'accountability'} 
             toggle={toggle}
         >
-             <p className="text-sm text-slate-400 mb-6">
+             <p className="text-sm text-slate-300 mb-6">
                 Administrative oversight ensures our moderation team maintains high standards of fairness and activity.
             </p>
              <ul className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -154,7 +154,7 @@ export const GovernancePage: React.FC = () => {
                         </div>
                         <h4 className="text-yellow-500 font-bold text-sm uppercase tracking-wider">Inactivity Policy</h4>
                     </div>
-                    <p className="text-sm text-slate-400 leading-relaxed">
+                    <p className="text-sm text-slate-300 leading-relaxed">
                         Moderators failing to complete assigned queue reviews for <span className="text-white font-bold">7 consecutive days</span> will be automatically rotated out of the active team.
                     </p>
                 </li>
@@ -165,8 +165,8 @@ export const GovernancePage: React.FC = () => {
                         </div>
                         <h4 className="text-red-500 font-bold text-sm uppercase tracking-wider">Abuse of Power</h4>
                     </div>
-                    <p className="text-sm text-slate-400 leading-relaxed">
-                        Clear evidence of bias or arbitrary enforcement results in <span className="text-white font-bold">immediate revocation of privileges</span> and a permanent ban from the community.
+                    <p className="text-sm text-slate-300 leading-relaxed">
+                        Clear evidence of bias or arbitrary enforcement results in <span className="text-white font-bold">immediately revocation of privileges</span> and a permanent ban from the community.
                     </p>
                 </li>
              </ul>

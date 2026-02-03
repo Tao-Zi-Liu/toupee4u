@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
@@ -61,7 +62,7 @@ export const CategoryPage: React.FC = () => {
                             </span>
                         </div>
                         <h3 className="text-3xl md:text-4xl font-bold text-white leading-tight group-hover:text-brand-blue transition-colors">{topic.title}</h3>
-                        <p className="text-slate-400 text-lg leading-relaxed line-clamp-3">{getExcerpt(topic.description)}</p>
+                        <p className="text-slate-300 text-lg leading-relaxed line-clamp-3">{getExcerpt(topic.description)}</p>
                         <div className="pt-4">
                             <span className="inline-flex items-center text-sm font-bold text-white group-hover:text-brand-blue transition-colors gap-2">
                                 Open Topic <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
@@ -86,7 +87,7 @@ export const CategoryPage: React.FC = () => {
             <div>
                 <h2 className="text-sm font-bold text-brand-blue uppercase tracking-wider mb-1">Physics Theme: {category.physicsTheme}</h2>
                 <h1 className="text-3xl font-bold text-white">{category.name}</h1>
-                <p className="text-slate-400 mt-1 max-w-2xl">{category.description}</p>
+                <p className="text-slate-300 mt-1 max-w-2xl">{category.description}</p>
             </div>
         </div>
       </div>

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { CONSULTATIONS } from '../constants';
 import { 
@@ -106,7 +107,7 @@ export const ConsultationsPage: React.FC = () => {
         </div>
 
         <div className="max-w-2xl relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-dark-900 border border-dark-600 text-xs font-bold uppercase tracking-wider text-slate-400 mb-6 shadow-sm">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-dark-900 border border-dark-600 text-xs font-bold uppercase tracking-wider text-slate-300 mb-6 shadow-sm">
             <Video className="w-4 h-4 text-brand-blue" />
             Live 1-on-1 Strategy
           </div>
@@ -114,7 +115,7 @@ export const ConsultationsPage: React.FC = () => {
             Tactical Analysis & <br/>
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-blue to-brand-purple">Expert Support</span>
           </h1>
-          <p className="text-slate-400 text-lg leading-relaxed mb-8 max-w-lg">
+          <p className="text-slate-300 text-lg leading-relaxed mb-8 max-w-lg">
              The internet is full of conflicting advice. Skip the noise. Get a customized engineering protocol for your specific hair density, skin chemistry, and lifestyle goals.
           </p>
           <div className="flex flex-wrap gap-6 justify-center md:justify-start">
@@ -144,7 +145,7 @@ export const ConsultationsPage: React.FC = () => {
                       <Calendar className="w-10 h-10" />
                   </div>
                   <div className="text-2xl font-bold text-white mb-1">Today</div>
-                  <div className="text-slate-400 font-mono">04:00 PM EST</div>
+                  <div className="text-slate-300 font-mono">04:00 PM EST</div>
               </div>
               <button className="w-full mt-auto py-2 bg-white text-dark-900 font-bold rounded-lg text-xs hover:bg-slate-200 transition-colors">
                   Check Availability
@@ -175,12 +176,12 @@ export const ConsultationsPage: React.FC = () => {
 
                     <h3 className="text-2xl font-bold text-white mb-2">{consult.title}</h3>
                     <div className="inline-flex mb-5">
-                        <span className="text-xs font-bold uppercase tracking-wider text-slate-400 border border-dark-600 px-2.5 py-1 rounded-md bg-dark-900/50">
+                        <span className="text-xs font-bold uppercase tracking-wider text-slate-300 border border-dark-600 px-2.5 py-1 rounded-md bg-dark-900/50">
                         For: <span className="text-white">{consult.targetAudience}</span>
                         </span>
                     </div>
                     
-                    <p className="text-slate-400 text-sm leading-relaxed mb-8 flex-1 border-t border-dashed border-dark-700 pt-4">
+                    <p className="text-slate-300 text-sm leading-relaxed mb-8 flex-1 border-t border-dashed border-dark-700 pt-4">
                         {consult.description}
                     </p>
 
@@ -233,7 +234,7 @@ export const ConsultationsPage: React.FC = () => {
                             <div className="absolute -inset-2 bg-brand-blue/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         </div>
                         <h3 className="text-lg font-bold text-white mb-3">{item.title}</h3>
-                        <p className="text-sm text-slate-400 leading-relaxed max-w-xs">{item.desc}</p>
+                        <p className="text-sm text-slate-300 leading-relaxed max-w-xs">{item.desc}</p>
                     </div>
                 ))}
             </div>
@@ -252,12 +253,12 @@ export const ConsultationsPage: React.FC = () => {
                             {step === 4 ? 'Booking Confirmed' : 'Schedule Session'}
                         </h3>
                         {step < 4 && (
-                            <p className="text-xs text-slate-400 flex items-center gap-1 mt-1">
+                            <p className="text-xs text-slate-300 flex items-center gap-1 mt-1">
                                 {selectedConsultation.title} <span className="w-1 h-1 bg-dark-600 rounded-full"></span> {selectedConsultation.duration}
                             </p>
                         )}
                     </div>
-                    <button onClick={() => setIsModalOpen(false)} className="p-2 bg-dark-800 hover:bg-dark-700 rounded-lg text-slate-400 hover:text-white transition-colors">
+                    <button onClick={() => setIsModalOpen(false)} className="p-2 bg-dark-800 hover:bg-dark-700 rounded-lg text-slate-300 hover:text-white transition-colors">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -291,7 +292,7 @@ export const ConsultationsPage: React.FC = () => {
                                             className={`flex-shrink-0 w-16 h-20 rounded-xl border flex flex-col items-center justify-center transition-all ${
                                                 selectedDate === d.full 
                                                 ? 'bg-brand-blue text-white border-brand-blue shadow-lg shadow-blue-500/20' 
-                                                : 'bg-dark-900 text-slate-400 border-dark-600 hover:border-slate-500 hover:text-white'
+                                                : 'bg-dark-900 text-slate-300 border-dark-600 hover:border-slate-500 hover:text-white'
                                             }`}
                                         >
                                             <span className="text-xs font-medium uppercase">{d.day}</span>
@@ -381,7 +382,7 @@ export const ConsultationsPage: React.FC = () => {
                                 <Lock className="w-5 h-5 text-brand-blue mt-0.5 flex-shrink-0" />
                                 <div className="text-sm">
                                     <p className="text-white font-bold mb-1">Secure Transaction</p>
-                                    <p className="text-slate-400 text-xs">
+                                    <p className="text-slate-300 text-xs">
                                         You are booking <span className="text-white">{selectedConsultation.title}</span>. Your card will be charged <span className="text-white font-bold">${selectedConsultation.price}</span>.
                                     </p>
                                 </div>
@@ -439,7 +440,7 @@ export const ConsultationsPage: React.FC = () => {
                                 <Check className="w-10 h-10" />
                             </div>
                             <h3 className="text-2xl font-bold text-white mb-2">Protocol Initiated</h3>
-                            <p className="text-slate-400 mb-8 max-w-sm mx-auto">
+                            <p className="text-slate-300 mb-8 max-w-sm mx-auto">
                                 Your session has been secured. A confirmation packet with the Zoom link has been sent to <strong>{formData.email}</strong>.
                             </p>
                             
@@ -468,7 +469,7 @@ export const ConsultationsPage: React.FC = () => {
                         {step > 1 && (
                             <button 
                                 onClick={() => setStep(step - 1)}
-                                className="px-6 py-3 rounded-xl font-bold text-slate-400 hover:text-white hover:bg-dark-800 transition-colors"
+                                className="px-6 py-3 rounded-xl font-bold text-slate-300 hover:text-white hover:bg-dark-800 transition-colors"
                             >
                                 Back
                             </button>

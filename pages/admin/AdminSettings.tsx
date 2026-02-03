@@ -21,7 +21,7 @@ export const AdminSettings: React.FC = () => {
     <div className="max-w-4xl mx-auto space-y-8">
       <div>
          <h1 className="text-2xl font-bold text-white mb-2">Platform Configuration</h1>
-         <p className="text-slate-400">Global system settings and AI parameter tuning.</p>
+         <p className="text-slate-300">Global system settings and AI parameter tuning.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

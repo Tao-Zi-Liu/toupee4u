@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { GLOSSARY_TERMS } from '../constants';
 import { Search, BookA, Hash } from 'lucide-react';
@@ -28,7 +29,7 @@ export const GlossaryPage: React.FC = () => {
                 <h1 className="text-4xl font-bold text-white">Technical Lexicon</h1>
              </div>
           </div>
-          <p className="text-slate-400 max-w-2xl text-lg">
+          <p className="text-slate-300 max-w-2xl text-lg">
              A comprehensive dictionary of industry terminology, chemical compounds, and structural components used in non-surgical hair replacement.
           </p>
        </div>
@@ -54,7 +55,7 @@ export const GlossaryPage: React.FC = () => {
                       className={`w-10 h-10 rounded-lg text-sm font-bold transition-all border ${
                           selectedLetter === letter 
                           ? 'bg-brand-purple text-white border-brand-purple' 
-                          : 'bg-dark-800 text-slate-400 border border-dark-700 hover:border-slate-500 hover:text-white'
+                          : 'bg-dark-800 text-slate-300 border border-dark-700 hover:border-slate-500 hover:text-white'
                       }`}
                   >
                       {letter}
@@ -73,7 +74,7 @@ export const GlossaryPage: React.FC = () => {
                            {item.category}
                        </span>
                    </div>
-                   <p className="text-slate-400 leading-relaxed">
+                   <p className="text-slate-300 leading-relaxed">
                        {item.definition}
                    </p>
                </div>

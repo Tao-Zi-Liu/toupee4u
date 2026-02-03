@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Shield, Terminal, ArrowRight, AlertCircle, Cpu } from 'lucide-react';
 
@@ -67,7 +66,7 @@ export const AccessGate: React.FC<AccessGateProps> = ({ children }) => {
               <Shield className={`w-10 h-10 transition-colors ${error ? 'text-red-500' : 'text-brand-blue'}`} />
             </div>
             <h1 className="text-2xl font-bold text-white mb-2 tracking-tight">Restricted Signal</h1>
-            <p className="text-slate-400 text-sm leading-relaxed">
+            <p className="text-slate-300 text-sm leading-relaxed">
                 The Toupee4U Knowledge Base is under <span className="text-brand-blue font-bold">Quantum Encrypt</span>. Enter the deployment key.
             </p>
           </div>

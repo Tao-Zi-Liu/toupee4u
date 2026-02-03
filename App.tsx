@@ -34,6 +34,8 @@ import { AdminAnalytics } from './pages/admin/AdminAnalytics';
 import { AdminUsers } from './pages/admin/AdminUsers';
 import { AiAssistant } from './components/AiAssistant';
 import { AccessGate } from './components/AccessGate';
+import { CommandPalette } from './components/CommandPalette';
+import { MobileBottomNav } from './components/MobileBottomNav';
 import { Menu, Search, Bell, User, LogIn, LogOut, Crown, Rocket, ShieldAlert } from 'lucide-react';
 
 // SECRET URL FOR STAFF ONLY
@@ -53,7 +55,6 @@ const StaffGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showGovernanceModal, setShowGovernanceModal] = useState(true);
-  const [highlightGovernance, setHighlightGovernance] = useState(false);
   const location = useLocation();
   const [userProfile, setUserProfile] = useState({
       name: "Alex Mercer",
@@ -75,16 +76,18 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }, []);
 
   const handleCloseGovernance = () => {
+    // Simply close the modal without triggering sidebar side effects
     setShowGovernanceModal(false);
-    setIsSidebarOpen(true);
-    setHighlightGovernance(true);
-    setTimeout(() => setHighlightGovernance(false), 3000);
   };
 
   const handleLogout = () => {
       localStorage.removeItem('toupee_auth');
       window.location.href = '#/login';
       window.location.reload();
+  };
+
+  const triggerSearch = () => {
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, ctrlKey: true }));
   };
 
   // If it's an admin route, we completely bypass this public layout
@@ -97,7 +100,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <Sidebar 
         isOpen={isSidebarOpen} 
         toggle={() => setIsSidebarOpen(!isSidebarOpen)} 
-        highlightGovernance={highlightGovernance}
       />
       
       {isSidebarOpen && (
@@ -111,29 +113,38 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <GovernanceModal onClose={handleCloseGovernance} />
       )}
 
+      <CommandPalette />
+
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 bg-dark-900 border-b border-dark-700 flex items-center justify-between px-6 sticky top-0 z-30">
           <div className="flex items-center gap-4">
             <button 
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="lg:hidden text-slate-400 hover:text-white"
+              className="lg:hidden text-slate-300 hover:text-white"
             >
               <Menu className="w-6 h-6" />
             </button>
-            <div className="hidden md:flex items-center text-slate-400 bg-dark-800 px-3 py-2 rounded-xl border border-dark-700 w-64 focus-within:border-brand-blue focus-within:ring-1 focus-within:ring-brand-blue transition-all">
+            <div className="hidden md:flex items-center text-slate-300 bg-dark-800 px-3 py-2 rounded-xl border border-dark-700 w-64 focus-within:border-brand-blue focus-within:ring-1 focus-within:ring-brand-blue transition-all cursor-pointer group" onClick={triggerSearch}>
               <Search className="w-4 h-4 mr-2" />
-              <input 
-                type="text" 
-                placeholder="Search topics..." 
-                className="bg-transparent border-none focus:outline-none text-sm w-full text-slate-200 placeholder-slate-500"
-              />
+              <div className="text-sm w-full text-slate-500 font-medium">Search protocols...</div>
+              <div className="flex items-center gap-1 ml-auto">
+                 <span className="px-1 py-0.5 rounded bg-dark-900 text-[10px] font-bold text-slate-600 border border-dark-700 group-hover:text-brand-blue transition-colors">⌘K</span>
+              </div>
             </div>
           </div>
           
-          <div className="flex items-center gap-4">
-            <button className="text-slate-400 hover:text-white relative transition-colors">
+          <div className="flex items-center gap-2 md:gap-4">
+            {/* Mobile Search Button */}
+            <button 
+              onClick={triggerSearch}
+              className="md:hidden text-slate-300 hover:text-white p-2 rounded-lg hover:bg-dark-800 transition-colors"
+            >
+              <Search className="w-5 h-5" />
+            </button>
+
+            <button className="text-slate-300 hover:text-white relative transition-colors p-2">
               <Bell className="w-5 h-5" />
-              <span className="absolute top-0 right-0 w-2 h-2 bg-brand-blue rounded-full border-2 border-dark-900"></span>
+              <span className="absolute top-2 right-2 w-2 h-2 bg-brand-blue rounded-full border-2 border-dark-900"></span>
             </button>
             
             <div className="relative group py-2">
@@ -179,11 +190,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </div>
         </header>
 
-        <main className="flex-1 overflow-auto p-6 md:p-8 max-w-7xl mx-auto w-full">
+        <main className="flex-1 overflow-auto p-6 md:p-8 max-w-7xl mx-auto w-full pb-24 lg:pb-8">
           {children}
         </main>
       </div>
 
+      <MobileBottomNav />
       <AiAssistant />
     </div>
   );

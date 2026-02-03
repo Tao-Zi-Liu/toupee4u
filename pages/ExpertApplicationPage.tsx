@@ -37,7 +37,7 @@ export const ExpertApplicationPage: React.FC = () => {
              <CheckCircle className="w-10 h-10" />
            </div>
            <h1 className="text-3xl font-bold text-white mb-4">Application Received</h1>
-           <p className="text-slate-400 mb-8">
+           <p className="text-slate-300 mb-8">
              Thank you, {formData.fullName}. Your credentials have been securely transmitted to our review board. We typically process verification requests within 48-72 hours.
            </p>
            <div className="bg-dark-900 rounded-xl p-4 mb-8 text-sm text-slate-500 border border-dark-600">
@@ -62,7 +62,7 @@ export const ExpertApplicationPage: React.FC = () => {
           <ArrowRight className="w-4 h-4 rotate-180" /> Back to Directory
         </Link>
         <h1 className="text-4xl font-bold text-white mb-2">Apply for Verification</h1>
-        <p className="text-slate-400">Join the Toupee4U Directorate and contribute to the "Physics of Hair" knowledge base.</p>
+        <p className="text-slate-300">Join the Toupee4U Directorate and contribute to the "Physics of Hair" knowledge base.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -84,7 +84,7 @@ export const ExpertApplicationPage: React.FC = () => {
                     </div>
                     <div>
                        <h3 className="font-bold text-white text-sm">Verification Badge</h3>
-                       <p className="text-xs text-slate-400 mt-1">Stand out in the forum and comments with a "Verified Expert" shield.</p>
+                       <p className="text-xs text-slate-300 mt-1">Stand out in the forum and comments with a "Verified Expert" shield.</p>
                     </div>
                  </li>
                  <li className="flex gap-3">
@@ -93,7 +93,7 @@ export const ExpertApplicationPage: React.FC = () => {
                     </div>
                     <div>
                        <h3 className="font-bold text-white text-sm">Client Leads</h3>
-                       <p className="text-xs text-slate-400 mt-1">List your consultation services directly on the platform (0% commission).</p>
+                       <p className="text-xs text-slate-300 mt-1">List your consultation services directly on the platform (0% commission).</p>
                     </div>
                  </li>
                  <li className="flex gap-3">
@@ -102,7 +102,7 @@ export const ExpertApplicationPage: React.FC = () => {
                     </div>
                     <div>
                        <h3 className="font-bold text-white text-sm">Publish Research</h3>
-                       <p className="text-xs text-slate-400 mt-1">Author official Knowledge Base articles credited to your profile.</p>
+                       <p className="text-xs text-slate-300 mt-1">Author official Knowledge Base articles credited to your profile.</p>
                     </div>
                  </li>
               </ul>

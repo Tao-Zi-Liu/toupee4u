@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { INDUSTRY_NEWS } from '../constants';
@@ -162,7 +163,7 @@ export const Home: React.FC = () => {
                 <span className="text-xs text-slate-500">• {video.views} views</span>
              </div>
              <h3 className="text-base font-bold text-white mb-1 group-hover:text-brand-blue transition-colors line-clamp-2">{video.title}</h3>
-             <p className="text-xs text-slate-400">with <span className="text-slate-300">{video.host}</span></p>
+             <p className="text-xs text-slate-300">with <span className="text-slate-300">{video.host}</span></p>
           </div>
         </div>
       );
@@ -189,7 +190,7 @@ export const Home: React.FC = () => {
                       <ExternalLink className="w-3 h-3 text-slate-600 group-hover:text-brand-blue transition-colors" />
                   </div>
                   <h3 className="text-lg font-bold text-white mb-2 group-hover:text-brand-blue transition-colors leading-tight">{news.title}</h3>
-                  <p className="text-sm text-slate-400 line-clamp-1">{news.snippet}</p>
+                  <p className="text-sm text-slate-300 line-clamp-1">{news.snippet}</p>
               </div>
           </div>
         </a>
@@ -205,7 +206,7 @@ export const Home: React.FC = () => {
       <div className="flex justify-between items-end">
           <div>
               <h1 className="text-2xl font-bold text-white mb-1">Welcome to Toupee4U 👋</h1>
-              <p className="text-slate-400 text-sm">The internet's best resource for men's hair systems.</p>
+              <p className="text-slate-300 text-sm">The internet's best resource for men's hair systems.</p>
           </div>
       </div>
 
@@ -215,7 +216,7 @@ export const Home: React.FC = () => {
             <div className="flex items-center justify-between px-6 mb-3 mt-2">
                  <div className="flex items-center gap-2">
                      <Award className="w-4 h-4 text-yellow-500" />
-                     <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Expert Insights</h3>
+                     <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Expert Insights</h3>
                  </div>
                  <Link to="/experts" className="text-xs font-medium text-brand-blue hover:text-white transition-colors">View All Experts &rarr;</Link>
             </div>
@@ -243,7 +244,7 @@ export const Home: React.FC = () => {
                             {activePost.category}
                         </span>
                         <h2 className="text-xl md:text-2xl font-bold text-white mb-3 leading-tight">{activePost.title}</h2>
-                        <p className="text-slate-400 text-sm leading-relaxed mb-6">{activePost.excerpt}</p>
+                        <p className="text-slate-300 text-sm leading-relaxed mb-6">{activePost.excerpt}</p>
                     </div>
                     <div className="flex items-center justify-between mt-auto">
                         <div className="flex items-center gap-4 text-xs text-slate-500">
@@ -263,7 +264,7 @@ export const Home: React.FC = () => {
         <div className="relative z-10 max-w-3xl p-8 pt-6">
           <div className="inline-block px-3 py-1 bg-brand-blue/10 text-brand-blue border border-brand-blue/20 font-semibold text-xs rounded-full mb-4">MANAGED DIY HAIR REPLACEMENT</div>
           <h2 className="text-3xl font-bold text-white tracking-tight mb-4">From Anxious Novice to <span className="text-brand-blue">Confident Expert</span>.</h2>
-          <p className="text-slate-400 mb-6 leading-relaxed">Stop relying on generic manufacturer advice. Toupee4U combines the physics of hair, chemical engineering of adhesives, and community support into a single "Truth Engine".</p>
+          <p className="text-slate-300 mb-6 leading-relaxed">Stop relying on generic manufacturer advice. Toupee4U combines the physics of hair, chemical engineering of adhesives, and community support into a single "Truth Engine".</p>
           <div className="flex flex-wrap gap-4">
             <Link to="/knowledge-map" className="px-6 py-3 bg-brand-blue text-white font-medium rounded-xl hover:bg-blue-600 transition-all flex items-center shadow-lg shadow-blue-500/20">Start Learning <ArrowRight className="ml-2 w-4 h-4" /></Link>
             <Link to="/consultations" className="px-6 py-3 bg-dark-700 border border-dark-600 text-slate-200 font-medium rounded-xl hover:bg-dark-600 transition-all">Book a Stylist</Link>
@@ -277,7 +278,7 @@ export const Home: React.FC = () => {
                <div className="p-2 bg-red-500/10 rounded-lg border border-red-500/20 text-red-500"><Film className="w-5 h-5" /></div>
                <div>
                   <h2 className="text-xl font-bold text-white">The Video Vault</h2>
-                  <p className="text-xs text-slate-400">Interviews, lab tests, and visual masterclasses.</p>
+                  <p className="text-xs text-slate-300">Interviews, lab tests, and visual masterclasses.</p>
                </div>
             </div>
          </div>
@@ -297,7 +298,7 @@ export const Home: React.FC = () => {
       <section className="bg-gradient-to-br from-brand-blue/10 to-brand-purple/10 rounded-2xl p-8 border border-brand-blue/20 relative overflow-hidden">
         <div className="relative z-10 max-w-2xl">
             <h2 className="text-xl font-bold text-white mb-4">Request a Research Protocol</h2>
-            <p className="text-slate-400 mb-6">The Toupee4U Knowledge Base is driven by community needs. Tell us what you want our experts to research next.</p>
+            <p className="text-slate-300 mb-6">The Toupee4U Knowledge Base is driven by community needs. Tell us what you want our experts to research next.</p>
             {requestSubmitted ? (
                 <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-6 flex items-center gap-4 text-green-400 animate-in fade-in">
                     <Check className="w-6 h-6" />

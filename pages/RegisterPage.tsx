@@ -19,7 +19,7 @@ export const RegisterPage: React.FC = () => {
             <Zap className="w-8 h-8 fill-current" />
           </div>
           <h1 className="text-2xl font-bold text-white mb-2">Join the Collective</h1>
-          <p className="text-slate-400 text-sm">Begin your journey from Observer to Quantum State.</p>
+          <p className="text-slate-300 text-sm">Begin your journey from Observer to Quantum State.</p>
         </div>
 
         {/* Form */}
@@ -77,7 +77,7 @@ export const RegisterPage: React.FC = () => {
              <div className="flex items-center h-5">
                <input id="terms" type="checkbox" className="w-4 h-4 rounded border-dark-600 bg-dark-900 text-brand-blue focus:ring-brand-blue" />
              </div>
-             <label htmlFor="terms" className="text-xs text-slate-400 leading-snug">
+             <label htmlFor="terms" className="text-xs text-slate-300 leading-snug">
                 I agree to the <a href="#" className="text-white hover:underline">Terms of Service</a> and acknowledge the "Physics of Hair" methodology.
              </label>
           </div>
@@ -90,7 +90,7 @@ export const RegisterPage: React.FC = () => {
 
         {/* Footer */}
         <div className="mt-8 text-center">
-          <p className="text-slate-400 text-sm">
+          <p className="text-slate-300 text-sm">
             Already a member?{' '}
             <Link to="/login" className="text-brand-blue font-bold hover:text-white transition-colors">
               Access Protocol

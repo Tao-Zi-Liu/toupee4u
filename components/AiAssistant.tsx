@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { askTheTruthEngine } from '../services/geminiService';
 import { Sparkles, Send, X, Bot, User } from 'lucide-react';
@@ -87,10 +88,10 @@ export const AiAssistant: React.FC = () => {
             </div>
             <div>
                 <h3 className="font-bold text-sm">The Truth Engine</h3>
-                <p className="text-slate-400 text-xs">Powered by Physics</p>
+                <p className="text-slate-300 text-xs">Powered by Physics</p>
             </div>
           </div>
-          <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-white hover:bg-dark-700 p-1 rounded-full transition-colors">
+          <button onClick={() => setIsOpen(false)} className="text-slate-300 hover:text-white hover:bg-dark-700 p-1 rounded-full transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>

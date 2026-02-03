@@ -96,7 +96,7 @@ export const AdminArticles: React.FC = () => {
       <div className="flex items-center justify-between">
          <div>
             <h1 className="text-2xl font-bold text-white">Topic Management</h1>
-            <p className="text-slate-400 text-sm">Manage main topics (Level 2). Articles (Level 3) are managed within Topics.</p>
+            <p className="text-slate-300 text-sm">Manage main topics (Level 2). Articles (Level 3) are managed within Topics.</p>
          </div>
          <button 
            onClick={openCreateModal}
@@ -146,7 +146,7 @@ export const AdminArticles: React.FC = () => {
                                 </span>
                             </td>
                             <td className="p-4">
-                                <span className="flex items-center gap-1 text-slate-400 text-sm">
+                                <span className="flex items-center gap-1 text-slate-300 text-sm">
                                     <Folder className="w-3 h-3" /> {topic.articles.length}
                                 </span>
                             </td>
@@ -156,7 +156,7 @@ export const AdminArticles: React.FC = () => {
                                         ? 'text-brand-purple bg-brand-purple/10 border-brand-purple/20' 
                                         : topic.tier === UserTier.KINETIC 
                                             ? 'text-brand-blue bg-brand-blue/10 border-brand-blue/20'
-                                            : 'text-slate-400 bg-dark-900 border-dark-600'
+                                            : 'text-slate-300 bg-dark-900 border-dark-600'
                                 }`}>
                                     {topic.tier}
                                 </span>
@@ -165,14 +165,14 @@ export const AdminArticles: React.FC = () => {
                                 <div className="flex items-center justify-end gap-2">
                                     <button 
                                         onClick={() => openEditModal(topic)}
-                                        className="p-2 text-slate-500 hover:text-brand-blue hover:bg-brand-blue/10 rounded-lg transition-colors"
+                                        className="p-2 text-slate-300 hover:text-brand-blue hover:bg-brand-blue/10 rounded-lg transition-colors"
                                         title="Edit"
                                     >
                                         <Edit3 className="w-4 h-4" />
                                     </button>
                                     <button 
                                         onClick={() => handleDelete(topic.categoryId, topic.id)}
-                                        className="p-2 text-slate-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                                        className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
                                         title="Delete"
                                     >
                                         <Trash2 className="w-4 h-4" />
@@ -202,7 +202,7 @@ export const AdminArticles: React.FC = () => {
                         <FileText className="w-5 h-5 text-brand-blue" />
                         {editingId ? 'Edit Topic' : 'Create New Topic'}
                     </h2>
-                    <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-white">
+                    <button onClick={() => setIsModalOpen(false)} className="text-slate-300 hover:text-white">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -212,24 +212,21 @@ export const AdminArticles: React.FC = () => {
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
-                                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Topic Title</label>
+                                <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">Topic Title</label>
                                 <input 
                                     required
                                     type="text" 
                                     className="w-full bg-dark-900 border border-dark-600 rounded-lg p-3 text-white focus:border-brand-blue outline-none"
-                                    placeholder="e.g., Human Hair vs Synthetic"
                                     value={formData.title}
                                     onChange={(e) => setFormData({...formData, title: e.target.value})}
                                 />
                             </div>
-
                             <div className="space-y-2">
-                                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Parent Category</label>
+                                <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">Target Category</label>
                                 <select 
                                     className="w-full bg-dark-900 border border-dark-600 rounded-lg p-3 text-white focus:border-brand-blue outline-none"
                                     value={formData.categoryId}
                                     onChange={(e) => setFormData({...formData, categoryId: e.target.value})}
-                                    disabled={!!editingId}
                                 >
                                     {categories.map(cat => (
                                         <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -239,60 +236,52 @@ export const AdminArticles: React.FC = () => {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                             <div className="space-y-2">
-                                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                                    <Shield className="w-3 h-3" /> Minimum Tier Access
-                                </label>
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">Read Time Estimate</label>
+                                <input 
+                                    type="text" 
+                                    className="w-full bg-dark-900 border border-dark-600 rounded-lg p-3 text-white focus:border-brand-blue outline-none"
+                                    value={formData.readTime}
+                                    onChange={(e) => setFormData({...formData, readTime: e.target.value})}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">Required Membership Tier</label>
                                 <select 
                                     className="w-full bg-dark-900 border border-dark-600 rounded-lg p-3 text-white focus:border-brand-blue outline-none"
                                     value={formData.tier}
                                     onChange={(e) => setFormData({...formData, tier: e.target.value as UserTier})}
                                 >
-                                    <option value={UserTier.OBSERVER}>Observer (Free)</option>
-                                    <option value={UserTier.KINETIC}>Kinetic Force (Paid)</option>
-                                    <option value={UserTier.QUANTUM}>Quantum State (Premium)</option>
+                                    {Object.values(UserTier).map(tier => (
+                                        <option key={tier} value={tier}>{tier}</option>
+                                    ))}
                                 </select>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                                    <Clock className="w-3 h-3" /> Overview Read Time
-                                </label>
-                                <input 
-                                    type="text" 
-                                    className="w-full bg-dark-900 border border-dark-600 rounded-lg p-3 text-white focus:border-brand-blue outline-none"
-                                    placeholder="e.g., 5 min"
-                                    value={formData.readTime}
-                                    onChange={(e) => setFormData({...formData, readTime: e.target.value})}
-                                />
                             </div>
                         </div>
 
-                        <div className="space-y-2 h-full">
-                            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Overview / Description (HTML)</label>
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">Overview Content (HTML)</label>
                             <textarea 
-                                className="w-full h-64 bg-dark-900 border border-dark-600 rounded-lg p-4 text-white font-mono text-sm focus:border-brand-blue outline-none resize-none"
-                                placeholder="<h3>Overview</h3><p>Introductory content...</p>"
+                                className="w-full bg-dark-900 border border-dark-600 rounded-lg p-3 text-white focus:border-brand-blue outline-none h-64 font-mono text-sm"
                                 value={formData.description}
                                 onChange={(e) => setFormData({...formData, description: e.target.value})}
                             ></textarea>
                         </div>
-
                     </div>
 
-                    <div className="p-6 border-t border-dark-700 flex justify-end gap-3 bg-dark-800">
+                    <div className="p-6 border-t border-dark-700 bg-dark-900/50 flex justify-end gap-3">
                         <button 
                             type="button" 
                             onClick={() => setIsModalOpen(false)}
-                            className="px-6 py-3 rounded-xl font-medium text-slate-400 hover:text-white hover:bg-dark-700 transition-colors"
+                            className="px-6 py-2 rounded-lg text-slate-300 hover:text-white font-bold transition-colors"
                         >
                             Cancel
                         </button>
                         <button 
                             type="submit" 
-                            className="px-6 py-3 bg-brand-blue text-white font-bold rounded-xl hover:bg-blue-600 transition-colors shadow-lg shadow-blue-500/20"
+                            className="px-8 py-2 bg-brand-blue text-white rounded-lg font-bold shadow-lg shadow-blue-500/20 hover:bg-blue-600 transition-all"
                         >
-                            {editingId ? 'Save Topic' : 'Create Topic'}
+                            {editingId ? 'Save Changes' : 'Create Topic'}
                         </button>
                     </div>
                 </form>

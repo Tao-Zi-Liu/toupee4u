@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { FlaskConical, Droplet, Activity, Layers, ArrowRight } from 'lucide-react';
 import { Zap, RefreshCw, Thermometer, Brain, Calculator, AlertTriangle, Check } from 'lucide-react';
@@ -23,7 +24,7 @@ export const LabPage: React.FC = () => {
              <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight">The Quantum Lab</h1>
              <span className="px-3 py-1 rounded-full bg-brand-purple/20 text-brand-purple border border-brand-purple/30 text-xs font-bold uppercase tracking-wider">Beta</span>
            </div>
-           <p className="text-slate-400 text-lg max-w-2xl leading-relaxed">
+           <p className="text-slate-300 text-lg max-w-2xl leading-relaxed">
              Welcome to the engineering deck. Use these tools to calculate entropy, simulate adhesive bonds, and analyze material physics before you apply them to your scalp.
            </p>
         </div>
@@ -42,7 +43,7 @@ export const LabPage: React.FC = () => {
                 : 'bg-dark-900 border-dark-700 hover:bg-dark-800 hover:border-slate-600'
               }`}
             >
-               <div className={`p-2 rounded-lg ${activeTool === 'adhesive' ? 'bg-brand-blue text-white' : 'bg-dark-800 text-slate-400 group-hover:text-white'}`}>
+               <div className={`p-2 rounded-lg ${activeTool === 'adhesive' ? 'bg-brand-blue text-white' : 'bg-dark-800 text-slate-300 group-hover:text-white'}`}>
                   <Droplet className="w-5 h-5" />
                </div>
                <div>
@@ -60,7 +61,7 @@ export const LabPage: React.FC = () => {
                 : 'bg-dark-900 border-dark-700 hover:bg-dark-800 hover:border-slate-600'
               }`}
             >
-               <div className={`p-2 rounded-lg ${activeTool === 'entropy' ? 'bg-brand-purple text-white' : 'bg-dark-800 text-slate-400 group-hover:text-white'}`}>
+               <div className={`p-2 rounded-lg ${activeTool === 'entropy' ? 'bg-brand-purple text-white' : 'bg-dark-800 text-slate-300 group-hover:text-white'}`}>
                   <Calculator className="w-5 h-5" />
                </div>
                <div>
@@ -182,7 +183,7 @@ const AdhesiveTool: React.FC = () => {
                    
                    <div className="flex items-start gap-3 p-3 bg-dark-900/50 rounded-lg border border-brand-blue/10">
                       <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0" />
-                      <p className="text-xs text-slate-400"><strong className="text-yellow-500">Caution:</strong> {result.warn}</p>
+                      <p className="text-xs text-slate-300"><strong className="text-yellow-500">Caution:</strong> {result.warn}</p>
                    </div>
                 </div>
                 
@@ -277,7 +278,7 @@ const EntropyTool: React.FC = () => {
               <div className="absolute inset-0 bg-brand-purple/5 animate-pulse"></div>
               <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Estimated Lifespan</p>
               <div className="text-5xl font-bold text-white mb-2">{lifespan} <span className="text-xl text-slate-500">Weeks</span></div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-300">
                  {thickness < 0.05 ? "High Entropic Decay (Fragile)" : "Stable State (Durable)"}
               </p>
           </div>

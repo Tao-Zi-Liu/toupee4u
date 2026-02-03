@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
@@ -49,7 +50,7 @@ export const TopicPage: React.FC = () => {
                 <div className="flex items-center text-xs text-slate-500"><Clock className="w-3 h-3 mr-1" /> {article.readTime}</div>
             </div>
             <div className="flex-shrink-0 ml-4">
-                <div className={`p-2 rounded-full ${locked ? 'text-slate-700' : 'bg-dark-900 text-slate-400 group-hover:bg-brand-blue group-hover:text-white'}`}>
+                <div className={`p-2 rounded-full ${locked ? 'text-slate-700' : 'bg-dark-900 text-slate-300 group-hover:bg-brand-blue group-hover:text-white'}`}>
                     {locked ? <Lock className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                 </div>
             </div>
@@ -62,13 +63,13 @@ export const TopicPage: React.FC = () => {
   return (
     <div className="space-y-12 pb-12 max-w-5xl mx-auto">
       <div>
-        <Link to={`/kb/${category.id}`} className="inline-flex items-center text-slate-400 hover:text-white text-sm font-medium"><ArrowLeft className="w-4 h-4 mr-2" /> Back to {category.name}</Link>
+        <Link to={`/kb/${category.id}`} className="inline-flex items-center text-slate-300 hover:text-white text-sm font-medium"><ArrowLeft className="w-4 h-4 mr-2" /> Back to {category.name}</Link>
       </div>
       <div className="bg-dark-800 rounded-3xl border border-dark-700 overflow-hidden relative">
          <div className="p-8 md:p-12 relative z-10">
             <div className="flex flex-wrap items-center gap-3 mb-6">
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-brand-blue/10 text-brand-blue border border-brand-blue/20 tracking-wide uppercase">{topic.category}</span>
-                <span className="flex items-center text-xs font-medium text-slate-400"><Clock className="w-3.5 h-3.5 mr-1.5" /> {topic.readTime} Overview</span>
+                <span className="flex items-center text-xs font-medium text-slate-300"><Clock className="w-3.5 h-3.5 mr-1.5" /> {topic.readTime} Overview</span>
                 <span className={`flex items-center text-xs font-bold ${topic.tier === UserTier.QUANTUM ? 'text-brand-purple' : 'text-slate-500'}`}><Award className="w-3.5 h-3.5 mr-1.5" /> {topic.tier} Tier</span>
             </div>
             <h1 className="text-3xl md:text-5xl font-bold text-white mb-8 tracking-tight leading-tight">{topic.title}</h1>

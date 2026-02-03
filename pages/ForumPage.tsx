@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MessageSquare, ThumbsUp, Clock, Hash, MoreHorizontal } from 'lucide-react';
@@ -65,7 +66,7 @@ export const ForumPage: React.FC = () => {
       <div className="flex flex-col md:flex-row justify-between items-end gap-4 border-b border-dark-700 pb-8">
         <div>
             <h1 className="text-3xl font-bold text-white mb-2">Community Forum</h1>
-            <p className="text-slate-400">Join the "Quantum State" collective. Real talk, no judgment.</p>
+            <p className="text-slate-300">Join the "Quantum State" collective. Real talk, no judgment.</p>
         </div>
         <div className="flex gap-3">
              <button 
@@ -102,7 +103,7 @@ export const ForumPage: React.FC = () => {
                           className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
                              activeTag === tag
                                 ? 'bg-brand-blue text-white border-brand-blue'
-                                : 'bg-dark-900 text-slate-400 border-dark-600 hover:border-brand-blue/50 hover:text-white'
+                                : 'bg-dark-900 text-slate-300 border-dark-600 hover:border-brand-blue/50 hover:text-white'
                           }`}
                        >
                           {tag}
@@ -124,7 +125,7 @@ export const ForumPage: React.FC = () => {
                           className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border flex items-center gap-2 ${
                              activeSort === sort
                                 ? 'bg-brand-purple text-white border-brand-purple'
-                                : 'bg-dark-900 text-slate-400 border-dark-600 hover:border-brand-purple/50 hover:text-white'
+                                : 'bg-dark-900 text-slate-300 border-dark-600 hover:border-brand-purple/50 hover:text-white'
                           }`}
                        >
                           {sort === 'Hottest' && <Flame className="w-3 h-3" />}
@@ -143,7 +144,7 @@ export const ForumPage: React.FC = () => {
               </div>
               <button 
                 onClick={() => { setActiveTag('All'); setActiveSort('Newest'); }}
-                className="text-xs text-slate-400 hover:text-white underline"
+                className="text-xs text-slate-300 hover:text-white underline"
               >
                  Reset Parameters
               </button>
@@ -163,7 +164,7 @@ export const ForumPage: React.FC = () => {
                         <div>
                             <div className="flex items-center gap-2">
                                 <span className="text-white font-medium text-sm group-hover:text-brand-blue transition-colors">{topic.author}</span>
-                                <span className={`text-[10px] px-1.5 py-0.5 rounded border ${topic.role === 'Pro Stylist' ? 'text-yellow-500 bg-yellow-500/10 border-yellow-500/20' : 'text-slate-400 bg-dark-900 border-dark-600'}`}>
+                                <span className={`text-[10px] px-1.5 py-0.5 rounded border ${topic.role === 'Pro Stylist' ? 'text-yellow-500 bg-yellow-500/10 border-yellow-500/20' : 'text-slate-300 bg-dark-900 border-dark-600'}`}>
                                     {topic.role}
                                 </span>
                             </div>
@@ -184,7 +185,7 @@ export const ForumPage: React.FC = () => {
                     
                     <div className="flex items-center justify-between mt-4">
                         <div className="flex gap-2">
-                            <span className="text-xs px-2.5 py-1 rounded bg-dark-900 text-slate-400 border border-dark-600 font-medium">
+                            <span className="text-xs px-2.5 py-1 rounded bg-dark-900 text-slate-300 border border-dark-600 font-medium">
                                 {topic.tag}
                             </span>
                         </div>
@@ -206,7 +207,7 @@ export const ForumPage: React.FC = () => {
       </div>
       
       <div className="flex justify-center pt-4">
-        <button className="px-6 py-2 bg-dark-800 border border-dark-700 text-slate-400 rounded-lg hover:text-white hover:border-slate-500 transition-colors text-sm">
+        <button className="px-6 py-2 bg-dark-800 border border-dark-700 text-slate-300 rounded-lg hover:text-white hover:border-slate-500 transition-colors text-sm">
             Load More Discussions
         </button>
       </div>

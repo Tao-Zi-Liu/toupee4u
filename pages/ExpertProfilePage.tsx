@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
@@ -66,7 +67,7 @@ export const ExpertProfilePage: React.FC = () => {
         case 'blue': return 'text-blue-400';
         case 'teal': return 'text-teal-400';
         case 'pink': return 'text-pink-400';
-        default: return 'text-slate-400';
+        default: return 'text-slate-300';
       }
   };
 
@@ -97,11 +98,11 @@ export const ExpertProfilePage: React.FC = () => {
                     </div>
                 </div>
                 <h4 className="text-xl font-bold text-white mb-2">{topic.title}</h4>
-                <p className="text-sm text-slate-400 mb-4 line-clamp-2">{topic.description.replace(/<[^>]*>?/gm, '').substring(0, 150)}...</p>
+                <p className="text-sm text-slate-300 mb-4 line-clamp-2">{topic.description.replace(/<[^>]*>?/gm, '').substring(0, 150)}...</p>
                 <div className="flex items-center justify-between pt-2 border-t border-dark-700/50">
                     <div className="flex gap-4">
-                        <button className="flex items-center gap-2 text-sm text-slate-400 hover:text-brand-blue"><ThumbsUp className="w-4 h-4" /> Like</button>
-                        <button className="flex items-center gap-2 text-sm text-slate-400 hover:text-white"><MessageCircle className="w-4 h-4" /> Comment</button>
+                        <button className="flex items-center gap-2 text-sm text-slate-300 hover:text-brand-blue"><ThumbsUp className="w-4 h-4" /> Like</button>
+                        <button className="flex items-center gap-2 text-sm text-slate-300 hover:text-white"><MessageCircle className="w-4 h-4" /> Comment</button>
                     </div>
                     <div className="flex items-center gap-1 text-xs text-slate-500"><BookOpen className="w-3 h-3" /> {topic.articles.length} sub-modules</div>
                 </div>
@@ -142,7 +143,7 @@ export const ExpertProfilePage: React.FC = () => {
         <div key={cred.id} className="bg-dark-800 rounded-2xl border border-dark-700 p-6 shadow-lg h-full flex flex-col items-center text-center">
             <Award className="w-8 h-8 text-brand-blue mb-4" />
             <h3 className="font-bold text-white mb-1">{cred.title}</h3>
-            <p className="text-sm text-slate-400 mb-4">{cred.issuer}</p>
+            <p className="text-sm text-slate-300 mb-4">{cred.issuer}</p>
             <div className="mt-auto flex items-center gap-2 px-3 py-1 bg-green-500/10 text-green-500 rounded-full border border-green-500/20 text-xs font-bold uppercase tracking-wider">
                 <ShieldCheck className="w-3 h-3" /> Verified {cred.year}
             </div>
@@ -162,7 +163,7 @@ export const ExpertProfilePage: React.FC = () => {
                 <h4 className="font-bold text-white group-hover:text-brand-blue">{consult.title}</h4>
                 <span className="text-white font-bold">${consult.price}</span>
             </div>
-            <p className="text-xs text-slate-400 mb-3">{consult.description}</p>
+            <p className="text-xs text-slate-300 mb-3">{consult.description}</p>
             <div className="flex items-center text-xs text-slate-500 gap-3">
                 <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {consult.duration}</span>
                 <span className="flex items-center gap-1"><Video className="w-3 h-3" /> Zoom</span>
@@ -176,7 +177,7 @@ export const ExpertProfilePage: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto pb-12 relative">
       <div className="mb-4">
-        <Link to="/experts" className="inline-flex items-center gap-2 text-slate-400 hover:text-white text-sm font-medium"><ArrowLeft className="w-4 h-4" /> Back to Directory</Link>
+        <Link to="/experts" className="inline-flex items-center gap-2 text-slate-300 hover:text-white text-sm font-medium"><ArrowLeft className="w-4 h-4" /> Back to Directory</Link>
       </div>
       <div className="bg-dark-800 rounded-b-3xl border border-dark-700 shadow-2xl overflow-hidden mb-6 relative">
           <div className={`h-64 md:h-80 w-full bg-gradient-to-r ${getThemeGradient(expert.colorTheme)} relative`}>
@@ -195,7 +196,7 @@ export const ExpertProfilePage: React.FC = () => {
                           <div>
                               <h1 className="text-3xl md:text-4xl font-bold text-white flex items-center justify-center md:justify-start gap-2">{expert.name} <CheckCircle className="w-6 h-6 text-brand-blue fill-current text-white bg-white rounded-full" /></h1>
                               <p className={`text-lg font-medium mt-1 ${getThemeColor(expert.colorTheme)}`}>{expert.role}</p>
-                              <div className="flex items-center justify-center md:justify-start gap-4 mt-2 text-slate-400 text-sm">
+                              <div className="flex items-center justify-center md:justify-start gap-4 mt-2 text-slate-300 text-sm">
                                   <span className="flex items-center gap-1"><Star className="w-4 h-4 text-yellow-500 fill-current" /><span className="font-bold text-white">{expert.stats.rating}</span> Rating</span>
                                   <span className="hidden md:inline">•</span>
                                   <span>{expert.stats.consultations} Consultations</span>
@@ -210,10 +211,10 @@ export const ExpertProfilePage: React.FC = () => {
               </div>
               <div className="mt-8 border-t border-dark-700 pt-1">
                   <div className="flex gap-1 overflow-x-auto">
-                      <button onClick={() => setActiveTab('posts')} className={`px-4 py-4 font-bold text-sm border-b-2 transition-colors ${activeTab === 'posts' ? 'text-brand-blue border-brand-blue' : 'text-slate-400 border-transparent'}`}>Posts & Research</button>
-                      <button onClick={() => setActiveTab('about')} className={`px-4 py-4 font-bold text-sm border-b-2 transition-colors ${activeTab === 'about' ? 'text-brand-blue border-brand-blue' : 'text-slate-400 border-transparent'}`}>About</button>
-                      <button onClick={() => setActiveTab('reviews')} className={`px-4 py-4 font-bold text-sm border-b-2 transition-colors ${activeTab === 'reviews' ? 'text-brand-blue border-brand-blue' : 'text-slate-400 border-transparent'}`}>Reviews</button>
-                      <button onClick={() => setActiveTab('credentials')} className={`px-4 py-4 font-bold text-sm border-b-2 transition-colors ${activeTab === 'credentials' ? 'text-brand-blue border-brand-blue' : 'text-slate-400 border-transparent'}`}>Credentials</button>
+                      <button onClick={() => setActiveTab('posts')} className={`px-4 py-4 font-bold text-sm border-b-2 transition-colors ${activeTab === 'posts' ? 'text-brand-blue border-brand-blue' : 'text-slate-300 border-transparent'}`}>Posts & Research</button>
+                      <button onClick={() => setActiveTab('about')} className={`px-4 py-4 font-bold text-sm border-b-2 transition-colors ${activeTab === 'about' ? 'text-brand-blue border-brand-blue' : 'text-slate-300 border-transparent'}`}>About</button>
+                      <button onClick={() => setActiveTab('reviews')} className={`px-4 py-4 font-bold text-sm border-b-2 transition-colors ${activeTab === 'reviews' ? 'text-brand-blue border-brand-blue' : 'text-slate-300 border-transparent'}`}>Reviews</button>
+                      <button onClick={() => setActiveTab('credentials')} className={`px-4 py-4 font-bold text-sm border-b-2 transition-colors ${activeTab === 'credentials' ? 'text-brand-blue border-brand-blue' : 'text-slate-300 border-transparent'}`}>Credentials</button>
                   </div>
               </div>
           </div>
@@ -250,7 +251,7 @@ export const ExpertProfilePage: React.FC = () => {
               <div className="bg-dark-800 w-full max-w-lg rounded-2xl border border-dark-600 shadow-2xl flex flex-col relative overflow-hidden">
                   <div className="p-6 border-b border-dark-700 flex justify-between items-center bg-dark-900">
                       <h3 className="text-xl font-bold text-white flex items-center gap-2"><Video className="w-5 h-5 text-brand-blue" /> Book Consultation</h3>
-                      <button onClick={() => setShowBooking(false)} className="text-slate-500 hover:text-white"><X className="w-5 h-5" /></button>
+                      <button onClick={() => setShowBooking(false)} className="text-slate-300 hover:text-white"><X className="w-5 h-5" /></button>
                   </div>
                   <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">{renderConsultations()}</div>
               </div>

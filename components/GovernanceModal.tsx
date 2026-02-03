@@ -19,7 +19,7 @@ export const GovernanceModal: React.FC<{ onClose: () => void }> = ({ onClose }) 
               </div>
               <div>
                  <h2 className="text-xl font-bold text-white">Community Governance</h2>
-                 <p className="text-xs text-slate-400">Please review our protocols before proceeding.</p>
+                 <p className="text-xs text-slate-300">Please review our protocols before proceeding.</p>
               </div>
            </div>
            <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors">
@@ -98,13 +98,13 @@ export const GovernanceModal: React.FC<{ onClose: () => void }> = ({ onClose }) 
                         <div className="text-brand-blue font-bold text-sm mb-2 flex items-center justify-center gap-2">
                             <MessageSquare className="w-4 h-4" /> Path A: Low Severity
                         </div>
-                        <div className="text-xs text-slate-400">Manual Review Queue (24h)</div>
+                        <div className="text-xs text-slate-300">Manual Review Queue (24h)</div>
                     </div>
                     <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-4 text-center">
                         <div className="text-red-500 font-bold text-sm mb-2 flex items-center justify-center gap-2">
                             <ShieldAlert className="w-4 h-4" /> Path B: Zero-Tolerance
                         </div>
-                        <div className="text-xs text-slate-400">Automatic Suspension</div>
+                        <div className="text-xs text-slate-300">Automatic Suspension</div>
                     </div>
                 </div>
             </Section>
@@ -122,7 +122,7 @@ export const GovernanceModal: React.FC<{ onClose: () => void }> = ({ onClose }) 
                     <div className="bg-yellow-500/10 p-2 rounded-lg text-yellow-500">
                         <Clock className="w-5 h-5" />
                     </div>
-                    <p className="text-sm text-slate-400">
+                    <p className="text-sm text-slate-300">
                         Moderators inactive for <span className="text-white font-bold">7 days</span> are automatically rotated out.
                     </p>
                 </div>

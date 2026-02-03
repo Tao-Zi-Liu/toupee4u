@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
@@ -46,7 +47,7 @@ export const ExpertsPage: React.FC = () => {
           key={role}
           onClick={() => setFilter(role)}
           className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap border transition-all ${
-            filter === role ? 'bg-brand-blue text-white' : 'bg-dark-900 text-slate-400 border-dark-600'
+            filter === role ? 'bg-brand-blue text-white' : 'bg-dark-900 text-slate-300 border-dark-600'
           }`}
         >
           {role}
@@ -63,7 +64,7 @@ export const ExpertsPage: React.FC = () => {
       const specItems = [];
       for (let j = 0; j < Math.min(expert.specialties.length, 3); j++) {
         specItems.push(
-          <span key={j} className="px-2 py-1 bg-dark-900 border border-dark-600 rounded text-[10px] text-slate-400 font-medium">{expert.specialties[j]}</span>
+          <span key={j} className="px-2 py-1 bg-dark-900 border border-dark-600 rounded text-[10px] text-slate-300 font-medium">{expert.specialties[j]}</span>
         );
       }
 
@@ -84,13 +85,13 @@ export const ExpertsPage: React.FC = () => {
                  <Link to={`/experts/${expert.id}`} className="group-hover:text-brand-blue transition-colors">
                      <h3 className="text-lg font-bold text-white flex items-center justify-center gap-1.5">{expert.name} <CheckCircle className="w-4 h-4 text-brand-blue fill-current text-dark-800" /></h3>
                  </Link>
-                 <p className="text-sm text-slate-400 mb-2 font-medium">{expert.role}</p>
+                 <p className="text-sm text-slate-300 mb-2 font-medium">{expert.role}</p>
                  <div className="text-xs text-slate-500 flex items-center gap-3 mb-4 bg-dark-900/50 py-1.5 px-3 rounded-full border border-dark-700">
                      <span className="flex items-center gap-1"><Star className="w-3 h-3 text-yellow-500 fill-current" /> <span className="text-slate-300 font-bold">{expert.stats.rating}</span></span>
                      <span className="w-0.5 h-3 bg-dark-600"></span>
                      <span><span className="text-slate-300 font-bold">{expert.stats.consultations}</span> Consults</span>
                  </div>
-                 <p className="text-xs text-slate-400 line-clamp-2 mb-4 px-2 leading-relaxed">{expert.bio}</p>
+                 <p className="text-xs text-slate-300 line-clamp-2 mb-4 px-2 leading-relaxed">{expert.bio}</p>
                  <div className="flex flex-wrap justify-center gap-1.5 mb-6">{specItems}</div>
                  <div className="mt-auto w-full flex flex-col gap-2">
                      <Link to={`/experts/${expert.id}`} className="w-full py-2 rounded-full bg-brand-blue hover:bg-blue-600 text-white text-sm font-bold transition-all shadow-lg shadow-blue-500/10">View Profile</Link>
@@ -109,7 +110,7 @@ export const ExpertsPage: React.FC = () => {
              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <div>
                     <h1 className="text-2xl font-bold text-white mb-1">Expert Network</h1>
-                    <p className="text-slate-400 text-sm">Connect with verified professionals in hair replacement science.</p>
+                    <p className="text-slate-300 text-sm">Connect with verified professionals in hair replacement science.</p>
                 </div>
                 <div className="inline-flex items-center gap-2 bg-dark-900 px-4 py-2 rounded-lg border border-dark-600 text-xs text-slate-300">
                     <Users className="w-4 h-4 text-brand-blue" />
@@ -138,7 +139,7 @@ export const ExpertsPage: React.FC = () => {
                          </div>
                     </div>
                     <h3 className="text-lg font-bold text-white mb-1">Are you an expert?</h3>
-                    <p className="text-sm text-slate-400 mb-4 font-medium">Join the Directorate</p>
+                    <p className="text-sm text-slate-300 mb-4 font-medium">Join the Directorate</p>
                     <div className="mt-auto w-full"><span className="block w-full py-2 rounded-full bg-dark-700 hover:bg-dark-600 text-slate-300 hover:text-white text-sm font-bold transition-colors">Apply for Verification</span></div>
                  </div>
             </Link>

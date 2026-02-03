@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { generateArticleFromVideo } from '../../services/geminiService';
 import { useData } from '../../contexts/DataContext';
@@ -188,7 +187,7 @@ export const AdminYouTubeCrawler: React.FC = () => {
                   </div>
                   <div>
                     <h2 className="text-2xl font-bold text-white mb-2">Establish Vector Frequency</h2>
-                    <p className="text-slate-400 text-sm">Target YouTube channels or keywords to distill into the Knowledge Base.</p>
+                    <p className="text-slate-300 text-sm">Target YouTube channels or keywords to distill into the Knowledge Base.</p>
                   </div>
                   <form onSubmit={handleSearch} className="relative group/input">
                       <div className="absolute -inset-1 bg-gradient-to-r from-red-600/20 to-brand-purple/20 rounded-2xl blur opacity-0 group-hover/input:opacity-100 transition duration-500"></div>
@@ -221,7 +220,7 @@ export const AdminYouTubeCrawler: React.FC = () => {
                       <h2 className="text-xl font-bold text-white">Select Signal Source</h2>
                       <span className="text-xs text-slate-500 font-mono">Found {results.length} active vectors</span>
                   </div>
-                  <button onClick={() => setStep(1)} className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors group">
+                  <button onClick={() => setStep(1)} className="flex items-center gap-2 text-sm text-slate-300 hover:text-white transition-colors group">
                       <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> New Search
                   </button>
               </div>
@@ -278,7 +277,7 @@ export const AdminYouTubeCrawler: React.FC = () => {
                               <div className="p-6">
                                   <h3 className="text-white font-bold text-sm line-clamp-2 mb-3 leading-snug">{video.title}</h3>
                                   <div className="flex justify-between items-center text-[10px] text-slate-500 font-bold uppercase tracking-wider">
-                                      <span className="text-slate-400">{video.channel}</span>
+                                      <span className="text-slate-300">{video.channel}</span>
                                       <span>{video.views} Views</span>
                                   </div>
                               </div>
@@ -390,7 +389,7 @@ export const AdminYouTubeCrawler: React.FC = () => {
                         </button>
                         <button 
                             onClick={() => setStep(2)}
-                            className="w-full py-4 bg-dark-900 border border-dark-600 hover:bg-dark-700 text-slate-400 hover:text-white font-bold text-xs uppercase tracking-widest rounded-2xl transition-all"
+                            className="w-full py-4 bg-dark-900 border border-dark-600 hover:bg-dark-700 text-slate-300 hover:text-white font-bold text-xs uppercase tracking-widest rounded-2xl transition-all"
                         >
                             Retrain Model
                         </button>

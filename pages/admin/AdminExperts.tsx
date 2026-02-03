@@ -126,14 +126,14 @@ export const AdminExperts: React.FC = () => {
             <div className="bg-dark-800 w-full max-w-lg rounded-2xl border border-dark-600 shadow-2xl flex flex-col max-h-[90vh]">
                 <div className="p-6 border-b border-dark-700 flex justify-between items-center">
                     <h2 className="text-xl font-bold text-white">Add New Expert</h2>
-                    <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-white">
+                    <button onClick={() => setIsModalOpen(false)} className="text-slate-300 hover:text-white">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
                 
                 <form onSubmit={handleAdd} className="p-6 overflow-y-auto space-y-4">
                     <div>
-                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Name</label>
+                        <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Name</label>
                         <input 
                             required
                             type="text" 
@@ -143,7 +143,7 @@ export const AdminExperts: React.FC = () => {
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Role</label>
+                        <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Role</label>
                         <input 
                             required
                             type="text" 
@@ -154,7 +154,7 @@ export const AdminExperts: React.FC = () => {
                     </div>
                     
                     <div>
-                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Specialties</label>
+                        <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Specialties</label>
                         <div className="flex gap-2 mb-2">
                              <input 
                                 type="text" 
@@ -191,7 +191,7 @@ export const AdminExperts: React.FC = () => {
                     </div>
 
                     <div>
-                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Bio</label>
+                        <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Bio</label>
                         <textarea 
                             className="w-full bg-dark-900 border border-dark-600 rounded-lg p-3 text-white focus:border-brand-blue outline-none h-24"
                             value={newExpert.bio}
@@ -200,7 +200,7 @@ export const AdminExperts: React.FC = () => {
                     </div>
 
                     <div>
-                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Color Theme</label>
+                        <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Color Theme</label>
                         <select 
                             className="w-full bg-dark-900 border border-dark-600 rounded-lg p-3 text-white focus:border-brand-blue outline-none"
                             value={newExpert.colorTheme}
