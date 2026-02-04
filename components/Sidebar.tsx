@@ -16,7 +16,8 @@ import {
   Microscope,
   PenTool,
   Terminal,
-  Search
+  Search,
+  BookA
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -160,6 +161,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
                   <SubNavItem to="/kb/foundations" icon={Layers} label="Fundamentals" onClick={handleItemClick} />
                   <SubNavItem to="/kb/base-fiber" icon={Microscope} label="Materials" onClick={handleItemClick} />
                   <SubNavItem to="/kb/maintenance" icon={PenTool} label="Maintenance" onClick={handleItemClick} />
+                  <SubNavItem to="/kb/glossary" icon={BookA} label="Technical Glossary" onClick={handleItemClick} />
                 </div>
               )}
             </div>

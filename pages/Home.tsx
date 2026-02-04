@@ -18,7 +18,12 @@ import {
   Send, 
   Newspaper, 
   ExternalLink, 
-  Globe 
+  Globe,
+  Flame,
+  Activity,
+  Zap,
+  Hash,
+  Share2
 } from 'lucide-react';
 
 const EXPERT_POSTS = [
@@ -84,6 +89,59 @@ const FEATURED_VIDEOS = [
     category: "Tutorials",
     views: "34k",
     host: "Mark 'The Knot'"
+  }
+];
+
+const TRENDING_SIGNALS = [
+  {
+    id: "f-102",
+    title: "Summer DIY: Switching from 0.03mm Poly to French Lace",
+    author: "Daniel Smith",
+    tag: "Poly Skin",
+    strength: 92,
+    replies: 12,
+    likes: 45,
+    isHot: true
+  },
+  {
+    id: "f-105",
+    title: "Front hairline lifting after 3 days. What am I doing wrong?",
+    author: "Kevin Taylor",
+    tag: "Troubleshooting",
+    strength: 88,
+    replies: 24,
+    likes: 89,
+    isHot: true
+  },
+  {
+    id: "f-108",
+    title: "Walker Tape vs. Ghost Bond Platinum: Humidity Test",
+    author: "Jason Brown",
+    tag: "Adhesives",
+    strength: 75,
+    replies: 56,
+    likes: 112,
+    isHot: false
+  },
+  {
+    id: "f-110",
+    title: "Can I swim daily with a Swiss Lace system?",
+    author: "Michael Chen",
+    tag: "Lifestyle",
+    strength: 64,
+    replies: 8,
+    likes: 15,
+    isHot: false
+  },
+  {
+    id: "f-115",
+    title: "Knot sealing techniques for ultra-thin bases",
+    author: "Aris C.",
+    tag: "Lab Report",
+    strength: 98,
+    replies: 42,
+    likes: 230,
+    isHot: true
   }
 ];
 
@@ -173,7 +231,6 @@ export const Home: React.FC = () => {
 
   const renderNews = () => {
     const list = [];
-    // Show 3 current news items from the feed
     for (let i = 0; i < 3; i++) {
       const idx = (newsIndex + i) % INDUSTRY_NEWS_FEED.length;
       const news = INDUSTRY_NEWS_FEED[idx];
@@ -270,6 +327,89 @@ export const Home: React.FC = () => {
             <Link to="/consultations" className="px-6 py-3 bg-dark-700 border border-dark-600 text-slate-200 font-medium rounded-xl hover:bg-dark-600 transition-all">Book a Stylist</Link>
           </div>
         </div>
+      </section>
+
+      {/* --- TRENDING FREQUENCIES (FORUM) --- */}
+      <section>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+                <div className="p-2 bg-brand-purple/10 rounded-lg border border-brand-purple/20 text-brand-purple">
+                  <Activity className="w-5 h-5" />
+                </div>
+                <div>
+                   <h2 className="text-xl font-bold text-white">Trending Frequencies</h2>
+                   <p className="text-xs text-slate-300">Live community engagement and troubleshooting signals.</p>
+                </div>
+            </div>
+            <Link to="/forum" className="text-xs font-bold text-slate-500 hover:text-white uppercase tracking-widest flex items-center gap-2 group transition-colors">
+               Enter Forum <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+          
+          <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-6 px-6 lg:mx-0 lg:px-0">
+             {TRENDING_SIGNALS.map((signal) => (
+                <Link 
+                  key={signal.id} 
+                  to="/forum" 
+                  className={`flex-shrink-0 w-[280px] md:w-[320px] p-5 rounded-2xl bg-dark-800 border transition-all duration-300 group hover:-translate-y-1 relative overflow-hidden ${
+                    signal.isHot ? 'border-brand-purple/30 hover:border-brand-purple' : 'border-dark-700 hover:border-brand-blue'
+                  }`}
+                >
+                   {signal.isHot && (
+                      <div className="absolute top-0 right-0 p-3 opacity-10">
+                        <Flame className="w-12 h-12 text-brand-purple" />
+                      </div>
+                   )}
+                   
+                   <div className="flex justify-between items-start mb-3">
+                      <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">Signal: {signal.id}</span>
+                      <div className="flex gap-2">
+                         {signal.isHot && (
+                           <span className="px-1.5 py-0.5 rounded bg-brand-purple/10 text-brand-purple text-[8px] font-bold uppercase tracking-widest border border-brand-purple/20 flex items-center gap-1">
+                              <Flame className="w-2 h-2" /> HOT
+                           </span>
+                         )}
+                         <span className="px-1.5 py-0.5 rounded bg-dark-900 text-slate-300 text-[8px] font-bold uppercase tracking-widest border border-dark-600">
+                            {signal.tag}
+                         </span>
+                      </div>
+                   </div>
+
+                   <h3 className="text-sm font-bold text-white mb-4 line-clamp-2 leading-snug group-hover:text-brand-blue transition-colors">
+                      {signal.title}
+                   </h3>
+
+                   <div className="space-y-4">
+                      {/* Signal Strength Bar */}
+                      <div>
+                         <div className="flex justify-between items-center mb-1.5">
+                            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Signal Strength</span>
+                            <span className={`text-[9px] font-bold ${signal.strength > 90 ? 'text-brand-purple' : 'text-brand-blue'}`}>{signal.strength}%</span>
+                         </div>
+                         <div className="h-1 bg-dark-900 rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full transition-all duration-1000 ${signal.strength > 90 ? 'bg-brand-purple shadow-[0_0_10px_rgba(139,92,246,0.4)]' : 'bg-brand-blue shadow-[0_0_10px_rgba(59,130,246,0.4)]'}`} 
+                              style={{ width: `${signal.strength}%` }}
+                            ></div>
+                         </div>
+                      </div>
+
+                      <div className="flex items-center justify-between border-t border-dark-700 pt-3">
+                         <div className="flex items-center gap-2">
+                            <div className="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-[8px] font-bold text-slate-300">
+                               {signal.author[0]}
+                            </div>
+                            <span className="text-[10px] text-slate-400 font-medium">{signal.author}</span>
+                         </div>
+                         <div className="flex items-center gap-3 text-slate-500">
+                            <span className="flex items-center gap-1 text-[10px] font-bold"><MessageSquare className="w-3 h-3" /> {signal.replies}</span>
+                            <span className="flex items-center gap-1 text-[10px] font-bold"><ThumbsUp className="w-3 h-3" /> {signal.likes}</span>
+                         </div>
+                      </div>
+                   </div>
+                </Link>
+             ))}
+          </div>
       </section>
 
       <section>
