@@ -1,4 +1,6 @@
 
+import { onAuthChange, getCompleteUserProfile } from './services/auth.service';
+import { UserRole, GalaxyLevel, MembershipTier } from './types';
 import { logoutUser } from './services/auth.service';
 import { AiAssistant } from './components/AiAssistant';
 import { AccessGate } from './components/AccessGate';
@@ -58,23 +60,49 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [showGovernanceModal, setShowGovernanceModal] = useState(true);
   const location = useLocation();
   const [userProfile, setUserProfile] = useState({
-      name: "Alex Mercer",
-      handle: "@amercer_diy",
-      avatar: "https://placehold.co/100x100/333/fff?text=ME",
-      isExpert: false
-  });
+    name: "Loading...",
+    handle: "@loading",
+    avatar: "https://placehold.co/100x100/333/fff?text=?",
+    isExpert: false,
+    role: 'VOYAGER' as UserRole,
+    galaxyLevel: 'NEBULA' as GalaxyLevel,
+    membershipTier: 'free' as MembershipTier
+});
 
-  useEffect(() => {
-      const userType = localStorage.getItem('toupee_auth');
-      if (userType === 'expert') {
-          setUserProfile({
-              name: "Dr. Test Account",
-              handle: "@sys_validator",
-              avatar: "https://placehold.co/100x100/10b981/fff?text=TEST",
-              isExpert: true
-          });
-      }
-  }, []);
+useEffect(() => {
+    // 监听Firebase认证状态
+    const unsubscribe = onAuthChange(async (firebaseUser) => {
+        if (firebaseUser) {
+            // 用户已登录，从Firestore获取完整档案
+            const completeProfile = await getCompleteUserProfile(firebaseUser.uid);
+            
+            if (completeProfile) {
+                setUserProfile({
+                    name: completeProfile.displayName,
+                    handle: `@${completeProfile.displayName.toLowerCase().replace(/\s/g, '_')}`,
+                    avatar: completeProfile.photoURL,
+                    isExpert: completeProfile.role === 'ARCHITECT' || completeProfile.role === 'SOURCE',
+                    role: completeProfile.role,
+                    galaxyLevel: completeProfile.galaxyLevel,
+                    membershipTier: completeProfile.membershipTier
+                });
+            }
+        } else {
+            // 用户未登录
+            setUserProfile({
+                name: "Guest",
+                handle: "@guest",
+                avatar: "https://placehold.co/100x100/333/fff?text=G",
+                isExpert: false,
+                role: 'VOYAGER',
+                galaxyLevel: 'NEBULA',
+                membershipTier: 'free'
+            });
+        }
+    });
+
+    return () => unsubscribe();
+}, []);
 
   const handleCloseGovernance = () => {
     // Simply close the modal without triggering sidebar side effects
