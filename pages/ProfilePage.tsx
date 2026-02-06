@@ -1,7 +1,8 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserTier } from '../types';
+import { getCurrentUser, getCompleteUserProfile } from '../services/auth.service';
+import { CompleteUserProfile } from '../types';
 import { 
   Shield, 
   Zap, 
@@ -33,21 +34,22 @@ import {
   Orbit,
   Sparkles
 } from 'lucide-react';
+import { logoutUser } from '../services/auth.service';
 
 const DEFAULT_USER = {
-  name: "Alex Mercer",
-  handle: "@amercer_diy",
-  email: "alex@example.com",
-  tier: UserTier.GALAXY,
-  avatar: "https://placehold.co/200x200/3b82f6/white?text=AM",
-  stats: { joined: "Aug 2023", reputation: 1250, posts: 42, solutions: 15 },
+  name: "Loading...",
+  handle: "@loading",
+  email: "loading@example.com",
+  tier: UserTier.NEBULA,
+  avatar: "https://placehold.co/200x200/3b82f6/white?text=?",
+  stats: { joined: "Loading...", reputation: 0, posts: 0, solutions: 0 },
   systemSpecs: {
-    base: "French Lace Center / Poly Perimeter",
-    density: "95% (Light-Medium)",
-    color: "#2 ASH (Darkest Brown Ash)",
-    contour: "CC (Standard)",
-    adhesive: "Ghost Bond Platinum",
-    lifestyle: "Active / Swimmer"
+    base: "Not configured",
+    density: "Not configured",
+    color: "Not configured",
+    contour: "Not configured",
+    adhesive: "Not configured",
+    lifestyle: "Not configured"
   }
 };
 
@@ -97,25 +99,69 @@ const TierBanner: React.FC<{ tier: UserTier; isExpert?: boolean }> = ({ tier, is
 export const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(DEFAULT_USER);
+  const [profile, setProfile] = useState<CompleteUserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
   const [isExpert, setIsExpert] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [avatar, setAvatar] = useState(user.avatar);
   const bannerInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const userType = localStorage.getItem('toupee_auth');
-    if (userType === 'expert') {
-        setIsExpert(true);
-        setActiveTab('dashboard');
-        setUser({
-            ...DEFAULT_USER,
-            name: "Dr. Test Account",
-            handle: "@sys_validator",
-            email: "123@456.com",
-            tier: UserTier.SUPERNOVA,
-            avatar: "https://placehold.co/400x400/10b981/FFF?text=TEST",
-        });
+    async function loadProfile() {
+      const currentUser = getCurrentUser();
+      if (currentUser) {
+        const completeProfile = await getCompleteUserProfile(currentUser.uid);
+        
+        if (completeProfile) {
+          setProfile(completeProfile);
+          
+          // 判断是否是专家
+          const isExpertUser = completeProfile.role === 'ARCHITECT' || completeProfile.role === 'SOURCE';
+          setIsExpert(isExpertUser);
+          
+          // 映射galaxyLevel到UserTier
+          const tierMap = {
+            'NEBULA': UserTier.NEBULA,
+            'NOVA': UserTier.NOVA,
+            'GALAXY': UserTier.GALAXY,
+            'SUPERNOVA': UserTier.SUPERNOVA
+          };
+          
+          // 更新用户显示信息
+          setUser({
+            name: completeProfile.displayName,
+            handle: `@${completeProfile.displayName.toLowerCase().replace(/\s/g, '_')}`,
+            email: completeProfile.email,
+            tier: tierMap[completeProfile.galaxyLevel],
+            avatar: completeProfile.photoURL,
+            stats: {
+              joined: new Date(completeProfile.createdAt?.toDate?.() || completeProfile.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+              reputation: completeProfile.xp || 0,
+              posts: 0, // 可以后续从其他collection查询
+              solutions: 0
+            },
+            systemSpecs: {
+              base: completeProfile.voyagerProfile?.hairPattern || "Not configured",
+              density: "Not configured",
+              color: "Not configured",
+              contour: "Not configured",
+              adhesive: "Not configured",
+              lifestyle: completeProfile.voyagerProfile?.activityLevel || "Not configured"
+            }
+          });
+          
+          setAvatar(completeProfile.photoURL);
+          
+          // 如果是专家，默认显示dashboard
+          if (isExpertUser) {
+            setActiveTab('dashboard');
+          }
+        }
+      }
+      setLoading(false);
     }
+    
+    loadProfile();
   }, []);
 
   const TABS = isExpert 
@@ -133,10 +179,23 @@ export const ProfilePage: React.FC = () => {
         { id: 'settings', label: 'Settings' }
       ];
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
       localStorage.removeItem('toupee_auth');
       navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-slate-400">Loading profile...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-12">
@@ -184,7 +243,7 @@ export const ProfilePage: React.FC = () => {
                    <>
                         <div className="text-center bg-dark-900/50 p-3 rounded-2xl border border-dark-700 backdrop-blur-sm">
                             <div className="text-lg font-bold text-white">{user.stats.reputation}</div>
-                            <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Reputation</div>
+                            <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">XP</div>
                         </div>
                    </>
                )}
@@ -232,8 +291,12 @@ export const ProfilePage: React.FC = () => {
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="bg-dark-900/50 p-4 rounded-xl border border-dark-700">
-                                <div className="text-xs text-slate-500 uppercase tracking-wider font-bold mb-1">Base Material</div>
+                                <div className="text-xs text-slate-500 uppercase tracking-wider font-bold mb-1">Hair Pattern</div>
                                 <div className="text-slate-200 font-medium">{user.systemSpecs.base}</div>
+                            </div>
+                            <div className="bg-dark-900/50 p-4 rounded-xl border border-dark-700">
+                                <div className="text-xs text-slate-500 uppercase tracking-wider font-bold mb-1">Activity Level</div>
+                                <div className="text-slate-200 font-medium">{user.systemSpecs.lifestyle}</div>
                             </div>
                         </div>
                     </div>
@@ -246,14 +309,17 @@ export const ProfilePage: React.FC = () => {
                             <TierBadge tier={user.tier} />
                         </div>
                         <div className="mb-6">
-                            <div className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Current Coordinate</div>
+                            <div className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Current Level</div>
                             <div className={`text-2xl font-bold ${user.tier === UserTier.GALAXY ? 'text-brand-purple' : user.tier === UserTier.SUPERNOVA ? 'text-amber-500' : 'text-white'}`}>
                                 {user.tier}
                             </div>
-                            <div className="text-xs text-slate-500 mt-1">Renews Oct 12, 2023</div>
+                            <div className="text-xs text-slate-500 mt-1">Member since {user.stats.joined}</div>
                         </div>
-                        <button className="w-full py-2 bg-brand-purple hover:bg-purple-600 text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors">
-                            Manage Subscription
+                        <button 
+                          onClick={() => navigate('/membership')}
+                          className="w-full py-2 bg-brand-purple hover:bg-purple-600 text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors"
+                        >
+                          Upgrade Membership
                         </button>
                     </div>
                 </div>
