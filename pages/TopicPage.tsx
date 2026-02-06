@@ -21,7 +21,8 @@ export const TopicPage: React.FC = () => {
     );
   }
 
-  const isLocked = (tier: UserTier) => tier === UserTier.QUANTUM;
+  /* Fix: Use UserTier.SUPERNOVA instead of UserTier.QUANTUM */
+  const isLocked = (tier: UserTier) => tier === UserTier.SUPERNOVA;
 
   const renderArticles = () => {
     const list = [];
@@ -70,7 +71,8 @@ export const TopicPage: React.FC = () => {
             <div className="flex flex-wrap items-center gap-3 mb-6">
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-brand-blue/10 text-brand-blue border border-brand-blue/20 tracking-wide uppercase">{topic.category}</span>
                 <span className="flex items-center text-xs font-medium text-slate-300"><Clock className="w-3.5 h-3.5 mr-1.5" /> {topic.readTime} Overview</span>
-                <span className={`flex items-center text-xs font-bold ${topic.tier === UserTier.QUANTUM ? 'text-brand-purple' : 'text-slate-500'}`}><Award className="w-3.5 h-3.5 mr-1.5" /> {topic.tier} Tier</span>
+                {/* Fix: Use UserTier.SUPERNOVA instead of UserTier.QUANTUM */}
+                <span className={`flex items-center text-xs font-bold ${topic.tier === UserTier.SUPERNOVA ? 'text-brand-purple' : 'text-slate-500'}`}><Award className="w-3.5 h-3.5 mr-1.5" /> {topic.tier} Tier</span>
             </div>
             <h1 className="text-3xl md:text-5xl font-bold text-white mb-8 tracking-tight leading-tight">{topic.title}</h1>
             <div className="prose prose-lg prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: topic.description }} />

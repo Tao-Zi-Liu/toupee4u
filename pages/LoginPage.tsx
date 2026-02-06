@@ -18,7 +18,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isStaffTerminal = false })
   const handleEmailLogin = async (e: React.FormEvent) => {
   e.preventDefault();
   setError('');
-  setLoading(true);
+  /* Fix: Use setIsLoading instead of setLoading */
+  setIsLoading(true);
 
   try {
     // 使用真实的Firebase登录
@@ -35,7 +36,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isStaffTerminal = false })
   } catch (err: any) {
     setError(err.message || 'Login failed');
   } finally {
-    setLoading(false);
+    /* Fix: Use setIsLoading instead of setLoading */
+    setIsLoading(false);
   }
 };
 
@@ -84,7 +86,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isStaffTerminal = false })
         )}
 
         {/* Form */}
-        <form onSubmit={handleLogin} className="space-y-4">
+        {/* Fix: Use handleEmailLogin instead of handleLogin */}
+        <form onSubmit={handleEmailLogin} className="space-y-4">
           <div className="space-y-1">
             <label className={`text-[10px] font-bold uppercase tracking-wider ml-1 ${isStaffTerminal ? 'text-brand-emerald/70' : 'text-slate-500'}`}>Identity Vector (Email)</label>
             <div className="relative group">

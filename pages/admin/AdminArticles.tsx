@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useData } from '../../contexts/DataContext';
 import { Plus, Trash2, Search, X, Edit3, FileText } from 'lucide-react';
@@ -26,7 +27,8 @@ export const AdminArticles: React.FC = () => {
     title: '',
     description: '',
     readTime: '15 min',
-    tier: UserTier.OBSERVER,
+    /* Fix: Use UserTier.NEBULA instead of UserTier.OBSERVER */
+    tier: UserTier.NEBULA,
     category: '', 
     categoryId: categories[0]?.id || '' 
   };
@@ -152,9 +154,11 @@ export const AdminArticles: React.FC = () => {
                             </td>
                             <td className="p-4">
                                 <span className={`text-xs font-bold px-2 py-1 rounded border ${
-                                    topic.tier === UserTier.QUANTUM 
+                                    /* Fix: Use UserTier.SUPERNOVA instead of UserTier.QUANTUM */
+                                    topic.tier === UserTier.SUPERNOVA 
                                         ? 'text-brand-purple bg-brand-purple/10 border-brand-purple/20' 
-                                        : topic.tier === UserTier.KINETIC 
+                                        /* Fix: Use UserTier.GALAXY instead of UserTier.KINETIC */
+                                        : topic.tier === UserTier.GALAXY 
                                             ? 'text-brand-blue bg-brand-blue/10 border-brand-blue/20'
                                             : 'text-slate-300 bg-dark-900 border-dark-600'
                                 }`}>

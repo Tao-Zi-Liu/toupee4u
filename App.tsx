@@ -35,8 +35,6 @@ import { AdminDeployment } from './pages/admin/AdminDeployment';
 import { AdminPortal } from './pages/admin/AdminPortal';
 import { AdminAnalytics } from './pages/admin/AdminAnalytics';
 import { AdminUsers } from './pages/admin/AdminUsers';
-import { AiAssistant } from './components/AiAssistant';
-import { AccessGate } from './components/AccessGate';
 import { CommandPalette } from './components/CommandPalette';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import { Menu, Search, Bell, User, LogIn, LogOut, Crown, Rocket, ShieldAlert } from 'lucide-react';

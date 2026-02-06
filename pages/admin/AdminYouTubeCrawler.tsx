@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { generateArticleFromVideo } from '../../services/geminiService';
 import { useData } from '../../contexts/DataContext';
@@ -142,7 +143,8 @@ export const AdminYouTubeCrawler: React.FC = () => {
         description: generatedHtml,
         category: categories.find(c => c.id === targetCategory)?.name || 'General',
         readTime: '6 min',
-        tier: UserTier.KINETIC,
+        /* Fix: Use UserTier.GALAXY instead of UserTier.KINETIC */
+        tier: UserTier.GALAXY,
         articles: []
     };
 

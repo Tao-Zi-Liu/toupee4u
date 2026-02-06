@@ -3,6 +3,7 @@ import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { Clock, ArrowRight, Lock, Sparkles, Book } from 'lucide-react';
+import { UserTier } from '../types';
 
 export const CategoryPage: React.FC = () => {
   const { categoryId } = useParams<{ categoryId: string }>();
@@ -39,12 +40,15 @@ export const CategoryPage: React.FC = () => {
                 <div className="w-full md:w-1/2 relative">
                     <div className="aspect-[4/3] rounded-3xl overflow-hidden border border-dark-700 group-hover:border-brand-blue/50 transition-all duration-500 relative bg-dark-800">
                         <img src={getPlaceholderImage(i, topic.title)} alt={topic.title} className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700" />
-                        {topic.tier !== 'Observer' && (
+                        {/* Fix: Use UserTier.NEBULA instead of 'Observer' string literal */}
+                        {topic.tier !== UserTier.NEBULA && (
                             <div className="absolute top-4 right-4 z-20">
+                                {/* Fix: Use UserTier.SUPERNOVA instead of 'Quantum State' string literal */}
                                 <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider backdrop-blur-md shadow-lg ${
-                                    topic.tier === 'Quantum State' ? 'bg-brand-purple/90 text-white' : 'bg-brand-blue/90 text-white'
+                                    topic.tier === UserTier.SUPERNOVA ? 'bg-brand-purple/90 text-white' : 'bg-brand-blue/90 text-white'
                                 }`}>
-                                    {topic.tier === 'Quantum State' ? <Lock className="w-3 h-3" /> : <Sparkles className="w-3 h-3" />}
+                                    {/* Fix: Use UserTier.SUPERNOVA instead of 'Quantum State' string literal */}
+                                    {topic.tier === UserTier.SUPERNOVA ? <Lock className="w-3 h-3" /> : <Sparkles className="w-3 h-3" />}
                                     {topic.tier}
                                 </span>
                             </div>

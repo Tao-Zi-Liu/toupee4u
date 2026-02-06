@@ -1,3 +1,4 @@
+
 // services/auth.service.ts
 import {
   createUserWithEmailAndPassword,
@@ -15,7 +16,7 @@ export interface UserProfile {
   email: string;
   displayName: string;
   photoURL: string;
-  membershipTier: 'free' | 'kinetic' | 'quantum';
+  membershipTier: 'nebula' | 'nova' | 'galaxy' | 'supernova';
   isExpert: boolean;
   createdAt: any;
 }
@@ -39,7 +40,7 @@ export async function registerUser(
       email: user.email || email,
       displayName: displayName,
       photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=random`,
-      membershipTier: 'free',
+      membershipTier: 'nebula',
       isExpert: false,
       createdAt: serverTimestamp()
     };

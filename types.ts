@@ -1,9 +1,11 @@
+
 import { LucideIcon } from 'lucide-react';
 
 export enum UserTier {
-  OBSERVER = 'Observer',
-  KINETIC = 'Kinetic Force',
-  QUANTUM = 'Quantum State'
+  NEBULA = 'Nebula',
+  NOVA = 'Nova',
+  GALAXY = 'Galaxy',
+  SUPERNOVA = 'Supernova'
 }
 
 export interface Article {
