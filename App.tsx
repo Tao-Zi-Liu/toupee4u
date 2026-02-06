@@ -41,6 +41,8 @@ import { CommandPalette } from './components/CommandPalette';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import { Menu, Search, Bell, User, LogIn, LogOut, Crown, Rocket, ShieldAlert } from 'lucide-react';
 import { SelectRolePage } from './pages/SelectRolePage';
+import { VoyagerQuizPage } from './pages/VoyagerQuizPage';
+import { ProfessionalSetupPage } from './pages/ProfessionalSetupPage';
 
 // SECRET URL FOR STAFF ONLY
 const SECRET_ADMIN_URL = "/terminal/x92-quantum-override";
@@ -272,6 +274,8 @@ const AppRoutes = () => {
       <Route path="/admin/users" element={<StaffGate><AdminUsers /></StaffGate>} />
       
       <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="/onboarding/voyager-quiz" element={<VoyagerQuizPage />} />
+      <Route path="/onboarding/professional-setup" element={<ProfessionalSetupPage />} />
     </Routes>
   );
 };
