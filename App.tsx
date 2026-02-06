@@ -1,4 +1,7 @@
 
+import { logoutUser } from './services/auth.service';
+import { AiAssistant } from './components/AiAssistant';
+import { AccessGate } from './components/AccessGate';
 import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { DataProvider } from './contexts/DataContext';
@@ -80,11 +83,20 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     setShowGovernanceModal(false);
   };
 
-  const handleLogout = () => {
-      localStorage.removeItem('toupee_auth');
-      window.location.href = '#/login';
-      window.location.reload();
-  };
+  const handleLogout = async () => {
+  try {
+    await logoutUser();
+    localStorage.removeItem('toupee_auth');
+    window.location.href = '#/login';
+    window.location.reload();
+  } catch (error) {
+    console.error('Logout error:', error);
+    // 即使失败也清除本地状态
+    localStorage.removeItem('toupee_auth');
+    window.location.href = '#/login';
+    window.location.reload();
+  }
+};
 
   const triggerSearch = () => {
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, ctrlKey: true }));

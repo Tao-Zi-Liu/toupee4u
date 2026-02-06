@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, ShieldCheck, Hexagon, AlertCircle, Cpu, Terminal } from 'lucide-react';
+import { loginUser } from '../services/auth.service';
 
 interface LoginPageProps {
   isStaffTerminal?: boolean;
@@ -14,35 +15,29 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isStaffTerminal = false })
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setIsLoading(true);
+  const handleEmailLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError('');
+  setLoading(true);
 
-    // Simulate API delay
-    setTimeout(() => {
-        if (isStaffTerminal) {
-            // STAFF AUTH LOGIC
-            if (email === '123@456.com' && password === 'lztzn1314') {
-                localStorage.setItem('staff_session_token', 'authorized_master');
-                localStorage.setItem('toupee_auth', 'expert');
-                navigate('/admin');
-            } else {
-                setError('FATAL ERROR: ACCESS DENIED. ATTEMPT LOGGED.');
-                setIsLoading(false);
-            }
-        } else {
-            // USER AUTH LOGIC
-            if (email === '123@456.com' && password === 'lztzn1314') {
-                localStorage.setItem('toupee_auth', 'expert');
-                navigate('/profile');
-            } else {
-                setError('Access Denied: Invalid authentication protocols.');
-                setIsLoading(false);
-            }
-        }
-    }, 1200);
-  };
+  try {
+    // 使用真实的Firebase登录
+    const userProfile = await loginUser(email, password);
+    
+    // 如果是管理员登录页面
+    if (isStaffTerminal) {
+      localStorage.setItem('staff_session_token', 'authorized_master');
+      navigate('/admin');
+    } else {
+      // 普通用户登录
+      navigate('/');
+    }
+  } catch (err: any) {
+    setError(err.message || 'Login failed');
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className={`min-h-screen ${isStaffTerminal ? 'bg-black staff-selection font-mono' : 'bg-dark-900 font-sans'} flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-700`}>
