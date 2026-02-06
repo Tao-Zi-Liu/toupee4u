@@ -27,7 +27,6 @@ export const RegisterPage: React.FC = () => {
     e.preventDefault();
     setError('');
 
-    // 验证
     if (!agreedToTerms) {
       setError('Please agree to the Terms of Service');
       return;
@@ -46,7 +45,6 @@ export const RegisterPage: React.FC = () => {
       
       setSuccess(true);
       
-      // 2秒后跳转到首页
       setTimeout(() => {
         navigate('/');
       }, 2000);
@@ -57,7 +55,6 @@ export const RegisterPage: React.FC = () => {
     }
   };
 
-  // 成功页面
   if (success) {
     return (
       <div className="min-h-screen bg-dark-900 flex items-center justify-center p-4">
@@ -67,7 +64,7 @@ export const RegisterPage: React.FC = () => {
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">Account Created!</h2>
           <p className="text-slate-400 mb-4">
-            Welcome to Toupee4U. Redirecting you to the platform...
+            Welcome to Toupee4U. Redirecting...
           </p>
           <Loader className="w-6 h-6 animate-spin mx-auto text-brand-blue" />
         </div>
@@ -77,14 +74,12 @@ export const RegisterPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-dark-900 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background Decor */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-brand-blue/5 rounded-full blur-[120px]"></div>
       </div>
 
       <div className="w-full max-w-md bg-dark-800 border border-dark-700 rounded-3xl p-8 shadow-2xl relative z-10">
         
-        {/* Brand Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-blue to-brand-purple mb-6 shadow-lg shadow-brand-blue/20 text-white">
             <Zap className="w-8 h-8 fill-current" />
@@ -93,7 +88,6 @@ export const RegisterPage: React.FC = () => {
           <p className="text-slate-300 text-sm">Begin your journey from Observer to Quantum State.</p>
         </div>
 
-        {/* Error Message */}
         {error && (
           <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-start gap-2">
             <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
@@ -101,7 +95,6 @@ export const RegisterPage: React.FC = () => {
           </div>
         )}
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           
           <div className="grid grid-cols-2 gap-4">
@@ -193,7 +186,7 @@ export const RegisterPage: React.FC = () => {
             {loading ? (
               <>
                 <Loader className="w-4 h-4 animate-spin" />
-                Creating Account...
+                Creating...
               </>
             ) : (
               <>
@@ -204,7 +197,6 @@ export const RegisterPage: React.FC = () => {
           </button>
         </form>
 
-        {/* Footer */}
         <div className="mt-8 text-center">
           <p className="text-slate-300 text-sm">
             Already a member?{' '}
