@@ -167,8 +167,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isStaffTerminal = false })
                 <div className="mt-8 text-center">
                 <p className="text-slate-400 text-sm">
                     Don't have an account?{' '}
-                    <Link to="/register" className="text-brand-blue font-bold hover:text-white transition-colors">
-                    Initialize Sequence
+                    <Link to="/onboarding/select-role" className="text-brand-blue font-bold hover:text-white transition-colors">
+                      Initialize Sequence
                     </Link>
                 </p>
                 </div>

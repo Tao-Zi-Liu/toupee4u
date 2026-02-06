@@ -40,6 +40,7 @@ import { AdminUsers } from './pages/admin/AdminUsers';
 import { CommandPalette } from './components/CommandPalette';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import { Menu, Search, Bell, User, LogIn, LogOut, Crown, Rocket, ShieldAlert } from 'lucide-react';
+import { SelectRolePage } from './pages/SelectRolePage';
 
 // SECRET URL FOR STAFF ONLY
 const SECRET_ADMIN_URL = "/terminal/x92-quantum-override";
@@ -283,6 +284,7 @@ const App: React.FC = () => {
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/onboarding/select-role" element={<SelectRolePage />} />
             
             {/* SECRET LOGIN PATH */}
             <Route path="/terminal/x92-quantum-override" element={<LoginPage isStaffTerminal={true} />} />
