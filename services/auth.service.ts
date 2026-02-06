@@ -1,54 +1,89 @@
-
 // services/auth.service.ts
+// 用户认证服务：注册、登录、登出（支持新的角色和等级系统）
+
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  User
+  User as FirebaseUser
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../firebase.config';
-
-// 用户数据类型
-export interface UserProfile {
-  uid: string;
-  email: string;
-  displayName: string;
-  photoURL: string;
-  membershipTier: 'nebula' | 'nova' | 'galaxy' | 'supernova';
-  isExpert: boolean;
-  createdAt: any;
-}
+import { 
+  User, 
+  UserRole, 
+  GalaxyLevel,
+  MembershipTier,
+  VoyagerProfile,
+  ArchitectProfile,
+  CompleteUserProfile
+} from '../types';
 
 /**
  * 注册新用户
+ * @param email 邮箱
+ * @param password 密码
+ * @param displayName 显示名称
+ * @param role 用户角色（可选，默认为VOYAGER）
  */
 export async function registerUser(
   email: string,
   password: string,
-  displayName: string
-): Promise<UserProfile> {
+  displayName: string,
+  role: UserRole = 'VOYAGER'
+): Promise<User> {
   try {
     // 1. 在Firebase Auth创建用户
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
+    const firebaseUser = userCredential.user;
 
-    // 2. 在Firestore创建用户档案
-    const userProfile: UserProfile = {
-      uid: user.uid,
-      email: user.email || email,
+    // 2. 创建主用户档案
+    const user: User = {
+      userId: firebaseUser.uid,
+      email: firebaseUser.email || email,
       displayName: displayName,
       photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=random`,
-      membershipTier: 'nebula',
-      isExpert: false,
-      createdAt: serverTimestamp()
+      
+      // 新增字段
+      role: role,
+      galaxyLevel: 'NEBULA',  // 注册即为星云等级
+      xp: 0,                   // 初始经验值为0
+      
+      // 付费会员默认为free
+      membershipTier: 'free',
+      
+      createdAt: serverTimestamp(),
+      lastLoginAt: serverTimestamp()
     };
 
-    await setDoc(doc(db, 'users', user.uid), userProfile);
+    // 3. 保存到 Firestore users collection
+    await setDoc(doc(db, 'users', firebaseUser.uid), user);
 
-    console.log('✅ User registered:', user.uid);
-    return userProfile;
+    // 4. 根据角色创建对应的扩展Profile
+    if (role === 'VOYAGER') {
+      const voyagerProfile: VoyagerProfile = {
+        userId: firebaseUser.uid,
+        contentTags: [],
+        quizCompleted: false
+      };
+      await setDoc(doc(db, 'voyagerProfiles', firebaseUser.uid), voyagerProfile);
+    } else if (role === 'ARCHITECT') {
+      const architectProfile: Partial<ArchitectProfile> = {
+        userId: firebaseUser.uid,
+        businessName: '',
+        location: {
+          city: '',
+          country: ''
+        },
+        skills: [],
+        verificationStatus: 'PENDING'
+      };
+      await setDoc(doc(db, 'architectProfiles', firebaseUser.uid), architectProfile);
+    }
+
+    console.log('✅ User registered:', firebaseUser.uid, 'Role:', role);
+    return user;
   } catch (error: any) {
     console.error('❌ Registration error:', error);
     throw new Error(getErrorMessage(error.code));
@@ -61,20 +96,25 @@ export async function registerUser(
 export async function loginUser(
   email: string,
   password: string
-): Promise<UserProfile> {
+): Promise<CompleteUserProfile> {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
+    const firebaseUser = userCredential.user;
 
-    // 从Firestore获取用户档案
-    const userProfile = await getUserProfile(user.uid);
+    // 获取完整的用户档案
+    const completeProfile = await getCompleteUserProfile(firebaseUser.uid);
 
-    if (!userProfile) {
+    if (!completeProfile) {
       throw new Error('User profile not found');
     }
 
-    console.log('✅ User logged in:', user.uid);
-    return userProfile;
+    // 更新最后登录时间
+    await setDoc(doc(db, 'users', firebaseUser.uid), {
+      lastLoginAt: serverTimestamp()
+    }, { merge: true });
+
+    console.log('✅ User logged in:', firebaseUser.uid);
+    return completeProfile;
   } catch (error: any) {
     console.error('❌ Login error:', error);
     throw new Error(getErrorMessage(error.code));
@@ -95,15 +135,15 @@ export async function logoutUser(): Promise<void> {
 }
 
 /**
- * 获取用户档案
+ * 获取基础用户档案
  */
-export async function getUserProfile(uid: string): Promise<UserProfile | null> {
+export async function getUserProfile(uid: string): Promise<User | null> {
   try {
     const docRef = doc(db, 'users', uid);
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      return docSnap.data() as UserProfile;
+      return docSnap.data() as User;
     }
 
     return null;
@@ -114,16 +154,47 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
 }
 
 /**
+ * 获取完整的用户档案（包括扩展Profile）
+ */
+export async function getCompleteUserProfile(uid: string): Promise<CompleteUserProfile | null> {
+  try {
+    // 1. 获取基础用户信息
+    const user = await getUserProfile(uid);
+    if (!user) return null;
+
+    const completeProfile: CompleteUserProfile = { ...user };
+
+    // 2. 根据角色获取扩展Profile
+    if (user.role === 'VOYAGER') {
+      const voyagerDoc = await getDoc(doc(db, 'voyagerProfiles', uid));
+      if (voyagerDoc.exists()) {
+        completeProfile.voyagerProfile = voyagerDoc.data() as VoyagerProfile;
+      }
+    } else if (user.role === 'ARCHITECT') {
+      const architectDoc = await getDoc(doc(db, 'architectProfiles', uid));
+      if (architectDoc.exists()) {
+        completeProfile.architectProfile = architectDoc.data() as ArchitectProfile;
+      }
+    }
+
+    return completeProfile;
+  } catch (error) {
+    console.error('❌ Error fetching complete user profile:', error);
+    return null;
+  }
+}
+
+/**
  * 监听认证状态变化
  */
-export function onAuthChange(callback: (user: User | null) => void) {
+export function onAuthChange(callback: (user: FirebaseUser | null) => void) {
   return onAuthStateChanged(auth, callback);
 }
 
 /**
  * 获取当前登录用户
  */
-export function getCurrentUser(): User | null {
+export function getCurrentUser(): FirebaseUser | null {
   return auth.currentUser;
 }
 
@@ -137,7 +208,8 @@ function getErrorMessage(errorCode: string): string {
     'auth/weak-password': 'Password must be at least 6 characters',
     'auth/user-not-found': 'No account found with this email',
     'auth/wrong-password': 'Incorrect password',
-    'auth/too-many-requests': 'Too many attempts. Please try again later'
+    'auth/too-many-requests': 'Too many attempts. Please try again later',
+    'auth/network-request-failed': 'Network error. Please check your connection'
   };
 
   return errorMessages[errorCode] || 'An error occurred. Please try again';
