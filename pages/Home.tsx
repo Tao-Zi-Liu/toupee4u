@@ -1,4 +1,7 @@
 
+import { getCurrentUser, getCompleteUserProfile } from '../services/auth.service';
+import { CompleteUserProfile } from '../types';
+import { CommunityWidget } from '../components/CommunityWidget';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { INDUSTRY_NEWS } from '../constants';
@@ -155,6 +158,7 @@ export const Home: React.FC = () => {
   const [isNewsPaused, setIsNewsPaused] = useState(false);
   const [requestTopic, setRequestTopic] = useState('');
   const [requestSubmitted, setRequestSubmitted] = useState(false);
+  const [userProfile, setUserProfile] = useState<CompleteUserProfile | null>(null);
 
   useEffect(() => {
     if (isExpertPaused) return;
@@ -178,6 +182,18 @@ export const Home: React.FC = () => {
     }, 2500);
     return () => clearInterval(timer);
   }, [isNewsPaused]);
+
+  useEffect(() => {
+    async function loadUserProfile() {
+      const currentUser = getCurrentUser();
+      if (currentUser) {
+        const profile = await getCompleteUserProfile(currentUser.uid);
+        setUserProfile(profile);
+      }
+    }
+    
+    loadUserProfile();
+  }, []);
 
   const getExpertTransformClass = (phase: 'idle' | 'exiting' | 'entering') => {
       switch(phase) {
