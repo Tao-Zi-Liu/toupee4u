@@ -4,7 +4,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, ArrowLeft, Loader, CheckCircle } from 'lucide-react';
-import { registerUser } from '../services/auth.service';
+import { registerUser, updateVoyagerProfile } from '../services/auth.service';
 import { HairPattern, ExperienceLevel, ActivityLevel } from '../types';
 
 type QuizStep = 1 | 2 | 3 | 4;
@@ -98,25 +98,32 @@ export const VoyagerQuizPage: React.FC = () => {
   const [error, setError] = useState('');
 
   // 处理账户创建
-  const handleAccountSubmit = async (email: string, password: string, displayName: string) => {
-    setError('');
-    setLoading(true);
+  // 处理账户创建
+const handleAccountSubmit = async (email: string, password: string, displayName: string) => {
+  setError('');
+  setLoading(true);
 
-    try {
-      // 注册用户
-      await registerUser(email, password, displayName, 'VOYAGER');
-
-      // TODO: 将Quiz数据保存到voyagerProfile
-      // 暂时跳过，后续实现
-
-      // 注册成功，跳转到首页
-      navigate('/');
-    } catch (err: any) {
-      setError(err.message || 'Registration failed');
-    } finally {
-      setLoading(false);
+  try {
+    // 1. 注册用户
+    const user = await registerUser(email, password, displayName, 'VOYAGER');
+    
+    // 2. 保存Quiz数据到VoyagerProfile
+    if (quizData.hairPattern && quizData.experienceLevel && quizData.activityLevel) {
+      await updateVoyagerProfile(user.userId, {
+        hairPattern: quizData.hairPattern,
+        experienceLevel: quizData.experienceLevel,
+        activityLevel: quizData.activityLevel
+      });
     }
-  };
+
+    // 3. 注册成功，跳转到首页
+    navigate('/');
+  } catch (err: any) {
+    setError(err.message || 'Registration failed');
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Step 1: 现状扫描（发量类型）
   const renderStep1 = () => {

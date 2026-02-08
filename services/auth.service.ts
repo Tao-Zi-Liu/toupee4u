@@ -17,7 +17,10 @@ import {
   MembershipTier,
   VoyagerProfile,
   ArchitectProfile,
-  CompleteUserProfile
+  CompleteUserProfile,
+  HairPattern,
+  ExperienceLevel,
+  ActivityLevel
 } from '../types';
 
 /**
@@ -213,4 +216,60 @@ function getErrorMessage(errorCode: string): string {
   };
 
   return errorMessages[errorCode] || 'An error occurred. Please try again';
+}
+/**
+ * 更新Voyager Profile（保存Quiz数据）
+ */
+export async function updateVoyagerProfile(
+  userId: string,
+  quizData: {
+    hairPattern: HairPattern;
+    experienceLevel: ExperienceLevel;
+    activityLevel: ActivityLevel;
+  }
+): Promise<void> {
+  try {
+    const voyagerProfileRef = doc(db, 'voyagerProfiles', userId);
+    
+    // 根据Quiz数据生成内容标签
+    const contentTags: string[] = [];
+    
+    // 根据经验等级添加标签
+    if (quizData.experienceLevel === 'NEWBIE') {
+      contentTags.push('WIKI_BASICS', 'GETTING_STARTED', 'TUTORIALS');
+    } else {
+      contentTags.push('ADVANCED_TECHNIQUES', 'EXPERT_TIPS', 'COMMUNITY_DISCUSSIONS');
+    }
+    
+    // 根据活动强度添加标签
+    if (quizData.activityLevel === 'HIGH') {
+      contentTags.push('ADHESIVES_SWEAT_PROOF', 'SPORTS_ACTIVITIES', 'MAINTENANCE_INTENSIVE');
+    } else if (quizData.activityLevel === 'MEDIUM') {
+      contentTags.push('DAILY_MAINTENANCE', 'STANDARD_ADHESIVES');
+    } else {
+      contentTags.push('GENTLE_CARE', 'BASIC_MAINTENANCE');
+    }
+    
+    // 根据发量类型添加标签
+    contentTags.push(`PATTERN_${quizData.hairPattern}`);
+    
+    // 生成匹配组（用于推荐同类人）
+    const matchGroup = `GROUP_${quizData.hairPattern}_${quizData.experienceLevel}`;
+    
+    // 更新Firestore
+    await setDoc(voyagerProfileRef, {
+      hairPattern: quizData.hairPattern,
+      experienceLevel: quizData.experienceLevel,
+      activityLevel: quizData.activityLevel,
+      contentTags: contentTags,
+      matchGroup: matchGroup,
+      quizCompleted: true,
+      quizCompletedAt: serverTimestamp()
+    }, { merge: true });
+    
+    console.log('✅ Voyager profile updated with quiz data');
+  } catch (error) {
+    console.error('❌ Error updating voyager profile:', error);
+    throw new Error('Failed to save quiz data');
+  }
 }
