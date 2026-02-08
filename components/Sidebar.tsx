@@ -122,13 +122,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
         </div>
 
         {/* DISCOVER */}
-        <div>
-          {!isCollapsed && <p className="px-2 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-3">Discover</p>}
-          <nav className="space-y-1">
-            <NavItem to="/forum" icon={MessageSquare} label="Forums" isCollapsed={isCollapsed} onClick={handleItemClick} />
-            <NavItem to="/news" icon={Newspaper} label="News" isCollapsed={isCollapsed} onClick={handleItemClick} />
-          </nav>
-        </div>
+          <div>
+            {!isCollapsed && <p className="px-2 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-3">Discover</p>}
+            <nav className="space-y-1">
+              <NavItem to="/for-you" icon={Sparkles} label="For You" isCollapsed={isCollapsed} onClick={handleItemClick} />
+              <NavItem to="/forum" icon={MessageSquare} label="Forums" isCollapsed={isCollapsed} onClick={handleItemClick} />
+              <NavItem to="/news" icon={Newspaper} label="News" isCollapsed={isCollapsed} onClick={handleItemClick} />
+            </nav>
+          </div>
 
         {/* LEARN */}
         <div>

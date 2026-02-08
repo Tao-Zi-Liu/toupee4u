@@ -1,4 +1,5 @@
 
+import { ForYouPage } from './pages/ForYouPage';
 import { onAuthChange, getCompleteUserProfile } from './services/auth.service';
 import { UserRole, GalaxyLevel, MembershipTier } from './types';
 import { logoutUser } from './services/auth.service';
@@ -258,6 +259,7 @@ const AppRoutes = () => {
       <Route path="/consultations" element={<ConsultationsPage />} />
       <Route path="/membership" element={<MembershipPage />} />
       <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/for-you" element={<ForYouPage />} />
       <Route path="/experts" element={<ExpertsPage />} />
       <Route path="/experts/apply" element={<ExpertApplicationPage />} />
       <Route path="/experts/:id" element={<ExpertProfilePage />} />

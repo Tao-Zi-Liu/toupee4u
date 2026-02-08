@@ -1,8 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { TrendingUp, MessageSquare, Eye, ThumbsUp, Clock, Shield } from 'lucide-react';
-import { PersonalizedDashboard } from '../components/PersonalizedDashboard';
-import { getCurrentUser, getCompleteUserProfile } from '../services/auth.service';
-import { CompleteUserProfile } from '../types';
 
 interface Post {
   id: string;
@@ -57,31 +54,6 @@ const MOCK_POSTS: Post[] = [
 ];
 
 export const Home: React.FC = () => {
-  const [userProfile, setUserProfile] = useState<CompleteUserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadUserProfile() {
-      const currentUser = getCurrentUser();
-      if (currentUser) {
-        const profile = await getCompleteUserProfile(currentUser.uid);
-        setUserProfile(profile);
-      }
-      setLoading(false);
-    }
-    
-    loadUserProfile();
-  }, []);
-
-  const getTierColor = (tier: string) => {
-    switch (tier) {
-      case 'Supernova': return 'text-amber-500';
-      case 'Galaxy': return 'text-brand-purple';
-      case 'Nova': return 'text-brand-blue';
-      default: return 'text-slate-400';
-    }
-  };
-
   const getTierBadge = (tier: string) => {
     switch (tier) {
       case 'Supernova': return 'bg-amber-500/20 text-amber-500 border-amber-500/30';
@@ -93,16 +65,6 @@ export const Home: React.FC = () => {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      
-      {/* 个性化Dashboard - 只对已登录且完成Quiz的Voyager用户显示 */}
-      {!loading && userProfile?.role === 'VOYAGER' && userProfile?.voyagerProfile?.quizCompleted && (
-        <PersonalizedDashboard
-          experienceLevel={userProfile.voyagerProfile.experienceLevel!}
-          activityLevel={userProfile.voyagerProfile.activityLevel!}
-        />
-      )}
-
-      {/* 原有内容 - Community Feed */}
       <div className="grid lg:grid-cols-3 gap-6">
         
         {/* Main Feed */}
