@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserTier } from '../types';
@@ -188,6 +189,12 @@ export const ProfilePage: React.FC = () => {
       console.error('Logout error:', error);
     }
   };
+
+    // 如果未登录，重定向到登录页
+    if (!loading && !profile) {
+      navigate('/login');
+      return null;
+    }
 
   if (loading) {
     return (

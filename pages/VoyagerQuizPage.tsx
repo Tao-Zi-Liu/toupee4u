@@ -13,10 +13,82 @@ interface QuizData {
   hairPattern?: HairPattern;
   experienceLevel?: ExperienceLevel;
   activityLevel?: ActivityLevel;
-  email?: string;
-  password?: string;
-  displayName?: string;
 }
+
+// 账户创建表单组件（提取到组件外部）
+const AccountForm: React.FC<{ 
+  onSubmit: (email: string, password: string, displayName: string) => void;
+  loading: boolean;
+}> = ({ onSubmit, loading }) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(email, password, displayName);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto">
+      <div>
+        <label className="block text-sm font-medium text-slate-300 mb-2">Your Name</label>
+        <input
+          type="text"
+          value={displayName}
+          onChange={(e) => setDisplayName(e.target.value)}
+          className="w-full bg-dark-800 border border-dark-700 text-white px-4 py-3 rounded-lg focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none"
+          placeholder="John Doe"
+          required
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-slate-300 mb-2">Email</label>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full bg-dark-800 border border-dark-700 text-white px-4 py-3 rounded-lg focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none"
+          placeholder="your@email.com"
+          required
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-slate-300 mb-2">Password</label>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full bg-dark-800 border border-dark-700 text-white px-4 py-3 rounded-lg focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none"
+          placeholder="••••••••"
+          required
+          minLength={6}
+        />
+        <p className="text-xs text-slate-500 mt-1">Minimum 6 characters</p>
+      </div>
+
+      <button
+        type="submit"
+        disabled={loading}
+        className="w-full bg-brand-blue hover:bg-blue-600 disabled:opacity-50 text-white font-bold py-3 rounded-lg transition-all flex items-center justify-center gap-2"
+      >
+        {loading ? (
+          <>
+            <Loader className="w-5 h-5 animate-spin" />
+            Creating account...
+          </>
+        ) : (
+          <>
+            Join the Community
+            <ArrowRight className="w-5 h-5" />
+          </>
+        )}
+      </button>
+    </form>
+  );
+};
 
 export const VoyagerQuizPage: React.FC = () => {
   const navigate = useNavigate();
@@ -24,6 +96,27 @@ export const VoyagerQuizPage: React.FC = () => {
   const [quizData, setQuizData] = useState<QuizData>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // 处理账户创建
+  const handleAccountSubmit = async (email: string, password: string, displayName: string) => {
+    setError('');
+    setLoading(true);
+
+    try {
+      // 注册用户
+      await registerUser(email, password, displayName, 'VOYAGER');
+
+      // TODO: 将Quiz数据保存到voyagerProfile
+      // 暂时跳过，后续实现
+
+      // 注册成功，跳转到首页
+      navigate('/');
+    } catch (err: any) {
+      setError(err.message || 'Registration failed');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Step 1: 现状扫描（发量类型）
   const renderStep1 = () => {
@@ -163,28 +256,6 @@ export const VoyagerQuizPage: React.FC = () => {
 
   // Step 4: 创建账户
   const renderStep4 = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [displayName, setDisplayName] = useState('');
-
-    const handleSubmit = async (e: React.FormEvent) => {
-      e.preventDefault();
-      setError('');
-      setLoading(true);
-
-      try {
-        // 注册用户
-        await registerUser(email, password, displayName, 'VOYAGER');
-
-        // 注册成功，跳转到首页
-        navigate('/');
-      } catch (err: any) {
-        setError(err.message || 'Registration failed');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     return (
       <div className="space-y-6">
         <div className="text-center mb-8">
@@ -220,63 +291,7 @@ export const VoyagerQuizPage: React.FC = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto">
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Your Name</label>
-            <input
-              type="text"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              className="w-full bg-dark-800 border border-dark-700 text-white px-4 py-3 rounded-lg focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none"
-              placeholder="John Doe"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-dark-800 border border-dark-700 text-white px-4 py-3 rounded-lg focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none"
-              placeholder="your@email.com"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-dark-800 border border-dark-700 text-white px-4 py-3 rounded-lg focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none"
-              placeholder="••••••••"
-              required
-              minLength={6}
-            />
-            <p className="text-xs text-slate-500 mt-1">Minimum 6 characters</p>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-brand-blue hover:bg-blue-600 disabled:opacity-50 text-white font-bold py-3 rounded-lg transition-all flex items-center justify-center gap-2"
-          >
-            {loading ? (
-              <>
-                <Loader className="w-5 h-5 animate-spin" />
-                Creating account...
-              </>
-            ) : (
-              <>
-                Join the Community
-                <ArrowRight className="w-5 h-5" />
-              </>
-            )}
-          </button>
-        </form>
+        <AccountForm onSubmit={handleAccountSubmit} loading={loading} />
       </div>
     );
   };
