@@ -15,7 +15,7 @@ import {
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase.config';
 import { Post, getRelativeTime, incrementPostViews, togglePostLike, checkUserLiked } from '../services/post.service';
-import { getCurrentUser,getCompleteUserProfile } from '../services/auth.service';
+import { getCurrentUser, getCompleteUserProfile } from '../services/auth.service';
 import { Comment, getComments, createComment } from '../services/post.service';
 import { updatePost, deletePost } from '../services/post.service';
 
@@ -84,127 +84,128 @@ export const PostDetailPage: React.FC = () => {
   }, [postId, navigate]);
 
   // 处理评论提交
-const handleCommentSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  
-  const currentUser = getCurrentUser();
-  if (!currentUser) {
-    alert('Please login to comment');
-    return;
-  }
-  
-  if (!commentContent.trim()) {
-    alert('Please enter a comment');
-    return;
-  }
-  
-  if (!postId || commentLoading) return;
-  
-  setCommentLoading(true);
-  
-  try {
-    const profile = await getCompleteUserProfile(currentUser.uid);
+  const handleCommentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     
-    const commentId = await createComment(
-      postId,
-      commentContent.trim(),
-      currentUser.uid,
-      profile.displayName,
-      profile.photoURL,
-      profile.galaxyLevel
-    );
-    
-    // 添加新评论到列表
-    const newComment: Comment = {
-      id: commentId,
-      postId: postId,
-      content: commentContent.trim(),
-      authorId: currentUser.uid,
-      authorName: profile.displayName,
-      authorAvatar: profile.photoURL,
-      authorGalaxyLevel: profile.galaxyLevel,
-      createdAt: new Date()
-    };
-    
-    setComments([...comments, newComment]);
-    setCommentContent('');
-    
-    // 更新帖子的评论数
-    if (post) {
-      setPost({ ...post, comments: post.comments + 1 });
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+      alert('Please login to comment');
+      return;
     }
-  } catch (error) {
-    console.error('Failed to create comment:', error);
-    alert('Failed to post comment. Please try again.');
-  } finally {
-    setCommentLoading(false);
-  }
-};
+    
+    if (!commentContent.trim()) {
+      alert('Please enter a comment');
+      return;
+    }
+    
+    if (!postId || commentLoading) return;
+    
+    setCommentLoading(true);
+    
+    try {
+      const profile = await getCompleteUserProfile(currentUser.uid);
+      
+      const commentId = await createComment(
+        postId,
+        commentContent.trim(),
+        currentUser.uid,
+        profile.displayName,
+        profile.photoURL,
+        profile.galaxyLevel
+      );
+      
+      // 添加新评论到列表
+      const newComment: Comment = {
+        id: commentId,
+        postId: postId,
+        content: commentContent.trim(),
+        authorId: currentUser.uid,
+        authorName: profile.displayName,
+        authorAvatar: profile.photoURL,
+        authorGalaxyLevel: profile.galaxyLevel,
+        createdAt: new Date()
+      };
+      
+      setComments([...comments, newComment]);
+      setCommentContent('');
+      
+      // 更新帖子的评论数
+      if (post) {
+        setPost({ ...post, comments: post.comments + 1 });
+      }
+    } catch (error) {
+      console.error('Failed to create comment:', error);
+      alert('Failed to post comment. Please try again.');
+    } finally {
+      setCommentLoading(false);
+    }
+  };
+
   // 开始编辑
-const handleStartEdit = () => {
-  if (!post) return;
-  setEditTitle(post.title);
-  setEditContent(post.content);
-  setEditCategory(post.category);
-  setEditTags(post.tags);
-  setIsEditing(true);
-};
+  const handleStartEdit = () => {
+    if (!post) return;
+    setEditTitle(post.title);
+    setEditContent(post.content);
+    setEditCategory(post.category);
+    setEditTags(post.tags);
+    setIsEditing(true);
+  };
 
-// 取消编辑
-const handleCancelEdit = () => {
-  setIsEditing(false);
-  setEditTitle('');
-  setEditContent('');
-  setEditCategory('');
-  setEditTags([]);
-};
-
-// 保存编辑
-const handleSaveEdit = async () => {
-  if (!post || !postId) return;
-  
-  if (!editTitle.trim() || !editContent.trim()) {
-    alert('Title and content are required');
-    return;
-  }
-  
-  setEditLoading(true);
-  
-  try {
-    await updatePost(postId, editTitle.trim(), editContent.trim(), editCategory, editTags);
-    
-    // 更新本地状态
-    setPost({
-      ...post,
-      title: editTitle.trim(),
-      content: editContent.trim(),
-      category: editCategory,
-      tags: editTags
-    });
-    
+  // 取消编辑
+  const handleCancelEdit = () => {
     setIsEditing(false);
-    alert('Post updated successfully!');
-  } catch (error) {
-    console.error('Failed to update post:', error);
-    alert('Failed to update post. Please try again.');
-  } finally {
-    setEditLoading(false);
-  }
-};
+    setEditTitle('');
+    setEditContent('');
+    setEditCategory('');
+    setEditTags([]);
+  };
 
-// 删除帖子
-const handleDelete = async () => {
-  if (!postId) return;
-  
-  try {
-    await deletePost(postId);
-    alert('Post deleted successfully!');
-    navigate('/forum');
-  } catch (error) {
-    console.error('Failed to delete post:', error);
-    alert('Failed to delete post. Please try again.');
-  }
-};
+  // 保存编辑
+  const handleSaveEdit = async () => {
+    if (!post || !postId) return;
+    
+    if (!editTitle.trim() || !editContent.trim()) {
+      alert('Title and content are required');
+      return;
+    }
+    
+    setEditLoading(true);
+    
+    try {
+      await updatePost(postId, editTitle.trim(), editContent.trim(), editCategory, editTags);
+      
+      // 更新本地状态
+      setPost({
+        ...post,
+        title: editTitle.trim(),
+        content: editContent.trim(),
+        category: editCategory,
+        tags: editTags
+      });
+      
+      setIsEditing(false);
+      alert('Post updated successfully!');
+    } catch (error) {
+      console.error('Failed to update post:', error);
+      alert('Failed to update post. Please try again.');
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  // 删除帖子
+  const handleDelete = async () => {
+    if (!postId) return;
+    
+    try {
+      await deletePost(postId);
+      alert('Post deleted successfully!');
+      navigate('/forum');
+    } catch (error) {
+      console.error('Failed to delete post:', error);
+      alert('Failed to delete post. Please try again.');
+    }
+  };
 
   // 处理点赞
   const handleLike = async () => {
@@ -230,10 +231,6 @@ const handleDelete = async () => {
     }
   };
 
-  // 检查是否是作者
-  const currentUser = getCurrentUser();
-  const isAuthor = currentUser && post && currentUser.uid === post.authorId;
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -245,6 +242,10 @@ const handleDelete = async () => {
   if (!post) {
     return null;
   }
+
+  // 检查是否是作者
+  const currentUser = getCurrentUser();
+  const isAuthor = currentUser && post && currentUser.uid === post.authorId;
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -396,32 +397,32 @@ const handleDelete = async () => {
       </div>
 
       {/* Comments Section */}
-<div className="bg-dark-800 border border-dark-700 rounded-2xl p-6">
-  <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-    <MessageSquare className="w-5 h-5" />
-    Comments ({post.comments})
-  </h3>
-  
-  {/* Comment Form */}
-  <form onSubmit={handleCommentSubmit} className="mb-6">
-    <textarea
-      value={commentContent}
-      onChange={(e) => setCommentContent(e.target.value)}
-      placeholder="Share your thoughts..."
-      className="w-full bg-dark-900 border border-dark-600 rounded-xl p-4 text-white placeholder-slate-500 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none transition-all resize-none h-24"
-      disabled={commentLoading}
-    />
-    <div className="flex justify-end mt-3">
-      <button
-        type="submit"
-        disabled={commentLoading || !commentContent.trim()}
-        className="px-6 py-2 bg-brand-blue hover:bg-blue-600 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {commentLoading ? 'Posting...' : 'Post Comment'}
-      </button>
-    </div>
-  </form>
-  
+      <div className="bg-dark-800 border border-dark-700 rounded-2xl p-6">
+        <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+          <MessageSquare className="w-5 h-5" />
+          Comments ({post.comments})
+        </h3>
+        
+        {/* Comment Form */}
+        <form onSubmit={handleCommentSubmit} className="mb-6">
+          <textarea
+            value={commentContent}
+            onChange={(e) => setCommentContent(e.target.value)}
+            placeholder="Share your thoughts..."
+            className="w-full bg-dark-900 border border-dark-600 rounded-xl p-4 text-white placeholder-slate-500 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none transition-all resize-none h-24"
+            disabled={commentLoading}
+          />
+          <div className="flex justify-end mt-3">
+            <button
+              type="submit"
+              disabled={commentLoading || !commentContent.trim()}
+              className="px-6 py-2 bg-brand-blue hover:bg-blue-600 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {commentLoading ? 'Posting...' : 'Post Comment'}
+            </button>
+          </div>
+        </form>
+        
         {/* Comments List */}
         <div className="space-y-4">
           {comments.length === 0 ? (
@@ -458,32 +459,32 @@ const handleDelete = async () => {
         </div>
       </div>
 
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-dark-800 border border-dark-700 rounded-2xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-xl font-bold text-white mb-3">Delete Post?</h3>
+            <p className="text-slate-300 mb-6">
+              Are you sure you want to delete this post? This action cannot be undone. All comments and likes will also be deleted.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="px-6 py-2 bg-dark-900 border border-dark-600 text-slate-300 hover:text-white hover:border-slate-500 rounded-lg transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-all"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
-
-    {/* Delete Confirmation Modal */}
-    {showDeleteConfirm && (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-dark-800 border border-dark-700 rounded-2xl p-6 max-w-md w-full mx-4">
-          <h3 className="text-xl font-bold text-white mb-3">Delete Post?</h3>
-          <p className="text-slate-300 mb-6">
-            Are you sure you want to delete this post? This action cannot be undone. All comments and likes will also be deleted.
-          </p>
-          <div className="flex justify-end gap-3">
-            <button
-              onClick={() => setShowDeleteConfirm(false)}
-              className="px-6 py-2 bg-dark-900 border border-dark-600 text-slate-300 hover:text-white hover:border-slate-500 rounded-lg transition-all"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleDelete}
-              className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-all"
-            >
-              Delete
-            </button>
-          </div>
-        </div>
-      </div>
-    )}
