@@ -12,7 +12,9 @@ import {
   Timestamp,
   doc,
   updateDoc,
-  increment
+  increment,
+  setDoc,
+  deleteDoc
 } from 'firebase/firestore';
 import { db } from '../firebase.config';
 
@@ -143,5 +145,68 @@ export async function incrementPostViews(postId: string): Promise<void> {
   } catch (error) {
     console.error('❌ Error incrementing views:', error);
     // 不抛出错误，浏览量失败不应该影响用户体验
+  }
+}
+
+/**
+ * 切换帖子点赞状态
+ */
+export async function togglePostLike(
+  postId: string, 
+  userId: string
+): Promise<{ liked: boolean; newLikeCount: number }> {
+  try {
+    const likeRef = doc(db, 'likes', `${postId}_${userId}`);
+    const likeDoc = await getDoc(likeRef);
+    const postRef = doc(db, 'posts', postId);
+    
+    if (likeDoc.exists()) {
+      // 已点赞，取消点赞
+      await deleteDoc(likeRef);
+      await updateDoc(postRef, {
+        likes: increment(-1)
+      });
+      
+      // 获取新的点赞数
+      const updatedPost = await getDoc(postRef);
+      const newLikeCount = updatedPost.data()?.likes || 0;
+      
+      console.log('✅ Post unliked');
+      return { liked: false, newLikeCount };
+    } else {
+      // 未点赞，添加点赞
+      await setDoc(likeRef, {
+        postId,
+        userId,
+        createdAt: serverTimestamp()
+      });
+      await updateDoc(postRef, {
+        likes: increment(1)
+      });
+      
+      // 获取新的点赞数
+      const updatedPost = await getDoc(postRef);
+      const newLikeCount = updatedPost.data()?.likes || 0;
+      
+      console.log('✅ Post liked');
+      return { liked: true, newLikeCount };
+    }
+  } catch (error) {
+    console.error('❌ Error toggling like:', error);
+    throw new Error('Failed to toggle like');
+  }
+}
+
+/**
+ * 检查用户是否已点赞帖子
+ */
+export async function checkUserLiked(postId: string, userId: string): Promise<boolean> {
+  try {
+    const likeRef = doc(db, 'likes', `${postId}_${userId}`);
+    const likeDoc = await getDoc(likeRef);
+    return likeDoc.exists();
+  } catch (error) {
+    console.error('❌ Error checking like:', error);
+    return false;
   }
 }

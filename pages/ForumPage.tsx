@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MessageSquare, ThumbsUp, Clock, Hash, MoreHorizontal, Eye } from 'lucide-react';
 import { Filter, X, Flame, ArrowDownUp } from 'lucide-react';
+import { getCurrentUser } from '../services/auth.service';
+import { checkUserLiked } from '../services/post.service';
 
 const TOPICS = [
     {
@@ -59,17 +61,32 @@ export const ForumPage: React.FC = () => {
   // 真实帖子数据
   const [realPosts, setRealPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userLikes, setUserLikes] = useState<Set<string>>(new Set());
   
   // 加载真实帖子
   useEffect(() => {
-    async function loadPosts() {
-      setLoading(true);
-      const posts = await getPosts(20);
-      setRealPosts(posts);
-      setLoading(false);
-    }
-    loadPosts();
-  }, []);
+      async function loadPosts() {
+        setLoading(true);
+        const posts = await getPosts(20);
+        setRealPosts(posts);
+        
+        // 加载用户点赞状态
+        const currentUser = getCurrentUser();
+        if (currentUser && posts.length > 0) {
+          const likes = new Set<string>();
+          for (const post of posts) {
+            const liked = await checkUserLiked(post.id, currentUser.uid);
+            if (liked) {
+              likes.add(post.id);
+            }
+          }
+          setUserLikes(likes);
+        }
+        
+        setLoading(false);
+      }
+      loadPosts();
+    }, []);
   
   // 决定使用哪个数据源
   const displayTopics = realPosts.length > 0 ? realPosts : TOPICS;
@@ -224,7 +241,12 @@ export const ForumPage: React.FC = () => {
                             </span>
                         </div>
                         <div className="flex gap-6 text-slate-500 text-sm">
-                            <span className="flex items-center gap-1.5 hover:text-white transition-colors"><ThumbsUp className="w-4 h-4" /> {topic.likes}</span>
+                            <span className={`flex items-center gap-1.5 transition-colors ${
+                              userLikes.has(topic.id) ? 'text-red-500' : 'text-slate-500 hover:text-white'
+                            }`}>
+                              <ThumbsUp className={`w-4 h-4 ${userLikes.has(topic.id) ? 'fill-current' : ''}`} /> 
+                              {topic.likes}
+                            </span>
                             <span className="flex items-center gap-1.5 hover:text-white transition-colors"><MessageSquare className="w-4 h-4" /> {topic.comments || topic.replies}</span>
                             <span className="flex items-center gap-1.5 hover:text-white transition-colors"><Eye className="w-4 h-4" /> {topic.views || 0}</span>
                             <span className="hover:text-white transition-colors"><MoreHorizontal className="w-4 h-4" /></span>

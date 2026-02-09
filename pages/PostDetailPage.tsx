@@ -16,12 +16,17 @@ import {
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase.config';
 import { Post, getRelativeTime, incrementPostViews } from '../services/post.service';
+import { togglePostLike, checkUserLiked } from '../services/post.service';
+import { getCurrentUser } from '../services/auth.service';
 
 export const PostDetailPage: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
   const navigate = useNavigate();
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [likeLoading, setLikeLoading] = useState(false)
 
   useEffect(() => {
     async function loadPost() {
@@ -38,8 +43,16 @@ export const PostDetailPage: React.FC = () => {
             id: postDoc.id,
             ...postDoc.data()
           } as Post);
+          setPost(postData);
+          setLikeCount(postData.likes || 0);
           // 增加浏览量
             incrementPostViews(postId);
+            const currentUser = getCurrentUser();
+              if (currentUser) {
+                const liked = await checkUserLiked(postId, currentUser.uid);
+                setIsLiked(liked);
+              }
+            }
         } else {
           console.error('Post not found');
           navigate('/forum');
@@ -54,6 +67,30 @@ export const PostDetailPage: React.FC = () => {
 
     loadPost();
   }, [postId, navigate]);
+
+  // 处理点赞
+const handleLike = async () => {
+  const currentUser = getCurrentUser();
+  if (!currentUser) {
+    alert('Please login to like posts');
+    return;
+  }
+  
+  if (!postId || likeLoading) return;
+  
+  setLikeLoading(true);
+  
+  try {
+    const result = await togglePostLike(postId, currentUser.uid);
+    setIsLiked(result.liked);
+    setLikeCount(result.newLikeCount);
+  } catch (error) {
+    console.error('Failed to toggle like:', error);
+    alert('Failed to update like. Please try again.');
+  } finally {
+    setLikeLoading(false);
+  }
+  };
 
   if (loading) {
     return (
@@ -140,9 +177,17 @@ export const PostDetailPage: React.FC = () => {
         {/* Post Actions */}
         <div className="px-6 py-4 border-t border-dark-700 flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <button className="flex items-center gap-2 text-slate-400 hover:text-brand-blue transition-colors">
-              <ThumbsUp className="w-5 h-5" />
-              <span className="text-sm font-semibold">{post.likes}</span>
+            <button 
+              onClick={handleLike}
+              disabled={likeLoading}
+              className={`flex items-center gap-2 transition-colors ${
+                isLiked 
+                  ? 'text-red-500 hover:text-red-600' 
+                  : 'text-slate-400 hover:text-brand-blue'
+              } ${likeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <ThumbsUp className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
+              <span className="text-sm font-semibold">{likeCount}</span>
             </button>
             <button className="flex items-center gap-2 text-slate-400 hover:text-brand-blue transition-colors">
               <MessageSquare className="w-5 h-5" />
