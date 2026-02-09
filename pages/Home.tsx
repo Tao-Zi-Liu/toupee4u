@@ -151,6 +151,7 @@ const TRENDING_SIGNALS = [
 const INDUSTRY_NEWS_FEED = INDUSTRY_NEWS.slice(0, 5);
 
 export const Home: React.FC = () => {
+  
   const [expertIndex, setExpertIndex] = useState(0);
   const [isExpertPaused, setIsExpertPaused] = useState(false);
   const [expertAnimPhase, setExpertAnimPhase] = useState<'idle' | 'exiting' | 'entering'>('idle');
