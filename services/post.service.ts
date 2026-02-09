@@ -18,6 +18,7 @@ import {
   setDoc,
   deleteDoc
 } from 'firebase/firestore';
+import { db } from '../firebase.config';
 
 export interface Post {
   id: string;
