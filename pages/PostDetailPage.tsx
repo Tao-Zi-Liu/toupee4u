@@ -11,13 +11,14 @@ import {
   MoreHorizontal,
   Clock,
   Eye,
-  Trash2
+  Trash2,
+  Heart
 } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase.config';
 import { Post, getRelativeTime, incrementPostViews, togglePostLike, checkUserLiked } from '../services/post.service';
 import { getCurrentUser, getCompleteUserProfile } from '../services/auth.service';
-import { Comment, getComments, createComment, deleteComment } from '../services/post.service';
+import { Comment, getComments, createComment, deleteComment, toggleCommentLike, checkCommentLiked } from '../services/post.service';
 import { updatePost, deletePost } from '../services/post.service';
 
 export const PostDetailPage: React.FC = () => {
@@ -38,7 +39,8 @@ export const PostDetailPage: React.FC = () => {
   const [editTags, setEditTags] = useState<string[]>([]);
   const [editLoading, setEditLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
+  const [commentLikes, setCommentLikes] = useState<{ [key: string]: boolean }>({});
+  const [commentLikeCounts, setCommentLikeCounts] = useState<{ [key: string]: number }>({});
   useEffect(() => {
     async function loadPost() {
       if (!postId) {
@@ -69,6 +71,22 @@ export const PostDetailPage: React.FC = () => {
           }
           const commentsList = await getComments(postId);
           setComments(commentsList);
+          // 初始化评论点赞数
+          const likeCounts: { [key: string]: number } = {};
+          commentsList.forEach(comment => {
+            likeCounts[comment.id] = comment.likes || 0;
+          });
+          setCommentLikeCounts(likeCounts);
+
+          // 检查当前用户对评论的点赞状态
+          if (currentUser) {
+            const likes: { [key: string]: boolean } = {};
+            for (const comment of commentsList) {
+              const liked = await checkCommentLiked(comment.id, currentUser.uid);
+              likes[comment.id] = liked;
+            }
+            setCommentLikes(likes);
+          }
         } else {
           console.error('Post not found');
           navigate('/forum');
@@ -124,8 +142,19 @@ export const PostDetailPage: React.FC = () => {
         authorName: profile.displayName,
         authorAvatar: profile.photoURL,
         authorGalaxyLevel: profile.galaxyLevel,
+        likes: 0,
         createdAt: new Date()
       };
+
+      // 初始化新评论的点赞状态
+      setCommentLikeCounts({
+        ...commentLikeCounts,
+        [commentId]: 0
+      });
+      setCommentLikes({
+        ...commentLikes,
+        [commentId]: false
+      });
       
       setComments([...comments, newComment]);
       setCommentContent('');
@@ -253,6 +282,34 @@ export const PostDetailPage: React.FC = () => {
     } catch (error) {
       console.error('Failed to delete comment:', error);
       alert('Failed to delete comment. Please try again.');
+    }
+  };
+
+  // 处理评论点赞
+  const handleCommentLike = async (commentId: string) => {
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+      alert('Please login to like comments');
+      return;
+    }
+    
+    try {
+      const result = await toggleCommentLike(commentId, currentUser.uid);
+      
+      // 更新点赞状态
+      setCommentLikes({
+        ...commentLikes,
+        [commentId]: result.liked
+      });
+      
+      // 更新点赞数
+      setCommentLikeCounts({
+        ...commentLikeCounts,
+        [commentId]: result.newLikeCount
+      });
+    } catch (error) {
+      console.error('Failed to toggle comment like:', error);
+      alert('Failed to update like. Please try again.');
     }
   };
 
@@ -488,9 +545,23 @@ export const PostDetailPage: React.FC = () => {
                             </button>
                           )}
                         </div>
+                        
                         <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
                           {comment.content}
                         </p>
+                        <div className="flex items-center gap-4 mt-2">
+                          <button
+                            onClick={() => handleCommentLike(comment.id)}
+                            className={`flex items-center gap-1.5 text-xs transition-colors ${
+                              commentLikes[comment.id]
+                                ? 'text-red-500 hover:text-red-600'
+                                : 'text-slate-500 hover:text-red-500'
+                            }`}
+                          >
+                            <Heart className={`w-4 h-4 ${commentLikes[comment.id] ? 'fill-current' : ''}`} />
+                            <span className="font-medium">{commentLikeCounts[comment.id] || 0}</span>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>

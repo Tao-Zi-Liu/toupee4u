@@ -224,6 +224,7 @@ export interface Comment {
   authorName: string;
   authorAvatar: string;
   authorGalaxyLevel: string;
+  likes: number;
   createdAt: Timestamp | any;
 }
 
@@ -241,14 +242,15 @@ export async function createComment(
   try {
     // 创建评论文档
     const commentRef = await addDoc(collection(db, 'comments'), {
-      postId,
-      content,
-      authorId,
-      authorName,
-      authorAvatar,
-      authorGalaxyLevel,
-      createdAt: serverTimestamp()
-    });
+  postId,
+  content,
+  authorId,
+  authorName,
+  authorAvatar,
+  authorGalaxyLevel,
+  likes: 0,
+  createdAt: serverTimestamp()
+});
     
     // 增加帖子的评论数
     const postRef = doc(db, 'posts', postId);
@@ -311,6 +313,89 @@ export async function deleteComment(commentId: string, postId: string): Promise<
   } catch (error) {
     console.error('❌ Error deleting comment:', error);
     throw new Error('Failed to delete comment');
+  }
+}
+
+/**
+ * 切换评论点赞状态
+ */
+export async function toggleCommentLike(commentId: string, userId: string): Promise<{ liked: boolean; newLikeCount: number }> {
+  try {
+    const likeRef = doc(db, 'commentLikes', `${commentId}_${userId}`);
+    const likeDoc = await getDoc(likeRef);
+    const commentRef = doc(db, 'comments', commentId);
+    
+    if (likeDoc.exists()) {
+      // 已点赞，取消点赞
+      await deleteDoc(likeRef);
+      await updateDoc(commentRef, {
+        likes: increment(-1)
+      });
+      
+      // 获取新的点赞数
+      const updatedComment = await getDoc(commentRef);
+      const newLikeCount = updatedComment.data()?.likes || 0;
+      
+      console.log('✅ Comment unliked');
+      return { liked: false, newLikeCount };
+    } else {
+      // 未点赞，添加点赞
+      await setDoc(likeRef, {
+        commentId,
+        userId,
+        createdAt: serverTimestamp()
+      });
+      await updateDoc(commentRef, {
+        likes: increment(1)
+      });
+      
+      // 获取新的点赞数
+      const updatedComment = await getDoc(commentRef);
+      const newLikeCount = updatedComment.data()?.likes || 0;
+      
+      console.log('✅ Comment liked');
+      return { liked: true, newLikeCount };
+    }
+  } catch (error) {
+    console.error('❌ Error toggling comment like:', error);
+    throw new Error('Failed to toggle comment like');
+  }
+}
+
+/**
+ * 检查用户是否已点赞评论
+ */
+export async function checkCommentLiked(commentId: string, userId: string): Promise<boolean> {
+  try {
+    const likeRef = doc(db, 'commentLikes', `${commentId}_${userId}`);
+    const likeDoc = await getDoc(likeRef);
+    return likeDoc.exists();
+  } catch (error) {
+    console.error('❌ Error checking comment like:', error);
+    return false;
+  }
+}
+
+/**
+ * 获取评论的点赞用户列表
+ */
+export async function getCommentLikes(commentId: string): Promise<string[]> {
+  try {
+    const likesQuery = query(
+      collection(db, 'commentLikes'),
+      where('commentId', '==', commentId)
+    );
+    const querySnapshot = await getDocs(likesQuery);
+    const userIds: string[] = [];
+    
+    querySnapshot.forEach((doc) => {
+      userIds.push(doc.data().userId);
+    });
+    
+    return userIds;
+  } catch (error) {
+    console.error('❌ Error getting comment likes:', error);
+    return [];
   }
 }
 
