@@ -182,7 +182,7 @@ export const ForumPage: React.FC = () => {
             <Link 
                 key={topic.id}
                 to={`/forum/post/${topic.id}`} 
-                className="bg-dark-800 rounded-xl p-5 border border-dark-700 hover:border-brand-blue/50 transition cursor-pointer group">
+                className="block bg-dark-800 rounded-xl p-5 border border-dark-700 hover:border-brand-blue/50 transition cursor-pointer group">
                 <div className="flex justify-between items-start mb-2">
                     <div className="flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-bold ${topic.id % 2 === 0 ? 'bg-brand-purple' : 'bg-brand-blue'}`}>
