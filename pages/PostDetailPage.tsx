@@ -10,13 +10,14 @@ import {
   Share2, 
   MoreHorizontal,
   Clock,
-  Eye
+  Eye,
+  Trash2
 } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase.config';
 import { Post, getRelativeTime, incrementPostViews, togglePostLike, checkUserLiked } from '../services/post.service';
 import { getCurrentUser, getCompleteUserProfile } from '../services/auth.service';
-import { Comment, getComments, createComment } from '../services/post.service';
+import { Comment, getComments, createComment, deleteComment } from '../services/post.service';
 import { updatePost, deletePost } from '../services/post.service';
 
 export const PostDetailPage: React.FC = () => {
@@ -231,6 +232,30 @@ export const PostDetailPage: React.FC = () => {
     }
   };
 
+  // 删除评论
+  const handleDeleteComment = async (commentId: string) => {
+    if (!postId) return;
+    
+    if (!confirm('Are you sure you want to delete this comment?')) {
+      return;
+    }
+    
+    try {
+      await deleteComment(commentId, postId);
+      
+      // 从本地状态移除评论
+      setComments(comments.filter(c => c.id !== commentId));
+      
+      // 更新帖子的评论数
+      if (post) {
+        setPost({ ...post, comments: post.comments - 1 });
+      }
+    } catch (error) {
+      console.error('Failed to delete comment:', error);
+      alert('Failed to delete comment. Please try again.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -431,23 +456,37 @@ export const PostDetailPage: React.FC = () => {
                   No comments yet. Be the first to comment!
                 </div>
               ) : (
-                comments.map((comment) => (
+                comments.map((comment) => {
+                const isCommentAuthor = currentUser && currentUser.uid === comment.authorId;
+                
+                return (
                   <div key={comment.id} className="bg-dark-900 rounded-xl p-4 border border-dark-700">
                     <div className="flex items-start gap-3">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-blue to-brand-purple flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                         {comment.authorName.split(' ').map(n => n[0]).join('')}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-semibold text-white text-sm">
-                            {comment.authorName}
-                          </span>
-                          <span className="text-xs px-2 py-0.5 rounded bg-brand-purple/10 text-brand-purple border border-brand-purple/20">
-                            {comment.authorGalaxyLevel}
-                          </span>
-                          <span className="text-xs text-slate-500">
-                            {getRelativeTime(comment.createdAt)}
-                          </span>
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-white text-sm">
+                              {comment.authorName}
+                            </span>
+                            <span className="text-xs px-2 py-0.5 rounded bg-brand-purple/10 text-brand-purple border border-brand-purple/20">
+                              {comment.authorGalaxyLevel}
+                            </span>
+                            <span className="text-xs text-slate-500">
+                              {getRelativeTime(comment.createdAt)}
+                            </span>
+                          </div>
+                          {isCommentAuthor && (
+                            <button
+                              onClick={() => handleDeleteComment(comment.id)}
+                              className="text-slate-500 hover:text-red-500 transition-colors"
+                              title="Delete comment"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
                         </div>
                         <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
                           {comment.content}
@@ -455,7 +494,8 @@ export const PostDetailPage: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                ))
+                );
+})
               )}
             </div>
           </div>

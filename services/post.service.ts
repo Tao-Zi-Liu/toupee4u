@@ -294,6 +294,27 @@ export async function getComments(postId: string): Promise<Comment[]> {
 }
 
 /**
+ * 删除评论
+ */
+export async function deleteComment(commentId: string, postId: string): Promise<void> {
+  try {
+    // 删除评论文档
+    await deleteDoc(doc(db, 'comments', commentId));
+    
+    // 减少帖子的评论数
+    const postRef = doc(db, 'posts', postId);
+    await updateDoc(postRef, {
+      comments: increment(-1)
+    });
+    
+    console.log('✅ Comment deleted');
+  } catch (error) {
+    console.error('❌ Error deleting comment:', error);
+    throw new Error('Failed to delete comment');
+  }
+}
+
+/**
  * 更新帖子
  */
 export async function updatePost(
