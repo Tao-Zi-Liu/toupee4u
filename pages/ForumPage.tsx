@@ -179,7 +179,7 @@ export const ForumPage: React.FC = () => {
             <div className="text-slate-400">Loading discussions...</div>
           </div>
         ) : filteredTopics.map((topic: any) => (
-            <link 
+            <Link 
                 key={topic.id} className="bg-dark-800 rounded-xl p-5 border border-dark-700 hover:border-brand-blue/50 transition cursor-pointer group">
                 <div className="flex justify-between items-start mb-2">
                     <div className="flex items-center gap-3">
@@ -228,7 +228,7 @@ export const ForumPage: React.FC = () => {
                         </div>
                     </div>
                 </div>
-            </link>
+            </Link>
         ))}
 
         {filteredTopics.length === 0 && !loading && (
