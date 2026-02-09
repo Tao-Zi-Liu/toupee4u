@@ -292,3 +292,70 @@ export async function getComments(postId: string): Promise<Comment[]> {
     return [];
   }
 }
+
+/**
+ * 更新帖子
+ */
+export async function updatePost(
+  postId: string,
+  title: string,
+  content: string,
+  category: string,
+  tags: string[]
+): Promise<void> {
+  try {
+    const excerpt = content.substring(0, 150) + (content.length > 150 ? '...' : '');
+    
+    const postRef = doc(db, 'posts', postId);
+    await updateDoc(postRef, {
+      title,
+      content,
+      excerpt,
+      category,
+      tags,
+      updatedAt: serverTimestamp()
+    });
+    
+    console.log('✅ Post updated');
+  } catch (error) {
+    console.error('❌ Error updating post:', error);
+    throw new Error('Failed to update post');
+  }
+}
+
+/**
+ * 删除帖子
+ */
+export async function deletePost(postId: string): Promise<void> {
+  try {
+    // 删除帖子
+    await deleteDoc(doc(db, 'posts', postId));
+    
+    // 删除相关的点赞记录
+    const likesQuery = query(
+      collection(db, 'likes'),
+      where('postId', '==', postId)
+    );
+    const likesSnapshot = await getDocs(likesQuery);
+    const deletePromises = likesSnapshot.docs.map(likeDoc => 
+      deleteDoc(doc(db, 'likes', likeDoc.id))
+    );
+    
+    // 删除相关的评论
+    const commentsQuery = query(
+      collection(db, 'comments'),
+      where('postId', '==', postId)
+    );
+    const commentsSnapshot = await getDocs(commentsQuery);
+    commentsSnapshot.docs.forEach(commentDoc => {
+      deletePromises.push(deleteDoc(doc(db, 'comments', commentDoc.id)));
+    });
+    
+    await Promise.all(deletePromises);
+    
+    console.log('✅ Post and related data deleted');
+  } catch (error) {
+    console.error('❌ Error deleting post:', error);
+    throw new Error('Failed to delete post');
+  }
+}

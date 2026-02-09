@@ -17,6 +17,7 @@ import { db } from '../firebase.config';
 import { Post, getRelativeTime, incrementPostViews, togglePostLike, checkUserLiked } from '../services/post.service';
 import { getCurrentUser,getCompleteUserProfile } from '../services/auth.service';
 import { Comment, getComments, createComment } from '../services/post.service';
+import { updatePost, deletePost } from '../services/post.service';
 
 export const PostDetailPage: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
@@ -29,6 +30,13 @@ export const PostDetailPage: React.FC = () => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentContent, setCommentContent] = useState('');
   const [commentLoading, setCommentLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
+  const [editCategory, setEditCategory] = useState('');
+  const [editTags, setEditTags] = useState<string[]>([]);
+  const [editLoading, setEditLoading] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     async function loadPost() {
@@ -132,6 +140,71 @@ const handleCommentSubmit = async (e: React.FormEvent) => {
     setCommentLoading(false);
   }
 };
+  // 开始编辑
+const handleStartEdit = () => {
+  if (!post) return;
+  setEditTitle(post.title);
+  setEditContent(post.content);
+  setEditCategory(post.category);
+  setEditTags(post.tags);
+  setIsEditing(true);
+};
+
+// 取消编辑
+const handleCancelEdit = () => {
+  setIsEditing(false);
+  setEditTitle('');
+  setEditContent('');
+  setEditCategory('');
+  setEditTags([]);
+};
+
+// 保存编辑
+const handleSaveEdit = async () => {
+  if (!post || !postId) return;
+  
+  if (!editTitle.trim() || !editContent.trim()) {
+    alert('Title and content are required');
+    return;
+  }
+  
+  setEditLoading(true);
+  
+  try {
+    await updatePost(postId, editTitle.trim(), editContent.trim(), editCategory, editTags);
+    
+    // 更新本地状态
+    setPost({
+      ...post,
+      title: editTitle.trim(),
+      content: editContent.trim(),
+      category: editCategory,
+      tags: editTags
+    });
+    
+    setIsEditing(false);
+    alert('Post updated successfully!');
+  } catch (error) {
+    console.error('Failed to update post:', error);
+    alert('Failed to update post. Please try again.');
+  } finally {
+    setEditLoading(false);
+  }
+};
+
+// 删除帖子
+const handleDelete = async () => {
+  if (!postId) return;
+  
+  try {
+    await deletePost(postId);
+    alert('Post deleted successfully!');
+    navigate('/forum');
+  } catch (error) {
+    console.error('Failed to delete post:', error);
+    alert('Failed to delete post. Please try again.');
+  }
+};
 
   // 处理点赞
   const handleLike = async () => {
@@ -156,6 +229,10 @@ const handleCommentSubmit = async (e: React.FormEvent) => {
       setLikeLoading(false);
     }
   };
+
+  // 检查是否是作者
+  const currentUser = getCurrentUser();
+  const isAuthor = currentUser && post && currentUser.uid === post.authorId;
 
   if (loading) {
     return (
@@ -209,14 +286,36 @@ const handleCommentSubmit = async (e: React.FormEvent) => {
               </div>
             </div>
             
-            <button className="p-2 text-slate-400 hover:text-white transition-colors">
-              <MoreHorizontal className="w-5 h-5" />
-            </button>
+            {isAuthor && !isEditing && (
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={handleStartEdit}
+                  className="px-4 py-2 bg-dark-900 border border-dark-600 text-slate-300 hover:text-white hover:border-brand-blue rounded-lg transition-all text-sm font-medium"
+                >
+                  Edit
+                </button>
+                <button 
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="px-4 py-2 bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500/20 rounded-lg transition-all text-sm font-medium"
+                >
+                  Delete
+                </button>
+              </div>
+            )}
           </div>
 
-          <h1 className="text-3xl font-bold text-white mb-3">
-            {post.title}
-          </h1>
+          {isEditing ? (
+            <input
+              type="text"
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              className="w-full text-3xl font-bold text-white bg-dark-900 border border-dark-600 rounded-xl p-4 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none transition-all mb-3"
+            />
+          ) : (
+            <h1 className="text-3xl font-bold text-white mb-3">
+              {post.title}
+            </h1>
+          )}
 
           <div className="flex items-center gap-2">
             <span className="text-xs px-3 py-1.5 rounded-lg bg-dark-900 text-slate-300 border border-dark-600 font-medium">
@@ -232,11 +331,37 @@ const handleCommentSubmit = async (e: React.FormEvent) => {
 
         {/* Post Body */}
         <div className="p-6">
-          <div className="prose prose-invert max-w-none">
-            <p className="text-slate-300 leading-relaxed whitespace-pre-wrap">
-              {post.content}
-            </p>
-          </div>
+          {isEditing ? (
+            <div className="space-y-4">
+              <textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                className="w-full h-64 bg-dark-900 border border-dark-600 rounded-xl p-4 text-white focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none transition-all resize-none"
+              />
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={handleCancelEdit}
+                  disabled={editLoading}
+                  className="px-6 py-2 bg-dark-900 border border-dark-600 text-slate-300 hover:text-white hover:border-slate-500 rounded-lg transition-all disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveEdit}
+                  disabled={editLoading}
+                  className="px-6 py-2 bg-brand-blue hover:bg-blue-600 text-white font-semibold rounded-lg transition-all disabled:opacity-50"
+                >
+                  {editLoading ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="prose prose-invert max-w-none">
+              <p className="text-slate-300 leading-relaxed whitespace-pre-wrap">
+                {post.content}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Post Actions */}
@@ -336,3 +461,29 @@ const handleCommentSubmit = async (e: React.FormEvent) => {
     </div>
   );
 };
+
+    {/* Delete Confirmation Modal */}
+    {showDeleteConfirm && (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="bg-dark-800 border border-dark-700 rounded-2xl p-6 max-w-md w-full mx-4">
+          <h3 className="text-xl font-bold text-white mb-3">Delete Post?</h3>
+          <p className="text-slate-300 mb-6">
+            Are you sure you want to delete this post? This action cannot be undone. All comments and likes will also be deleted.
+          </p>
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setShowDeleteConfirm(false)}
+              className="px-6 py-2 bg-dark-900 border border-dark-600 text-slate-300 hover:text-white hover:border-slate-500 rounded-lg transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDelete}
+              className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-all"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
