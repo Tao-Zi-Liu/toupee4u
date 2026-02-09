@@ -1,5 +1,7 @@
 
-import React, { useState } from 'react';
+import { createPost } from '../services/post.service';
+import { getCurrentUser, getCompleteUserProfile } from '../services/auth.service';
+import React, { useState, useEffect } from 'react';
 // Fixing react-router-dom named imports
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Send, ImageIcon as ImageIcon, Hash } from 'lucide-react';
@@ -10,11 +12,77 @@ export const CreateDiscussionPage: React.FC = () => {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Troubleshooting');
   const [content, setContent] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
+  
+  // 新增状态
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  
+  // 加载用户信息
+  useEffect(() => {
+    async function loadUser() {
+      const currentUser = getCurrentUser();
+      if (!currentUser) {
+        navigate('/login');
+        return;
+      }
+      const profile = await getCompleteUserProfile(currentUser.uid);
+      setUserProfile(profile);
+    }
+    loadUser();
+  }, [navigate]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Logic to submit would go here
-    navigate('/forum');
+    
+    // 验证
+    if (!title.trim()) {
+      setError('Please enter a title');
+      return;
+    }
+    if (!content.trim()) {
+      setError('Please enter some content');
+      return;
+    }
+    if (!category) {
+      setError('Please select a category');
+      return;
+    }
+    
+    if (!userProfile) {
+      setError('User not loaded');
+      return;
+    }
+    
+    setLoading(true);
+    setError('');
+    
+    try {
+      // 创建帖子
+      const postId = await createPost(
+        {
+          title: title.trim(),
+          content: content.trim(),
+          category: category,
+          tags: tags
+        },
+        userProfile.userId,
+        userProfile.displayName,
+        userProfile.photoURL,
+        userProfile.galaxyLevel
+      );
+      
+      console.log('✅ Post created successfully:', postId);
+      
+      // 跳转到论坛页面
+      navigate('/forum');
+    } catch (err: any) {
+      console.error('❌ Error creating post:', err);
+      setError('Failed to create post. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const categories = ['Troubleshooting', 'Review', 'Lifestyle', 'Science', 'Adhesives', 'Newbie Help'];

@@ -1,5 +1,6 @@
 
-import React, { useState } from 'react';
+import { getPosts, getRelativeTime, Post } from '../services/post.service';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MessageSquare, ThumbsUp, Clock, Hash, MoreHorizontal } from 'lucide-react';
 import { Filter, X, Check, Flame, ArrowDownUp } from 'lucide-react';
@@ -53,13 +54,37 @@ const TOPICS = [
 
 export const ForumPage: React.FC = () => {
   const [showFilters, setShowFilters] = useState(false);
+  export const ForumPage: React.FC = () => {
+  const [showFilters, setShowFilters] = useState(false);
+  const [activeTag, setActiveTag] = useState('All');
+  const [activeSort, setActiveSort] = useState('Newest');
+  
+  // 新增：真实帖子数据
+  const [realPosts, setRealPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  // 加载真实帖子
+  useEffect(() => {
+    async function loadPosts() {
+      setLoading(true);
+      const posts = await getPosts(20);
+      setRealPosts(posts);
+      setLoading(false);
+    }
+    loadPosts();
+  }, []);
+  
+  // 决定使用哪个数据源
+  const displayTopics = realPosts.length > 0 ? realPosts : TOPICS;
   const [activeTag, setActiveTag] = useState('All');
   const [activeSort, setActiveSort] = useState('Newest');
 
   const tags = ['All', 'Troubleshooting', 'Poly Skin', 'Adhesives', 'Lifestyle', 'Review'];
   const sorts = ['Newest', 'Hottest', 'Most Replied'];
 
-  const filteredTopics = activeTag === 'All' ? TOPICS : TOPICS.filter(t => t.tag === activeTag);
+  const filteredTopics = activeTag === 'All' 
+  ? displayTopics 
+  : displayTopics.filter(t => t.category === activeTag || (t as any).tag === activeTag);
 
   return (
     <div className="space-y-6">
@@ -153,8 +178,12 @@ export const ForumPage: React.FC = () => {
       )}
 
       {/* Discussion List */}
-      <div className="space-y-4">
-        {filteredTopics.map((topic) => (
+        <div className="space-y-4">
+        {loading ? (
+            <div className="text-center py-12">
+            <div className="text-slate-400">Loading discussions...</div>
+            </div>
+        ) : filteredTopics.map((topic) => (
             <div key={topic.id} className="bg-dark-800 rounded-xl p-5 border border-dark-700 hover:border-brand-blue/50 transition cursor-pointer group">
                 <div className="flex justify-between items-start mb-2">
                     <div className="flex items-center gap-3">
@@ -169,7 +198,7 @@ export const ForumPage: React.FC = () => {
                                 </span>
                             </div>
                             <span className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
-                                <Clock className="w-3 h-3" /> {topic.time}
+                                <Clock className="w-3 h-3" /> {(topic as any).createdAt ? getRelativeTime((topic as any).createdAt) : (topic as any).time}
                             </span>
                         </div>
                     </div>
