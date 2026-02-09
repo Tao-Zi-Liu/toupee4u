@@ -208,7 +208,12 @@ export const ForumPage: React.FC = () => {
                 
                 <div className="pl-13 md:pl-13">
                     <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-brand-blue transition-colors">{topic.title}</h3>
-                    
+                    {/* 显示摘要 - 新增 */}
+                    {topic.excerpt && (
+                    <p className="text-sm text-slate-400 mb-3 line-clamp-2">
+                        {topic.excerpt}
+                    </p>
+                    )}
                     <div className="flex items-center justify-between mt-4">
                         <div className="flex gap-2">
                             <span className="text-xs px-2.5 py-1 rounded bg-dark-900 text-slate-300 border border-dark-600 font-medium">
