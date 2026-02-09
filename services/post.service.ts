@@ -4,7 +4,8 @@
 import { 
   collection, 
   addDoc, 
-  getDocs, 
+  getDocs,
+  getDoc, 
   query, 
   orderBy, 
   limit,
