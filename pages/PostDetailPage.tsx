@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase.config';
-import { Post, getRelativeTime } from '../services/post.service';
+import { Post, getRelativeTime, incrementPostViews } from '../services/post.service';
 
 export const PostDetailPage: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
@@ -37,6 +37,8 @@ export const PostDetailPage: React.FC = () => {
             id: postDoc.id,
             ...postDoc.data()
           } as Post);
+          // 增加浏览量
+            incrementPostViews(postId);
         } else {
           console.error('Post not found');
           navigate('/forum');
