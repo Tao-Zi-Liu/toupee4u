@@ -130,3 +130,18 @@ export function getRelativeTime(timestamp: Timestamp | any): string {
   
   return date.toLocaleDateString();
 }
+/**
+ * 增加帖子浏览量
+ */
+export async function incrementPostViews(postId: string): Promise<void> {
+  try {
+    const postRef = doc(db, 'posts', postId);
+    await updateDoc(postRef, {
+      views: increment(1)
+    });
+    console.log('✅ Post views incremented');
+  } catch (error) {
+    console.error('❌ Error incrementing views:', error);
+    // 不抛出错误，浏览量失败不应该影响用户体验
+  }
+}
