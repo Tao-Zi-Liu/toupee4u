@@ -2,7 +2,7 @@
 // 帖子详情页
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
   ThumbsUp, 
@@ -10,13 +10,11 @@ import {
   Share2, 
   MoreHorizontal,
   Clock,
-  User,
   Eye
 } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase.config';
-import { Post, getRelativeTime, incrementPostViews } from '../services/post.service';
-import { togglePostLike, checkUserLiked } from '../services/post.service';
+import { Post, getRelativeTime, incrementPostViews, togglePostLike, checkUserLiked } from '../services/post.service';
 import { getCurrentUser } from '../services/auth.service';
 
 export const PostDetailPage: React.FC = () => {
@@ -26,7 +24,7 @@ export const PostDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
-  const [likeLoading, setLikeLoading] = useState(false)
+  const [likeLoading, setLikeLoading] = useState(false);
 
   useEffect(() => {
     async function loadPost() {
@@ -39,20 +37,23 @@ export const PostDetailPage: React.FC = () => {
         const postDoc = await getDoc(doc(db, 'posts', postId));
         
         if (postDoc.exists()) {
-          setPost({
+          const postData = {
             id: postDoc.id,
             ...postDoc.data()
-          } as Post);
+          } as Post;
+          
           setPost(postData);
           setLikeCount(postData.likes || 0);
+          
           // 增加浏览量
-            incrementPostViews(postId);
-            const currentUser = getCurrentUser();
-              if (currentUser) {
-                const liked = await checkUserLiked(postId, currentUser.uid);
-                setIsLiked(liked);
-              }
-            }
+          incrementPostViews(postId);
+          
+          // 检查当前用户是否已点赞
+          const currentUser = getCurrentUser();
+          if (currentUser) {
+            const liked = await checkUserLiked(postId, currentUser.uid);
+            setIsLiked(liked);
+          }
         } else {
           console.error('Post not found');
           navigate('/forum');
@@ -69,27 +70,27 @@ export const PostDetailPage: React.FC = () => {
   }, [postId, navigate]);
 
   // 处理点赞
-const handleLike = async () => {
-  const currentUser = getCurrentUser();
-  if (!currentUser) {
-    alert('Please login to like posts');
-    return;
-  }
-  
-  if (!postId || likeLoading) return;
-  
-  setLikeLoading(true);
-  
-  try {
-    const result = await togglePostLike(postId, currentUser.uid);
-    setIsLiked(result.liked);
-    setLikeCount(result.newLikeCount);
-  } catch (error) {
-    console.error('Failed to toggle like:', error);
-    alert('Failed to update like. Please try again.');
-  } finally {
-    setLikeLoading(false);
-  }
+  const handleLike = async () => {
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+      alert('Please login to like posts');
+      return;
+    }
+    
+    if (!postId || likeLoading) return;
+    
+    setLikeLoading(true);
+    
+    try {
+      const result = await togglePostLike(postId, currentUser.uid);
+      setIsLiked(result.liked);
+      setLikeCount(result.newLikeCount);
+    } catch (error) {
+      console.error('Failed to toggle like:', error);
+      alert('Failed to update like. Please try again.');
+    } finally {
+      setLikeLoading(false);
+    }
   };
 
   if (loading) {
