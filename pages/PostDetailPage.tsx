@@ -15,7 +15,8 @@ import {
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase.config';
 import { Post, getRelativeTime, incrementPostViews, togglePostLike, checkUserLiked } from '../services/post.service';
-import { getCurrentUser } from '../services/auth.service';
+import { getCurrentUser,getCompleteUserProfile } from '../services/auth.service';
+import { Comment, getComments, createComment } from '../services/post.service';
 
 export const PostDetailPage: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
@@ -25,6 +26,9 @@ export const PostDetailPage: React.FC = () => {
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [likeLoading, setLikeLoading] = useState(false);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [commentContent, setCommentContent] = useState('');
+  const [commentLoading, setCommentLoading] = useState(false);
 
   useEffect(() => {
     async function loadPost() {
@@ -54,6 +58,8 @@ export const PostDetailPage: React.FC = () => {
             const liked = await checkUserLiked(postId, currentUser.uid);
             setIsLiked(liked);
           }
+          const commentsList = await getComments(postId);
+          setComments(commentsList);
         } else {
           console.error('Post not found');
           navigate('/forum');
@@ -68,6 +74,64 @@ export const PostDetailPage: React.FC = () => {
 
     loadPost();
   }, [postId, navigate]);
+
+  // 处理评论提交
+const handleCommentSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  
+  const currentUser = getCurrentUser();
+  if (!currentUser) {
+    alert('Please login to comment');
+    return;
+  }
+  
+  if (!commentContent.trim()) {
+    alert('Please enter a comment');
+    return;
+  }
+  
+  if (!postId || commentLoading) return;
+  
+  setCommentLoading(true);
+  
+  try {
+    const profile = await getCompleteUserProfile(currentUser.uid);
+    
+    const commentId = await createComment(
+      postId,
+      commentContent.trim(),
+      currentUser.uid,
+      profile.displayName,
+      profile.photoURL,
+      profile.galaxyLevel
+    );
+    
+    // 添加新评论到列表
+    const newComment: Comment = {
+      id: commentId,
+      postId: postId,
+      content: commentContent.trim(),
+      authorId: currentUser.uid,
+      authorName: profile.displayName,
+      authorAvatar: profile.photoURL,
+      authorGalaxyLevel: profile.galaxyLevel,
+      createdAt: new Date()
+    };
+    
+    setComments([...comments, newComment]);
+    setCommentContent('');
+    
+    // 更新帖子的评论数
+    if (post) {
+      setPost({ ...post, comments: post.comments + 1 });
+    }
+  } catch (error) {
+    console.error('Failed to create comment:', error);
+    alert('Failed to post comment. Please try again.');
+  } finally {
+    setCommentLoading(false);
+  }
+};
 
   // 处理点赞
   const handleLike = async () => {
@@ -206,14 +270,66 @@ export const PostDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Comments Section - Placeholder */}
-      <div className="bg-dark-800 border border-dark-700 rounded-2xl p-6">
-        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-          <MessageSquare className="w-5 h-5" />
-          Comments ({post.comments})
-        </h3>
-        <div className="text-center py-8 text-slate-500">
-          Comments coming soon...
+      {/* Comments Section */}
+<div className="bg-dark-800 border border-dark-700 rounded-2xl p-6">
+  <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+    <MessageSquare className="w-5 h-5" />
+    Comments ({post.comments})
+  </h3>
+  
+  {/* Comment Form */}
+  <form onSubmit={handleCommentSubmit} className="mb-6">
+    <textarea
+      value={commentContent}
+      onChange={(e) => setCommentContent(e.target.value)}
+      placeholder="Share your thoughts..."
+      className="w-full bg-dark-900 border border-dark-600 rounded-xl p-4 text-white placeholder-slate-500 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none transition-all resize-none h-24"
+      disabled={commentLoading}
+    />
+    <div className="flex justify-end mt-3">
+      <button
+        type="submit"
+        disabled={commentLoading || !commentContent.trim()}
+        className="px-6 py-2 bg-brand-blue hover:bg-blue-600 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {commentLoading ? 'Posting...' : 'Post Comment'}
+      </button>
+    </div>
+  </form>
+  
+        {/* Comments List */}
+        <div className="space-y-4">
+          {comments.length === 0 ? (
+            <div className="text-center py-8 text-slate-500">
+              No comments yet. Be the first to comment!
+            </div>
+          ) : (
+            comments.map((comment) => (
+              <div key={comment.id} className="bg-dark-900 rounded-xl p-4 border border-dark-700">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-blue to-brand-purple flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                    {comment.authorName.split(' ').map(n => n[0]).join('')}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-semibold text-white text-sm">
+                        {comment.authorName}
+                      </span>
+                      <span className="text-xs px-2 py-0.5 rounded bg-brand-purple/10 text-brand-purple border border-brand-purple/20">
+                        {comment.authorGalaxyLevel}
+                      </span>
+                      <span className="text-xs text-slate-500">
+                        {getRelativeTime(comment.createdAt)}
+                      </span>
+                    </div>
+                    <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
+                      {comment.content}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 

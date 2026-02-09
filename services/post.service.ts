@@ -4,11 +4,12 @@
 import { 
   collection, 
   addDoc, 
-  getDocs,
-  getDoc, 
+  getDocs, 
+  getDoc,
   query, 
   orderBy, 
   limit,
+  where,
   serverTimestamp,
   Timestamp,
   doc,
@@ -17,7 +18,6 @@ import {
   setDoc,
   deleteDoc
 } from 'firebase/firestore';
-import { db } from '../firebase.config';
 
 export interface Post {
   id: string;
@@ -209,5 +209,85 @@ export async function checkUserLiked(postId: string, userId: string): Promise<bo
   } catch (error) {
     console.error('❌ Error checking like:', error);
     return false;
+  }
+}
+
+/**
+ * 评论接口
+ */
+export interface Comment {
+  id: string;
+  postId: string;
+  content: string;
+  authorId: string;
+  authorName: string;
+  authorAvatar: string;
+  authorGalaxyLevel: string;
+  createdAt: Timestamp | any;
+}
+
+/**
+ * 创建评论
+ */
+export async function createComment(
+  postId: string,
+  content: string,
+  authorId: string,
+  authorName: string,
+  authorAvatar: string,
+  authorGalaxyLevel: string
+): Promise<string> {
+  try {
+    // 创建评论文档
+    const commentRef = await addDoc(collection(db, 'comments'), {
+      postId,
+      content,
+      authorId,
+      authorName,
+      authorAvatar,
+      authorGalaxyLevel,
+      createdAt: serverTimestamp()
+    });
+    
+    // 增加帖子的评论数
+    const postRef = doc(db, 'posts', postId);
+    await updateDoc(postRef, {
+      comments: increment(1)
+    });
+    
+    console.log('✅ Comment created:', commentRef.id);
+    return commentRef.id;
+  } catch (error) {
+    console.error('❌ Error creating comment:', error);
+    throw new Error('Failed to create comment');
+  }
+}
+
+/**
+ * 获取帖子的评论列表
+ */
+export async function getComments(postId: string): Promise<Comment[]> {
+  try {
+    const commentsQuery = query(
+      collection(db, 'comments'),
+      where('postId', '==', postId),
+      orderBy('createdAt', 'asc')
+    );
+    
+    const querySnapshot = await getDocs(commentsQuery);
+    const comments: Comment[] = [];
+    
+    querySnapshot.forEach((doc) => {
+      comments.push({
+        id: doc.id,
+        ...doc.data()
+      } as Comment);
+    });
+    
+    console.log('✅ Loaded comments:', comments.length);
+    return comments;
+  } catch (error) {
+    console.error('❌ Error getting comments:', error);
+    return [];
   }
 }
