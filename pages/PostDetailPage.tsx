@@ -397,67 +397,69 @@ export const PostDetailPage: React.FC = () => {
       </div>
 
       {/* Comments Section */}
-      <div className="bg-dark-800 border border-dark-700 rounded-2xl p-6">
-        <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-          <MessageSquare className="w-5 h-5" />
-          Comments ({post.comments})
-        </h3>
-        
-        {/* Comment Form */}
-        <form onSubmit={handleCommentSubmit} className="mb-6">
-          <textarea
-            value={commentContent}
-            onChange={(e) => setCommentContent(e.target.value)}
-            placeholder="Share your thoughts..."
-            className="w-full bg-dark-900 border border-dark-600 rounded-xl p-4 text-white placeholder-slate-500 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none transition-all resize-none h-24"
-            disabled={commentLoading}
-          />
-          <div className="flex justify-end mt-3">
-            <button
-              type="submit"
-              disabled={commentLoading || !commentContent.trim()}
-              className="px-6 py-2 bg-brand-blue hover:bg-blue-600 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {commentLoading ? 'Posting...' : 'Post Comment'}
-            </button>
-          </div>
-        </form>
-        
-        {/* Comments List */}
-        <div className="space-y-4">
-          {comments.length === 0 ? (
-            <div className="text-center py-8 text-slate-500">
-              No comments yet. Be the first to comment!
-            </div>
-          ) : (
-            comments.map((comment) => (
-              <div key={comment.id} className="bg-dark-900 rounded-xl p-4 border border-dark-700">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-blue to-brand-purple flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                    {comment.authorName.split(' ').map(n => n[0]).join('')}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-semibold text-white text-sm">
-                        {comment.authorName}
-                      </span>
-                      <span className="text-xs px-2 py-0.5 rounded bg-brand-purple/10 text-brand-purple border border-brand-purple/20">
-                        {comment.authorGalaxyLevel}
-                      </span>
-                      <span className="text-xs text-slate-500">
-                        {getRelativeTime(comment.createdAt)}
-                      </span>
-                    </div>
-                    <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
-                      {comment.content}
-                    </p>
-                  </div>
-                </div>
+        {!isEditing && (
+          <div className="bg-dark-800 border border-dark-700 rounded-2xl p-6">
+            <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+              <MessageSquare className="w-5 h-5" />
+              Comments ({post.comments})
+            </h3>
+            
+            {/* Comment Form */}
+            <form onSubmit={handleCommentSubmit} className="mb-6">
+              <textarea
+                value={commentContent}
+                onChange={(e) => setCommentContent(e.target.value)}
+                placeholder="Share your thoughts..."
+                className="w-full bg-dark-900 border border-dark-600 rounded-xl p-4 text-white placeholder-slate-500 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none transition-all resize-none h-24"
+                disabled={commentLoading}
+              />
+              <div className="flex justify-end mt-3">
+                <button
+                  type="submit"
+                  disabled={commentLoading || !commentContent.trim()}
+                  className="px-6 py-2 bg-brand-blue hover:bg-blue-600 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {commentLoading ? 'Posting...' : 'Post Comment'}
+                </button>
               </div>
-            ))
-          )}
-        </div>
-      </div>
+            </form>
+            
+            {/* Comments List */}
+            <div className="space-y-4">
+              {comments.length === 0 ? (
+                <div className="text-center py-8 text-slate-500">
+                  No comments yet. Be the first to comment!
+                </div>
+              ) : (
+                comments.map((comment) => (
+                  <div key={comment.id} className="bg-dark-900 rounded-xl p-4 border border-dark-700">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-blue to-brand-purple flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                        {comment.authorName.split(' ').map(n => n[0]).join('')}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-semibold text-white text-sm">
+                            {comment.authorName}
+                          </span>
+                          <span className="text-xs px-2 py-0.5 rounded bg-brand-purple/10 text-brand-purple border border-brand-purple/20">
+                            {comment.authorGalaxyLevel}
+                          </span>
+                          <span className="text-xs text-slate-500">
+                            {getRelativeTime(comment.createdAt)}
+                          </span>
+                        </div>
+                        <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
+                          {comment.content}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
