@@ -10,7 +10,8 @@ import {
   Share2, 
   MoreHorizontal,
   Clock,
-  User
+  User,
+  Eye
 } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase.config';
@@ -147,6 +148,10 @@ export const PostDetailPage: React.FC = () => {
               <MessageSquare className="w-5 h-5" />
               <span className="text-sm font-semibold">{post.comments}</span>
             </button>
+            <div className="flex items-center gap-2 text-slate-400">
+              <Eye className="w-5 h-5" />
+              <span className="text-sm font-semibold">{post.views || 0}</span>
+            </div>
           </div>
           <button className="flex items-center gap-2 text-slate-400 hover:text-brand-blue transition-colors">
             <Share2 className="w-5 h-5" />

@@ -1,7 +1,7 @@
 import { getPosts, getRelativeTime, Post } from '../services/post.service';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { MessageSquare, ThumbsUp, Clock, Hash, MoreHorizontal } from 'lucide-react';
+import { MessageSquare, ThumbsUp, Clock, Hash, MoreHorizontal, Eye } from 'lucide-react';
 import { Filter, X, Flame, ArrowDownUp } from 'lucide-react';
 
 const TOPICS = [
@@ -226,6 +226,7 @@ export const ForumPage: React.FC = () => {
                         <div className="flex gap-6 text-slate-500 text-sm">
                             <span className="flex items-center gap-1.5 hover:text-white transition-colors"><ThumbsUp className="w-4 h-4" /> {topic.likes}</span>
                             <span className="flex items-center gap-1.5 hover:text-white transition-colors"><MessageSquare className="w-4 h-4" /> {topic.comments || topic.replies}</span>
+                            <span className="flex items-center gap-1.5 hover:text-white transition-colors"><Eye className="w-4 h-4" /> {topic.views || 0}</span>
                             <span className="hover:text-white transition-colors"><MoreHorizontal className="w-4 h-4" /></span>
                         </div>
                     </div>
