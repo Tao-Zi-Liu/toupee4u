@@ -16,6 +16,7 @@ import { ArticlePage } from './pages/ArticlePage';
 import { ConsultationsPage } from './pages/ConsultationsPage';
 import { MembershipPage } from './pages/MembershipPage';
 import { ForumPage } from './pages/ForumPage';
+import { PostDetailPage } from './pages/PostDetailPage'; 
 import { CreateDiscussionPage } from './pages/CreateDiscussionPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { ExpertsPage } from './pages/ExpertsPage';
@@ -248,6 +249,7 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/forum" element={<ForumPage />} />
+      <Route path="/forum/post/:postId" element={<PostDetailPage />} />
       <Route path="/forum/new" element={<CreateDiscussionPage />} />
       <Route path="/lab" element={<LabPage />} />
       <Route path="/news" element={<IndustryNewsPage />} />
