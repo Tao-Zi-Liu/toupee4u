@@ -50,33 +50,48 @@ export const CreateDiscussionPage: React.FC = () => {
     if (!userProfile) {
       setError('User profile not loaded');
       return;
-    }
+      }
+
+      // 详细检查必需字段
+      if (!userProfile.uid) {
+      setError('User ID is missing. Please try logging out and back in.');
+      console.error('User profile missing uid:', userProfile);
+      return;
+      }
+
+      if (!userProfile.displayName) {
+      console.warn('User profile missing displayName, using default');
+      userProfile.displayName = 'Anonymous';
+      }
 
     setLoading(true);
 
     try {
-      // 第一步：审核内容
-      if (!forcePublish) {
-        console.log('🔍 Moderating content...');
-        const combinedText = `${title}\n\n${content}`;
-        const modResult = await smartModerate(combinedText);
-        
-        setModerationResult(modResult);
-        
-        // 如果有严重问题，阻止发布
-        if (modResult.severity === 'high') {
-          setShowModerationWarning(true);
-          setLoading(false);
-          return;
-        }
-        
-        // 如果有中等或轻微问题，显示警告但允许继续
-        if (!modResult.isClean) {
-          setShowModerationWarning(true);
-          setLoading(false);
-          return;
-        }
+   if (!forcePublish) {
+   try {
+      const combinedText = `${title}\n\n${content}`;
+      const modResult = await smartModerate(combinedText);
+      
+      setModerationResult(modResult);
+      
+      // 如果有严重问题，阻止发布
+      if (modResult.severity === 'high') {
+         setShowModerationWarning(true);
+         setLoading(false);
+         return;
       }
+      
+      // 如果有中等或轻微问题，显示警告但允许继续
+      if (!modResult.isClean) {
+         setShowModerationWarning(true);
+         setLoading(false);
+         return;
+      }
+   } catch (error) {
+      console.error('Moderation failed, allowing post:', error);
+      // AI审核失败，允许继续发布（只使用规则审核）
+   }
+
 
       // 第二步：发布帖子
       const postData = {
@@ -294,7 +309,7 @@ export const CreateDiscussionPage: React.FC = () => {
                     : 'Content Warning'}
                 </h3>
                 <p className="text-slate-300 text-sm">
-                  Our AI detected some issues with your content:
+                  We noticed some issues that may violate our community standards:
                 </p>
               </div>
             </div>

@@ -161,7 +161,7 @@ export async function aiModerateContent(text: string): Promise<ModerationResult>
         body: JSON.stringify({
           contents: [{
             parts: [{
-              text: `You are a content moderator for a hair system community platform. Analyze the following content and determine if it's appropriate.
+              text: `You are a content moderator for a hair system/toupee community platform. Analyze the following content in ANY language and determine if it's appropriate.
 
 Content to review:
 """
@@ -177,16 +177,19 @@ Respond ONLY with valid JSON in this exact format (no extra text, no markdown):
   "reason": "brief explanation"
 }
 
-Consider:
+Consider issues in ANY language (English, Chinese, Japanese, etc.):
 - Offensive language or personal attacks
 - Spam or promotional content
-- Inappropriate topics (not related to hair systems/toupees)
+- Inappropriate topics (not related to hair systems/toupees/wigs)
 - Hate speech or discrimination
 - Threats or harassment
-- Excessive negativity
+- Excessive negativity or trolling
 - Medical misinformation
+- Profanity and vulgar language in any language
 
-Be firm but fair. Some criticism is okay if constructive.`
+Be culturally aware and understand context. Some criticism is okay if constructive.
+
+IMPORTANT: Your response must be appropriate regardless of the language used in the content.`
             }]
           }],
           generationConfig: {
@@ -226,34 +229,17 @@ Be firm but fair. Some criticism is okay if constructive.`
 }
 
 /**
- * 混合审核策略
- * 1. 先用规则快速检查
- * 2. 严重问题（high）→ 直接阻止发布
- * 3. 轻微问题（low）或通过 → AI二次审核
- * 4. 中等问题（medium）→ 返回规则结果
+ * 混合审核策略（AI优先）
  */
 export async function smartModerate(text: string): Promise<ModerationResult> {
-  console.log('🔍 Starting smart moderation...');
-  
-  // 先用规则快速检查
-  const ruleResult = moderateContent(text);
-  console.log('📋 Rule-based result:', ruleResult);
-  
-  // 如果规则检查发现严重问题，直接阻止
-  if (ruleResult.severity === 'high') {
-    console.log('⛔ High severity detected, blocking immediately');
-    return ruleResult;
-  }
-  
-  // 如果规则检查通过或只有轻微问题，用AI再次检查
-  if (ruleResult.isClean || ruleResult.severity === 'low') {
-    console.log('🤖 Sending to AI for deeper analysis...');
+  try {
+    // 直接使用AI审核（支持多语言）
     return await aiModerateContent(text);
+  } catch (error) {
+    console.error('AI moderation failed, using rule-based fallback:', error);
+    // AI失败时降级到规则审核
+    return moderateContent(text);
   }
-  
-  // 中等严重度，返回规则结果
-  console.log('⚠️ Medium severity, returning rule result');
-  return ruleResult;
 }
 
 /**
