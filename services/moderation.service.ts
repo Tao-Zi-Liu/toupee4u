@@ -12,9 +12,7 @@ import { GEMINI_API_KEY } from '../config/secrets';
  * AI内容审核（使用Gemini API）
  */
 export async function aiModerateContent(text: string): Promise<ModerationResult> {
-  try {
-    // 使用Gemini API
-    // 注意：您需要在 https://makersuite.google.com/app/apikey 获取API key    
+  try {  
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`,
       {
