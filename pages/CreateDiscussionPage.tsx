@@ -34,6 +34,8 @@ export const CreateDiscussionPage: React.FC = () => {
     e.preventDefault();
     setError('');
 
+    console.log('userProfile:', userProfile);
+
     if (!title.trim() || !content.trim() || !category) {
       setError('Please fill in all required fields');
       return;
