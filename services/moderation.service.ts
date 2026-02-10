@@ -1,91 +1,12 @@
 // services/moderation.service.ts
 // 内容审核服务
 
+import { GEMINI_API_KEY } from '../config/secrets';
+
 /**
  * 敏感词列表（示例）
  * 实际使用时应该更全面，可以从服务器动态加载
  */
-
-
-import { GEMINI_API_KEY } from '../config/secrets';
-/**
- * AI内容审核（使用Gemini API）
- */
-export async function aiModerateContent(text: string): Promise<ModerationResult> {
-  try {  
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: `You are a content moderator for a hair system community platform. Analyze the following content and determine if it's appropriate.
-
-Content to review:
-"""
-${text}
-"""
-
-Respond ONLY with valid JSON in this exact format (no extra text, no markdown):
-{
-  "isClean": true or false,
-  "issues": ["list of specific issues found"],
-  "severity": "low" or "medium" or "high",
-  "suggestions": ["list of suggestions to improve the content"],
-  "reason": "brief explanation"
-}
-
-Consider:
-- Offensive language or personal attacks
-- Spam or promotional content
-- Inappropriate topics (not related to hair systems/toupees)
-- Hate speech or discrimination
-- Threats or harassment
-- Excessive negativity
-- Medical misinformation
-
-Be firm but fair. Some criticism is okay if constructive.`
-            }]
-          }],
-          generationConfig: {
-            temperature: 0.1,
-            maxOutputTokens: 1000,
-          }
-        })
-      }
-    );
-
-    const data = await response.json();
-    
-    if (!data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
-      throw new Error('Invalid Gemini API response');
-    }
-    
-    // 提取JSON响应
-    let resultText = data.candidates[0].content.parts[0].text;
-    
-    // 移除可能的markdown代码块标记
-    resultText = resultText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    
-    const result = JSON.parse(resultText);
-    
-    return {
-      isClean: result.isClean,
-      issues: result.issues || [],
-      severity: result.severity || 'low',
-      suggestions: result.suggestions || []
-    };
-    
-  } catch (error) {
-    console.error('AI moderation error:', error);
-    // 如果AI审核失败，降级到规则审核
-    return moderateContent(text);
-  }
-}
 const SENSITIVE_WORDS = [
   // 脏话
   'fuck', 'shit', 'damn', 'bitch', 'asshole',
@@ -170,7 +91,7 @@ function detectShouting(text: string): boolean {
 }
 
 /**
- * 主审核函数
+ * 基于规则的内容审核
  */
 export function moderateContent(text: string): ModerationResult {
   const issues: string[] = [];
@@ -223,6 +144,116 @@ export function moderateContent(text: string): ModerationResult {
     severity,
     suggestions
   };
+}
+
+/**
+ * AI内容审核（使用Gemini API）
+ */
+export async function aiModerateContent(text: string): Promise<ModerationResult> {
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: `You are a content moderator for a hair system community platform. Analyze the following content and determine if it's appropriate.
+
+Content to review:
+"""
+${text}
+"""
+
+Respond ONLY with valid JSON in this exact format (no extra text, no markdown):
+{
+  "isClean": true or false,
+  "issues": ["list of specific issues found"],
+  "severity": "low" or "medium" or "high",
+  "suggestions": ["list of suggestions to improve the content"],
+  "reason": "brief explanation"
+}
+
+Consider:
+- Offensive language or personal attacks
+- Spam or promotional content
+- Inappropriate topics (not related to hair systems/toupees)
+- Hate speech or discrimination
+- Threats or harassment
+- Excessive negativity
+- Medical misinformation
+
+Be firm but fair. Some criticism is okay if constructive.`
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.1,
+            maxOutputTokens: 1000,
+          }
+        })
+      }
+    );
+
+    const data = await response.json();
+    
+    if (!data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
+      throw new Error('Invalid Gemini API response');
+    }
+    
+    // 提取JSON响应
+    let resultText = data.candidates[0].content.parts[0].text;
+    
+    // 移除可能的markdown代码块标记
+    resultText = resultText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    
+    const result = JSON.parse(resultText);
+    
+    return {
+      isClean: result.isClean,
+      issues: result.issues || [],
+      severity: result.severity || 'low',
+      suggestions: result.suggestions || []
+    };
+    
+  } catch (error) {
+    console.error('AI moderation error:', error);
+    // 如果AI审核失败，降级到规则审核
+    return moderateContent(text);
+  }
+}
+
+/**
+ * 混合审核策略
+ * 1. 先用规则快速检查
+ * 2. 严重问题（high）→ 直接阻止发布
+ * 3. 轻微问题（low）或通过 → AI二次审核
+ * 4. 中等问题（medium）→ 返回规则结果
+ */
+export async function smartModerate(text: string): Promise<ModerationResult> {
+  console.log('🔍 Starting smart moderation...');
+  
+  // 先用规则快速检查
+  const ruleResult = moderateContent(text);
+  console.log('📋 Rule-based result:', ruleResult);
+  
+  // 如果规则检查发现严重问题，直接阻止
+  if (ruleResult.severity === 'high') {
+    console.log('⛔ High severity detected, blocking immediately');
+    return ruleResult;
+  }
+  
+  // 如果规则检查通过或只有轻微问题，用AI再次检查
+  if (ruleResult.isClean || ruleResult.severity === 'low') {
+    console.log('🤖 Sending to AI for deeper analysis...');
+    return await aiModerateContent(text);
+  }
+  
+  // 中等严重度，返回规则结果
+  console.log('⚠️ Medium severity, returning rule result');
+  return ruleResult;
 }
 
 /**
