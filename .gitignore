@@ -1,5 +1,13 @@
-# 屏蔽包含真实密钥的文件
+# API Keys and Secrets
 src/config/secrets.ts
 
-# 也可以屏蔽所有 .env 文件（如果有）
+# Dependencies
+node_modules/
+
+# Build
+dist/
+build/
+
+# Environment
 .env
+.env.local
