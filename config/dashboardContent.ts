@@ -1,3 +1,4 @@
+
 // config/dashboardContent.ts
 // 根据用户Quiz数据配置个性化Dashboard内容
 
@@ -25,6 +26,20 @@ export interface FeaturedArticle {
   category: string;
   readTime: string;
   tier: string;
+}
+
+/* FIX: Added DashboardConfig interface to allow safe property access for specialBanner */
+export interface DashboardConfig {
+  banner: DashboardBanner;
+  featuredArticles: FeaturedArticle[];
+  recommendedTopics: RecommendedTopic[];
+  communitySpotlight: {
+    title: string;
+    description: string;
+    ctaText: string;
+    ctaLink: string;
+  };
+  specialBanner?: DashboardBanner;
 }
 
 // 新手用户的Dashboard配置
@@ -149,10 +164,11 @@ export const HIGH_ACTIVITY_ADDITIONS = {
 };
 
 // 根据用户Profile获取Dashboard配置
+/* FIX: Explicitly typed return value as DashboardConfig to resolve property access errors */
 export function getDashboardConfig(
   experienceLevel: ExperienceLevel,
   activityLevel: ActivityLevel
-) {
+): DashboardConfig {
   const baseConfig = experienceLevel === 'NEWBIE' ? NEWBIE_DASHBOARD : VETERAN_DASHBOARD;
   
   // 如果是高强度运动用户，添加特殊推荐

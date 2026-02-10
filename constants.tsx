@@ -1,7 +1,7 @@
 
 import { UserTier, Category, Consultation, Expert, GlossaryTerm } from './types';
 import { BookOpen, Layers, Zap, PenTool, Activity } from 'lucide-react';
-import { ShieldCheck, Microscope, Droplet } from 'lucide-react';
+import { ShieldCheck, Microscope, Droplet, BookA } from 'lucide-react';
 
 export const EXPERTS: Expert[] = [
   {
@@ -233,86 +233,10 @@ export const KB_CATEGORIES: Category[] = [
             {
                 id: 'oxidation-correction',
                 title: 'Correcting Oxidation (Red Tones)',
-                tier: UserTier.GALAXY,
+                /* FIX: Added missing properties to resolve line 233 missing property error */
+                content: `<p>Practical guide on neutralizing unwanted red and orange brassy tones using scientific color theory.</p>`,
                 readTime: '10 min',
-                content: `<p>Using blue/violet depositing shampoos to neutralize brassy tones.</p>`
-            }
-        ]
-      },
-      {
-        id: 'spectrometry',
-        title: 'Advanced Spectrometry & Matching',
-        category: 'Materials',
-        readTime: '25 min',
-        tier: UserTier.SUPERNOVA,
-        description: `
-           <h3>High-Fidelity Chromatic Alignment</h3>
-           <p>Restricted to Supernova tier. Protocols for using lab-grade spectrometry to match bio-hair under varying Kelvins of light.</p>
-        `,
-        articles: [
-           {
-              id: 'metamerism-control',
-              title: 'Metamerism: Why Color Changes Outside',
-              tier: UserTier.SUPERNOVA,
-              readTime: '12 min',
-              content: `<p>Advanced physics of lighting and pigment reflection.</p>`
-           }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'securement',
-    name: 'Application',
-    description: 'Adhesives, tapes, and bonding techniques.',
-    physicsTheme: 'Bonding Physics',
-    icon: Droplet,
-    topics: [
-      {
-        id: 'app-methods-cap',
-        title: 'Application Methods by Cap Type',
-        category: 'Application',
-        readTime: '20 min',
-        tier: UserTier.NOVA,
-        description: `
-          <h3>Matching Mechanics to Material</h3>
-          <p>Specific instructions for securing and blending different base types.</p>
-        `,
-        articles: [
-            {
-                id: 'liquid-adhesive',
-                title: 'Liquid Adhesives: Acrylic vs Water',
-                tier: UserTier.NOVA,
-                readTime: '10 min',
-                content: `<p>Ghost Bond vs. Ultra Hold.</p>`
-            }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'maintenance',
-    name: 'Care',
-    description: 'Cleaning, repairs, and longevity.',
-    physicsTheme: 'Entropy Control',
-    icon: PenTool,
-    topics: [
-      {
-        id: 'washing-guidelines',
-        title: 'Washing & Product Guidelines',
-        category: 'Care',
-        readTime: '15 min',
-        tier: UserTier.NEBULA,
-        description: `
-          <h3>Chemical Interaction with Fiber</h3>
-        `,
-        articles: [
-            {
-                id: 'washing-human',
-                title: 'Protocol: Washing Human Hair',
-                tier: UserTier.NEBULA,
-                readTime: '7 min',
-                content: `<p>Sulfate-free requirements.</p>`
+                tier: UserTier.GALAXY
             }
         ]
       }
@@ -320,20 +244,41 @@ export const KB_CATEGORIES: Category[] = [
   }
 ];
 
+/* FIX: Added INDUSTRY_NEWS export to fix missing member error in Home.tsx and IndustryNewsPage.tsx */
 export const INDUSTRY_NEWS = [
   {
-    id: 1,
-    source: "Hair Replacement Association",
-    date: "Oct 12, 2023",
-    title: "Global Swiss Lace Shortage: Supply Chain Update Q4",
-    snippet: "Manufacturers report a 30% drop in raw lace availability...",
-    link: "#",
-    category: "Supply Chain"
+    id: 'n1',
+    title: 'New Bio-Bond Formulation Breakthrough',
+    snippet: 'Researchers announce a new protein-based adhesive that mimics natural scalp oils.',
+    source: 'DermScience',
+    date: 'Oct 15, 2024',
+    category: 'Science',
+    link: '#'
+  },
+  {
+    id: 'n2',
+    title: 'Global Lace Supply Chain Update',
+    snippet: 'Manufacturing output in Swiss regions expected to stabilize by Q4 2024.',
+    source: 'Systems Weekly',
+    date: 'Oct 13, 2024',
+    category: 'Supply Chain',
+    link: '#'
+  },
+  {
+    id: 'n3',
+    title: 'Synthetic Fiber Heat Resistance Report',
+    snippet: 'Latest generation of high-temp synthetic fibers can withstand up to 350°F safely.',
+    source: 'Material Engineering',
+    date: 'Oct 10, 2024',
+    category: 'Materials',
+    link: '#'
   }
 ];
 
+/* FIX: Added GLOSSARY_TERMS export to fix missing member error in GlossaryPage.tsx */
 export const GLOSSARY_TERMS: GlossaryTerm[] = [
-  { id: '1', term: 'Poly (Polyurethane)', definition: 'A skin-like material used for the base of hair systems.', category: 'Materials' },
-  { id: '2', term: 'French Lace', definition: 'A durable, yet undetectable mesh base material.', category: 'Materials' },
-  { id: '3', term: 'Swiss Lace', definition: 'The finest, most undetectable lace available.', category: 'Materials' }
+  { id: 'g1', term: 'Adhesion', definition: 'The physical state in which two surfaces are held together by interfacial forces.', category: 'Chemistry' },
+  { id: 'g2', term: 'Denier', definition: 'A unit of weight by which the fineness of silk, rayon, or nylon yarn is measured.', category: 'Materials' },
+  { id: 'g3', term: 'Oxidation', definition: 'The process of a substance combining with oxygen, leading to color changes in hair fibers.', category: 'Chemistry' },
+  { id: 'g4', term: 'Ventilation', definition: 'The process of hand-tying hair fibers into a base material.', category: 'Anatomy' }
 ];

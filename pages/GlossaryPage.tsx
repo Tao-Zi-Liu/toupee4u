@@ -7,7 +7,8 @@ export const GlossaryPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLetter, setSelectedLetter] = useState('All');
 
-  const alphabet = ['All', ...Array.from(new Set(GLOSSARY_TERMS.map(t => t.term[0].toUpperCase()))).sort()];
+  /* FIX: Explicitly type alphabet as string array to resolve unknown type errors */
+  const alphabet: string[] = ['All', ...Array.from(new Set(GLOSSARY_TERMS.map(t => t.term[0].toUpperCase()))).sort()];
 
   const filteredTerms = GLOSSARY_TERMS.filter(item => {
     const matchesSearch = item.term.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -22,7 +23,7 @@ export const GlossaryPage: React.FC = () => {
        <div className="border-b border-dark-700 pb-8">
           <div className="flex items-center gap-3 mb-4">
              <div className="p-3 bg-brand-purple/10 rounded-xl text-brand-purple border border-brand-purple/20">
-                <BookA className="w-8 h-8" />
+                < BookA className="w-8 h-8" />
              </div>
              <div>
                 <h4 className="text-xs font-bold text-brand-purple uppercase tracking-widest">Knowledge Base</h4>
@@ -48,7 +49,8 @@ export const GlossaryPage: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap gap-2">
-              {alphabet.map(letter => (
+              /* FIX: Explicitly type letter as string to resolve Key and SetStateAction unknown errors */
+              {alphabet.map((letter: string) => (
                   <button
                       key={letter}
                       onClick={() => setSelectedLetter(letter)}

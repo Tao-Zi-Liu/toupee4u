@@ -1,15 +1,18 @@
+
 // components/PersonalizedDashboard.tsx
 // 个性化Dashboard组件
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Sparkles, TrendingUp, Users } from 'lucide-react';
-import { ExperienceLevel, ActivityLevel } from '../types';
-import { getDashboardConfig } from '../config/dashboardContent';
+import { ExperienceLevel, ActivityLevel, HairPattern } from '../types';
+import { getDashboardConfig, DashboardConfig } from '../config/dashboardContent';
 
+/* FIX: Added hairPattern to interface to resolve prop mismatch error in ForYouPage.tsx */
 interface PersonalizedDashboardProps {
   experienceLevel: ExperienceLevel;
   activityLevel: ActivityLevel;
+  hairPattern?: HairPattern;
 }
 
 export const PersonalizedDashboard: React.FC<PersonalizedDashboardProps> = ({
@@ -17,7 +20,8 @@ export const PersonalizedDashboard: React.FC<PersonalizedDashboardProps> = ({
   activityLevel
 }) => {
   const navigate = useNavigate();
-  const config = getDashboardConfig(experienceLevel, activityLevel);
+  /* FIX: Explicitly type config as DashboardConfig to resolve specialBanner property errors */
+  const config: DashboardConfig = getDashboardConfig(experienceLevel, activityLevel);
 
   return (
     <div className="space-y-6">
@@ -46,6 +50,7 @@ export const PersonalizedDashboard: React.FC<PersonalizedDashboardProps> = ({
       </div>
 
       {/* Special Banner for High Activity Users */}
+      {/* FIX: Now safely accessible thanks to DashboardConfig type */}
       {config.specialBanner && (
         <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-r ${config.specialBanner.bgGradient} p-6 border border-white/10`}>
           <div className="relative z-10 flex items-center justify-between">

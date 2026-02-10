@@ -7,7 +7,8 @@ export const IndustryNewsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('All');
 
-  const categories = ['All', ...Array.from(new Set(INDUSTRY_NEWS.map(n => n.category)))];
+  /* FIX: Explicitly type categories as string array to resolve unknown type errors */
+  const categories: string[] = ['All', ...Array.from(new Set(INDUSTRY_NEWS.map(n => n.category)))];
 
   const filteredNews = INDUSTRY_NEWS.filter(news => {
     const matchesSearch = news.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -23,7 +24,7 @@ export const IndustryNewsPage: React.FC = () => {
         <div>
            <div className="flex items-center gap-2 mb-2">
               <div className="p-2 bg-blue-500/10 rounded-lg border border-blue-500/20 text-blue-400">
-                <Newspaper className="w-5 h-5" />
+                < Newspaper className="w-5 h-5" />
               </div>
               <h4 className="text-xs font-bold text-blue-400 uppercase tracking-widest">Market Intelligence</h4>
            </div>
@@ -47,7 +48,8 @@ export const IndustryNewsPage: React.FC = () => {
               />
           </div>
           <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
-              {categories.map(cat => (
+              /* FIX: Explicitly type cat as string to resolve Key and ReactNode unknown errors */
+              {categories.map((cat: string) => (
                   <button
                       key={cat}
                       onClick={() => setFilter(cat)}
