@@ -1,7 +1,7 @@
 // services/moderation.service.ts
 // 内容审核服务
 
-import { GEMINI_API_KEY } from '../config/secrets';
+import { GEMINI_API_KEY } from '../src/config/secrets';
 
 /**
  * 敏感词列表（示例）
