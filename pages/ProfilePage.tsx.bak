@@ -15,8 +15,6 @@ import { getUserReadingStats } from '../services/progress.service';
 import { useData } from '../contexts/DataContext';
 import { BookOpen, UserPlus, UserCheck, UserMinus } from 'lucide-react';
 import { followUser, unfollowUser, checkIsFollowing, getFollowing, getFollowers, FollowUser } from '../services/follow.service';
-import { getUserXPStats, getXPHistory, dailyCheckin, checkDiscountEligibility } from '../services/xp.service';
-import { UserXPStats, XPRecord, XP_POST_THRESHOLD, XP_DISCOUNT_THRESHOLDS } from '../types';
 
 const DEFAULT_USER = {
   name: "Loading...",
@@ -105,11 +103,6 @@ export const ProfilePage: React.FC = () => {
   const [followers, setFollowers] = useState<FollowUser[]>([]);
   const [followCounts, setFollowCounts] = useState({ followingCount: 0, followersCount: 0 });
   const [followLoading, setFollowLoading] = useState(false);
-  const [xpStats, setXpStats] = useState<UserXPStats | null>(null);
-  const [xpHistory, setXpHistory] = useState<XPRecord[]>([]);
-  const [xpLoading, setXpLoading] = useState(false);
-  const [checkinDone, setCheckinDone] = useState(false);
-  const [discountEligibility, setDiscountEligibility] = useState<any>(null);
   const [followTab, setFollowTab] = useState<'following' | 'followers'>('following');
 
   useEffect(() => {
@@ -172,7 +165,6 @@ export const ProfilePage: React.FC = () => {
       await loadBookmarks();
       await loadReadingStats();
       await loadFollowData();
-      await loadXPData();
       setLoading(false);
     }
     
@@ -193,7 +185,6 @@ export const ProfilePage: React.FC = () => {
         { id: 'bookmarks', label: 'Saved' },
         { id: 'learning', label: 'Learning' },
         { id: 'following', label: 'Following' },
-        { id: 'xp', label: '⚡ XP' },
         { id: 'billing', label: 'Billing' },
         { id: 'settings', label: 'Settings' }
       ];
@@ -304,26 +295,6 @@ export const ProfilePage: React.FC = () => {
       }
     };
 
-    const loadXPData = async () => {
-      const currentUser = getCurrentUser();
-      if (!currentUser) return;
-      setXpLoading(true);
-      try {
-        const [stats, history, discount] = await Promise.all([
-          getUserXPStats(currentUser.uid),
-          getXPHistory(currentUser.uid, 15),
-          checkDiscountEligibility(currentUser.uid)
-        ]);
-        setXpStats(stats);
-        setXpHistory(history);
-        setDiscountEligibility(discount);
-      } catch (error) {
-        console.error("Failed to load XP data:", error);
-      } finally {
-        setXpLoading(false);
-      }
-    };
-
     // 上传头像
     const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -409,7 +380,7 @@ export const ProfilePage: React.FC = () => {
                {!isExpert && (
                    <>
                         <div className="text-center bg-dark-900/50 p-3 rounded-2xl border border-dark-700 backdrop-blur-sm">
-                          <div className="text-lg font-bold text-white">{xpStats?.availableXp ?? user.stats.reputation}</div>
+                          <div className="text-lg font-bold text-white">{user.stats.reputation}</div>
                           <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">XP</div>
                       </div>
                       <button
@@ -502,36 +473,6 @@ export const ProfilePage: React.FC = () => {
                         >
                           Upgrade Membership
                         </button>
-                    </div>
-
-                    {/* XP 积分卡片 */}
-                    <div className="bg-dark-800 border border-dark-700 rounded-2xl p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-bold text-white flex items-center gap-2">⚡ XP Points</h3>
-                        <button
-                          onClick={() => setActiveTab("xp")}
-                          className="text-xs text-brand-blue hover:text-blue-400 font-medium transition-colors"
-                        >View History</button>
-                      </div>
-                      <div className="text-3xl font-bold text-white mb-1">{xpStats?.availableXp ?? 0}</div>
-                      <div className="text-xs text-slate-500 mb-3">of {XP_POST_THRESHOLD} needed to post</div>
-                      <div className="h-2 bg-dark-900 rounded-full overflow-hidden mb-3">
-                        <div
-                          className={`h-full rounded-full transition-all duration-700 ${(xpStats?.availableXp ?? 0) >= XP_POST_THRESHOLD ? "bg-green-500" : "bg-brand-blue"}`}
-                          style={{ width: `${Math.min(100, ((xpStats?.availableXp ?? 0) / XP_POST_THRESHOLD) * 100)}%` }}
-                        />
-                      </div>
-                      {(xpStats?.availableXp ?? 0) >= XP_POST_THRESHOLD ? (
-                        <p className="text-green-400 text-xs font-medium">✓ Posting unlocked</p>
-                      ) : (
-                        <p className="text-slate-500 text-xs">Browse, like, comment & read KB articles to earn XP.</p>
-                      )}
-                      {discountEligibility?.novaDiscount && (
-                        <div className="mt-3 p-2 bg-brand-blue/10 border border-brand-blue/20 rounded-lg text-xs text-brand-blue font-medium">🎉 500 XP reached! Nova 50% discount available.</div>
-                      )}
-                      {discountEligibility?.galaxyDiscount && (
-                        <div className="mt-2 p-2 bg-brand-purple/10 border border-brand-purple/20 rounded-lg text-xs text-brand-purple font-medium">🚀 2000 XP reached! Galaxy 50% discount available.</div>
-                      )}
                     </div>
                 </div>
             </div>
@@ -965,117 +906,6 @@ export const ProfilePage: React.FC = () => {
                       )}
                     </div>
                   ))
-                )}
-              </div>
-            </div>
-          )}
-
-          {activeTab === "xp" && (
-            <div className="space-y-6">
-              {/* 签到按钮 */}
-              <div className="bg-dark-800 border border-dark-700 rounded-2xl p-6 flex items-center justify-between">
-                <div>
-                  <h3 className="text-white font-bold mb-1">Daily Check-in</h3>
-                  <p className="text-slate-500 text-sm">+2 XP · Streak: {xpStats?.consecutiveCheckinDays ?? 0} days</p>
-                </div>
-                <button
-                  onClick={async () => {
-                    const currentUser = getCurrentUser();
-                    if (!currentUser) return;
-                    const result = await dailyCheckin(currentUser.uid);
-                    if (result.success) {
-                      setCheckinDone(true);
-                      await loadXPData();
-                    }
-                  }}
-                  disabled={checkinDone || xpStats?.lastCheckinDate === new Date().toISOString().slice(0,10)}
-                  className="px-5 py-2.5 bg-brand-blue hover:bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-colors text-sm"
-                >
-                  {xpStats?.lastCheckinDate === new Date().toISOString().slice(0,10) ? "✓ Done" : "Check In"}
-                </button>
-              </div>
-
-              {/* XP 概览 */}
-              <div className="grid grid-cols-3 gap-4">
-                <div className="bg-dark-800 border border-dark-700 rounded-2xl p-5 text-center">
-                  <div className="text-3xl font-bold text-white">{xpStats?.availableXp ?? 0}</div>
-                  <div className="text-slate-500 text-xs mt-1">Available XP</div>
-                </div>
-                <div className="bg-dark-800 border border-dark-700 rounded-2xl p-5 text-center">
-                  <div className="text-3xl font-bold text-white">{xpStats?.totalXp ?? 0}</div>
-                  <div className="text-slate-500 text-xs mt-1">Total Earned</div>
-                </div>
-                <div className="bg-dark-800 border border-dark-700 rounded-2xl p-5 text-center">
-                  <div className={`text-3xl font-bold ${xpStats?.isFrozen ? "text-red-400" : "text-green-400"}`}>
-                    {xpStats?.isFrozen ? "❄️" : "✓"}
-                  </div>
-                  <div className="text-slate-500 text-xs mt-1">{xpStats?.isFrozen ? "Frozen" : "Active"}</div>
-                </div>
-              </div>
-
-              {/* 折扣资格 */}
-              {(discountEligibility?.novaDiscount || discountEligibility?.galaxyDiscount) && (
-                <div className="bg-dark-800 border border-dark-700 rounded-2xl p-6 space-y-3">
-                  <h4 className="text-white font-bold">🎁 Available Discounts</h4>
-                  {discountEligibility?.novaDiscount && (
-                    <div className="flex items-center justify-between p-3 bg-brand-blue/10 border border-brand-blue/20 rounded-xl">
-                      <div>
-                        <p className="text-brand-blue font-semibold text-sm">Nova 50% Off</p>
-                        <p className="text-slate-500 text-xs">Reached 500 XP milestone</p>
-                      </div>
-                      <button onClick={() => navigate("/membership")} className="px-4 py-2 bg-brand-blue hover:bg-blue-600 text-white text-xs font-bold rounded-lg transition-colors">Redeem</button>
-                    </div>
-                  )}
-                  {discountEligibility?.galaxyDiscount && (
-                    <div className="flex items-center justify-between p-3 bg-brand-purple/10 border border-brand-purple/20 rounded-xl">
-                      <div>
-                        <p className="text-brand-purple font-semibold text-sm">Galaxy 50% Off</p>
-                        <p className="text-slate-500 text-xs">Reached 2000 XP milestone</p>
-                      </div>
-                      <button onClick={() => navigate("/membership")} className="px-4 py-2 bg-brand-purple hover:bg-purple-600 text-white text-xs font-bold rounded-lg transition-colors">Redeem</button>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* XP 历史 */}
-              <div className="bg-dark-800 border border-dark-700 rounded-2xl p-6">
-                <h4 className="text-white font-bold mb-4">Recent Activity</h4>
-                {xpLoading ? (
-                  <div className="text-center py-8 text-slate-500">Loading...</div>
-                ) : xpHistory.length === 0 ? (
-                  <div className="text-center py-8 text-slate-500 text-sm">No XP activity yet. Start browsing and engaging!</div>
-                ) : (
-                  <div className="space-y-2">
-                    {xpHistory.map((record, i) => (
-                      <div key={record.id || i} className="flex items-center justify-between py-2.5 border-b border-dark-700 last:border-0">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm ${
-                            record.delta > 0 ? "bg-green-500/10 text-green-400" : "bg-red-500/10 text-red-400"
-                          }`}>
-                            {record.delta > 0 ? "+" : ""}
-                          </div>
-                          <div>
-                            <p className="text-white text-sm font-medium">
-                              {record.action === "DAILY_CHECKIN" ? "Daily Check-in" :
-                               record.action === "VIEW_POST" ? "Viewed Post" :
-                               record.action === "LIKE_POST" ? "Liked Post" :
-                               record.action === "COMMENT" ? "Posted Comment" :
-                               record.action === "READ_KB_ARTICLE" ? "Read KB Article" :
-                               record.action === "RECEIVED_LIKE" ? "Received Like" :
-                               record.action === "CREATE_POST" ? "Created Post" : record.action}
-                            </p>
-                            <p className="text-slate-500 text-xs">
-                              {record.createdAt?.toDate ? new Date(record.createdAt.toDate()).toLocaleDateString() : "Recently"}
-                            </p>
-                          </div>
-                        </div>
-                        <span className={`font-bold text-sm ${record.delta > 0 ? "text-green-400" : "text-red-400"}`}>
-                          {record.delta > 0 ? "+" : ""}{record.delta} XP
-                        </span>
-                      </div>
-                    ))}
-                  </div>
                 )}
               </div>
             </div>

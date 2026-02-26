@@ -9,6 +9,7 @@ import {
   User as FirebaseUser
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, getDocs, collection, serverTimestamp } from 'firebase/firestore';
+import { initUserXPStats } from './xp.service';
 import { auth, db } from '../firebase.config';
 import { 
   User, 
@@ -84,6 +85,9 @@ export async function registerUser(
       };
       await setDoc(doc(db, 'architectProfiles', firebaseUser.uid), architectProfile);
     }
+    // 5. 初始化XP积分档案
+    await initUserXPStats(firebaseUser.uid);
+
     return user;
   } catch (error: any) {
     console.error('❌ Registration error:', error);

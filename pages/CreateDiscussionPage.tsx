@@ -8,6 +8,8 @@ import { logModerationAction } from '../services/moderation-log.service';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Send, ImageIcon as ImageIcon, Hash } from 'lucide-react';
 import { AlertCircle, Type, Paperclip } from 'lucide-react';
+import { canUserPost, awardXP, getUserXPStats } from '../services/xp.service';
+import { XP_POST_THRESHOLD, UserXPStats } from '../types';
 
 export const CreateDiscussionPage: React.FC = () => {
   const navigate = useNavigate();
@@ -25,6 +27,8 @@ export const CreateDiscussionPage: React.FC = () => {
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
   const [uploadingImages, setUploadingImages] = useState(false);
+  const [xpStats, setXpStats] = useState<UserXPStats | null>(null);
+  const [showXpBlocker, setShowXpBlocker] = useState(false);
   useEffect(() => {
     async function loadUser() {
       const currentUser = getCurrentUser();
@@ -34,12 +38,24 @@ export const CreateDiscussionPage: React.FC = () => {
       }
       const profile = await getCompleteUserProfile(currentUser.uid);
       setUserProfile(profile);
+      const stats = await getUserXPStats(currentUser.uid);
+      setXpStats(stats);
     }
     loadUser();
   }, [navigate]);
 
   const handleSubmit = async () => {
     setError('');
+
+    // ── XP 门槛检查 ──
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+      const postCheck = await canUserPost(currentUser.uid);
+      if (!postCheck.canPost) {
+        setShowXpBlocker(true);
+        return;
+      }
+    }
 
     if (!title.trim() || !content.trim() || !category) {
       setError('Please fill in all required fields');
@@ -166,6 +182,12 @@ export const CreateDiscussionPage: React.FC = () => {
         title,
         postId
       );
+      // 发帖成功：扣减积分
+      if (currentUser) {
+        await awardXP(currentUser.uid, 'CREATE_POST', postId);
+        const updated = await getUserXPStats(currentUser.uid);
+        setXpStats(updated);
+      }
       navigate('/forum');
     } catch (error) {
       console.error('Error creating post:', error);
@@ -239,6 +261,26 @@ export const CreateDiscussionPage: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto pb-12 space-y-6">
+      {/* XP 不足弹窗 */}
+      {showXpBlocker && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-dark-800 border-2 border-brand-purple/40 rounded-3xl p-8 max-w-md w-full mx-4 text-center shadow-2xl">
+            <div className="w-16 h-16 bg-brand-purple/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <span className="text-3xl">🔒</span>
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">Posting Locked</h3>
+            <p className="text-slate-300 text-sm mb-4">You need <span className="text-brand-blue font-bold">{XP_POST_THRESHOLD} XP</span> to post. You currently have <span className="font-bold text-white">{xpStats?.availableXp ?? 0} XP</span>.</p>
+            <div className="h-2 bg-dark-900 rounded-full overflow-hidden mb-4">
+              <div className="h-full bg-brand-blue rounded-full transition-all" style={{ width: `${Math.min(100, ((xpStats?.availableXp ?? 0) / XP_POST_THRESHOLD) * 100)}%` }} />
+            </div>
+            <p className="text-slate-500 text-xs mb-6">Earn XP by browsing posts, liking, commenting, and reading KB articles.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setShowXpBlocker(false)} className="flex-1 py-2 bg-dark-700 border border-dark-600 text-slate-300 rounded-xl text-sm font-medium hover:bg-dark-600 transition-colors">Close</button>
+              <Link to="/forum" className="flex-1 py-2 bg-brand-blue hover:bg-blue-600 text-white rounded-xl text-sm font-bold transition-colors flex items-center justify-center">Browse Forum</Link>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="flex items-center gap-4">
         <Link 
           to="/forum" 
@@ -406,6 +448,28 @@ export const CreateDiscussionPage: React.FC = () => {
         </div>
 
         <div className="space-y-6">
+          {/* XP 进度卡片 */}
+          <div className="bg-dark-800 border border-dark-700 rounded-2xl p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-lg">⚡</span>
+              <h3 className="font-bold text-white text-sm">Your XP Status</h3>
+            </div>
+            <div className="flex items-end justify-between mb-2">
+              <span className="text-2xl font-bold text-white">{xpStats?.availableXp ?? 0}</span>
+              <span className="text-slate-500 text-xs">/ {XP_POST_THRESHOLD} needed</span>
+            </div>
+            <div className="h-2 bg-dark-900 rounded-full overflow-hidden mb-3">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${(xpStats?.availableXp ?? 0) >= XP_POST_THRESHOLD ? "bg-green-500" : "bg-brand-blue"}`}
+                style={{ width: `${Math.min(100, ((xpStats?.availableXp ?? 0) / XP_POST_THRESHOLD) * 100)}%` }}
+              />
+            </div>
+            {(xpStats?.availableXp ?? 0) >= XP_POST_THRESHOLD ? (
+              <p className="text-green-400 text-xs font-medium">✓ Posting unlocked</p>
+            ) : (
+              <p className="text-slate-500 text-xs">Earn XP by browsing, liking, commenting & reading KB articles.</p>
+            )}
+          </div>
           <div className="bg-brand-blue/5 border border-brand-blue/20 rounded-2xl p-6">
             <div className="flex items-start gap-3 mb-4">
               <div className="p-2 bg-brand-blue/10 rounded-lg text-brand-blue">

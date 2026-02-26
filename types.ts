@@ -220,3 +220,81 @@ export interface CompleteUserProfile extends User {
   architectProfile?: ArchitectProfile;
   sourceProfile?: SourceProfile;
 }
+// ============================================
+// 积分系统（XP System）
+// ============================================
+
+// 积分行为类型
+export type XPActionType =
+  | 'DAILY_CHECKIN'       // 每日签到 +2
+  | 'VIEW_POST'           // 浏览帖子 +1（每篇上限1次，每日上限5）
+  | 'LIKE_POST'           // 点赞帖子 +2（每日上限10）
+  | 'COMMENT'             // 评论/回复 +8
+  | 'READ_KB_ARTICLE'     // 阅读KB文章 +10
+  | 'RECEIVED_LIKE'       // 被他人点赞 +5
+  | 'CREATE_POST';        // 发帖消耗 -5
+
+// 各行为对应的XP值
+export const XP_RULES: Record<XPActionType, number> = {
+  DAILY_CHECKIN: 2,
+  VIEW_POST: 1,
+  LIKE_POST: 2,
+  COMMENT: 8,
+  READ_KB_ARTICLE: 10,
+  RECEIVED_LIKE: 5,
+  CREATE_POST: -5,
+};
+
+// 每日XP上限
+export const XP_DAILY_LIMITS: Partial<Record<XPActionType, number>> = {
+  VIEW_POST: 5,
+  LIKE_POST: 10,
+};
+
+// 发帖所需最低XP门槛
+export const XP_POST_THRESHOLD = 100;
+
+// 积分兑换折扣门槛
+export const XP_DISCOUNT_THRESHOLDS = {
+  NOVA_HALF_PRICE: 500,
+  GALAXY_HALF_PRICE: 2000,
+};
+
+// 积分冻结天数
+export const XP_FREEZE_DAYS = 180;
+
+// 签到连续无互动天数上限
+export const XP_ZOMBIE_CHECKIN_DAYS = 3;
+
+// 单条XP记录
+export interface XPRecord {
+  id?: string;
+  userId: string;
+  action: XPActionType;
+  delta: number;
+  targetId?: string;
+  createdAt: any;
+}
+
+// 用户XP状态
+export interface UserXPStats {
+  userId: string;
+  totalXp: number;
+  availableXp: number;
+  lastCheckinDate?: string;
+  consecutiveCheckinDays: number;
+  lastInteractionDate?: string;
+  dailyXpLog: {
+    date: string;
+    VIEW_POST?: number;
+    LIKE_POST?: number;
+  };
+  isFrozen: boolean;
+  lastActiveDate?: string;
+  canPost: boolean;
+  discountUsed?: {
+    NOVA_HALF_PRICE?: boolean;
+    GALAXY_HALF_PRICE?: boolean;
+  };
+  updatedAt: any;
+}

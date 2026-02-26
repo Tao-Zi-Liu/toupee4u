@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Zap, Crown, Check, Sparkles, Orbit, ArrowRight, Loader } from 'lucide-react';
 import { getCurrentUser, getCompleteUserProfile} from '../services/auth.service';
-import { getUserXPStats, checkDiscountEligibility, useDiscount } from '../services/xp.service';
-import { UserXPStats, XP_POST_THRESHOLD, XP_DISCOUNT_THRESHOLDS } from '../types';
 import { UserTier } from '../types';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase.config';
@@ -90,8 +88,6 @@ export const MembershipPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [upgrading, setUpgrading] = useState(false);
   const [selectedTier, setSelectedTier] = useState<UserTier | null>(null);
-  const [xpStats, setXpStats] = useState<UserXPStats | null>(null);
-  const [discountEligibility, setDiscountEligibility] = useState<any>(null);
 
   useEffect(() => {
     async function loadProfile() {
@@ -111,33 +107,10 @@ export const MembershipPage: React.FC = () => {
         };
         setCurrentTier(tierMap[profile.galaxyLevel] || UserTier.NEBULA);
       }
-      // 加载XP积分和折扣资格
-      const [stats, discount] = await Promise.all([
-        getUserXPStats(user.uid),
-        checkDiscountEligibility(user.uid)
-      ]);
-      setXpStats(stats);
-      setDiscountEligibility(discount);
       setLoading(false);
     }
     loadProfile();
   }, [navigate]);
-
-  // 计算折扣后价格
-  const getDiscountedPrice = (tier: UserTier): { original: string; discounted: string | null; hasDiscount: boolean } => {
-    const prices: Record<string, number> = { Nova: 9, Galaxy: 19, Supernova: 49 };
-    const name = TIER_CONFIG[tier].name;
-    const base = prices[name];
-    if (!base) return { original: TIER_CONFIG[tier].price, discounted: null, hasDiscount: false };
-
-    if (name === 'Nova' && discountEligibility?.novaDiscount) {
-      return { original: `$${base}/month`, discounted: `$${base / 2}/month`, hasDiscount: true };
-    }
-    if (name === 'Galaxy' && discountEligibility?.galaxyDiscount) {
-      return { original: `$${base}/month`, discounted: `$${base / 2}/month`, hasDiscount: true };
-    }
-    return { original: TIER_CONFIG[tier].price, discounted: null, hasDiscount: false };
-  };
 
   const handleUpgrade = async (tier: UserTier) => {
     const user = getCurrentUser();
@@ -149,14 +122,6 @@ export const MembershipPage: React.FC = () => {
     try {
       // 模拟支付处理延迟
       await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // 标记折扣已使用
-      const tierName = TIER_CONFIG[tier].name;
-      if (tierName === 'Nova' && discountEligibility?.novaDiscount) {
-        await useDiscount(user.uid, 'NOVA_HALF_PRICE');
-      } else if (tierName === 'Galaxy' && discountEligibility?.galaxyDiscount) {
-        await useDiscount(user.uid, 'GALAXY_HALF_PRICE');
-      }
 
       // 直接更新用户等级
       await setDoc(doc(db, 'users', user.uid), {
@@ -213,41 +178,6 @@ export const MembershipPage: React.FC = () => {
         </div>
       </div>
 
-      {/* XP 积分横幅 */}
-      {xpStats && (
-        <div className="max-w-2xl mx-auto bg-dark-800 border border-dark-700 rounded-2xl p-5">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <span className="text-lg">⚡</span>
-              <span className="text-white font-bold">Your XP</span>
-              <span className="text-2xl font-extrabold text-white ml-1">{xpStats.availableXp}</span>
-            </div>
-            <div className="text-right">
-              {discountEligibility?.novaDiscount && (
-                <span className="px-3 py-1 bg-brand-blue/20 border border-brand-blue/30 text-brand-blue text-xs font-bold rounded-full mr-2">Nova 50% OFF</span>
-              )}
-              {discountEligibility?.galaxyDiscount && (
-                <span className="px-3 py-1 bg-brand-purple/20 border border-brand-purple/30 text-brand-purple text-xs font-bold rounded-full">Galaxy 50% OFF</span>
-              )}
-              {!discountEligibility?.novaDiscount && !discountEligibility?.galaxyDiscount && (
-                <span className="text-slate-500 text-xs">Earn 500 XP for Nova discount</span>
-              )}
-            </div>
-          </div>
-          <div className="h-1.5 bg-dark-900 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-brand-blue rounded-full transition-all duration-700"
-              style={{ width: `${Math.min(100, (xpStats.availableXp / XP_DISCOUNT_THRESHOLDS.NOVA_HALF_PRICE) * 100)}%` }}
-            />
-          </div>
-          <div className="flex justify-between text-xs text-slate-600 mt-1">
-            <span>0</span>
-            <span>500 XP → Nova 50% off</span>
-            <span>2000 XP → Galaxy 50% off</span>
-          </div>
-        </div>
-      )}
-
       {/* Pricing Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {tierOrder.map((tier, index) => {
@@ -277,23 +207,12 @@ export const MembershipPage: React.FC = () => {
                   <Icon className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-2">{config.name}</h3>
-                {(() => {
-                  const priceInfo = getDiscountedPrice(tier);
-                  return priceInfo.hasDiscount ? (
-                    <div>
-                      <div className="text-lg line-through text-slate-600">{priceInfo.original}</div>
-                      <div className="text-3xl font-extrabold text-green-400">{priceInfo.discounted}</div>
-                      <div className="text-xs font-bold text-green-500 mt-1">🎉 50% XP Discount Applied</div>
-                    </div>
-                  ) : (
-                    <div className="text-3xl font-extrabold text-white">
-                      {config.price.split('/')[0]}
-                      {config.price.includes('/') && (
-                        <span className="text-sm text-slate-500">/{config.price.split('/')[1]}</span>
-                      )}
-                    </div>
-                  );
-                })()}
+                <div className="text-3xl font-extrabold text-white">
+                  {config.price.split('/')[0]}
+                  {config.price.includes('/') && (
+                    <span className="text-sm text-slate-500">/{config.price.split('/')[1]}</span>
+                  )}
+                </div>
               </div>
 
               <ul className="space-y-3 mb-8">
