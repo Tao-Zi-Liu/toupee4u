@@ -242,7 +242,7 @@ export const AdminYouTubeCrawler: React.FC = () => {
                     <div className="h-64 overflow-y-auto space-y-1.5 custom-scrollbar text-emerald-500/80">
                        {generationLogs.map((log, i) => (
                           <div key={i} className="animate-in fade-in slide-in-from-left-2 duration-300">
-                            <span className="opacity-40">>></span> {log}
+                            <span className="opacity-40">{">>"}</span> {log}
                           </div>
                        ))}
                        <div className="w-2 h-4 bg-emerald-500 animate-pulse inline-block align-middle ml-1"></div>
@@ -397,7 +397,7 @@ export const AdminYouTubeCrawler: React.FC = () => {
                         </button>
                     </div>
                 </div>
-            </div>
+              </div>
 
          </div>
       )}
