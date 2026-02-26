@@ -117,7 +117,7 @@ export const ForumPage: React.FC = () => {
       <div className="flex flex-col md:flex-row justify-between items-end gap-4 border-b border-dark-700 pb-8">
         <div>
             <h1 className="text-3xl font-bold text-white mb-2">Community Forum</h1>
-            <p className="text-slate-300">Join the "Quantum State" collective. Real talk, no judgment.</p>
+            <p className="text-slate-300">The community for hair system enthusiasts. Real talk, real solutions.</p>
         </div>
         
           <div className="relative w-full md:w-auto md:min-w-[400px]">
@@ -274,7 +274,7 @@ export const ForumPage: React.FC = () => {
                 className="block bg-dark-800 rounded-2xl p-5 border border-dark-700 hover:border-brand-blue/50 transition cursor-pointer group shadow-lg shadow-black/5">
                 <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white text-xs font-bold ${topic.id % 2 === 0 ? 'bg-brand-purple shadow-lg shadow-purple-500/10' : 'bg-brand-blue shadow-lg shadow-blue-500/10'}`}>
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white text-xs font-bold ${topic.id.charCodeAt(0) % 2 === 0 ? 'bg-brand-purple shadow-lg shadow-purple-500/10' : 'bg-brand-blue shadow-lg shadow-blue-500/10'}`}>
                             {topic.authorName ? topic.authorName.split(' ').map((n: string) => n[0]).join('') : '?'}
                         </div>
                         <div>
