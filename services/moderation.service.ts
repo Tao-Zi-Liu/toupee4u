@@ -1,7 +1,7 @@
 // services/moderation.service.ts
 // Content moderation service with rule-based and AI moderation
 
-import { GEMINI_API_KEY } from '../src/config/secrets';
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
 
 const SENSITIVE_WORDS = [
   'fuck', 'shit', 'damn', 'bitch', 'asshole',

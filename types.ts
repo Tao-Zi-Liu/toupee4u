@@ -98,8 +98,8 @@ export const GALAXY_LEVELS = {
   SUPERNOVA: 'SUPERNOVA'    // L4 传说状态
 } as const;
 
-// 付费会员等级（内容访问权限）- 保留原有命名
-export type MembershipTier = 'free' | 'kinetic' | 'quantum';
+// 付费会员等级（内容访问权限）- 与 UserTier 保持一致
+export type MembershipTier = 'free' | 'nova' | 'galaxy' | 'supernova';
 
 // Voyager相关类型
 export type HairPattern = 

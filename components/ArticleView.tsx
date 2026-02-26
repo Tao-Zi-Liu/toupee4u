@@ -333,8 +333,8 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
           TOC 桌面侧边栏
       ══════════════════════════════════════════ */}
       {tocHeadings.length > 0 && !isLocked && (
-      <div className="hidden lg:block w-64 xl:w-72 flex-shrink-0">
-      <div className="fixed top-24 w-64 xl:w-72 bg-dark-800 border border-dark-700 rounded-2xl p-5 max-h-[calc(100vh-8rem)] overflow-y-auto">
+      <div className="hidden lg:block w-56 xl:w-64 flex-shrink-0">
+      <div className="fixed top-24 right-6 xl:right-8 w-56 xl:w-64 bg-dark-800 border border-dark-700 rounded-2xl p-5 max-h-[calc(100vh-8rem)] overflow-y-auto z-10">
             <div className="flex items-center gap-2 mb-4">
               <List className="w-4 h-4 text-brand-blue" />
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Contents</span>

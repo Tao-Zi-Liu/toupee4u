@@ -184,7 +184,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
               className={`group flex items-center px-3 py-2 text-sm font-bold rounded-lg transition-all duration-200 relative overflow-hidden whitespace-nowrap bg-brand-purple/10 text-brand-purple border border-brand-purple/20 hover:bg-brand-purple/20 ${isCollapsed ? 'justify-center' : ''}`}
             >
               <Crown className={`h-5 w-5 flex-shrink-0 transition-colors ${isCollapsed ? '' : 'mr-3'}`} />
-              {!isCollapsed && <span>Upgrade to Kinetic</span>}
+              {!isCollapsed && <span>Upgrade to Nova</span>}
             </Link>
           </nav>
         </div>
