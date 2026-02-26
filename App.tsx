@@ -306,11 +306,16 @@ useEffect(() => {
                                 <p className="text-slate-500 text-xs">{userProfile.handle}</p>
                             </div>
                             <div className="flex flex-wrap gap-2">
-                                <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-brand-purple/10 border border-brand-purple/20 text-[10px] font-bold text-brand-purple uppercase tracking-wider">
-                                    <Crown className="w-3 h-3" /> Quantum
+                                <div className={`flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${
+                                  userProfile.galaxyLevel === 'SUPERNOVA' ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' :
+                                  userProfile.galaxyLevel === 'GALAXY' ? 'bg-brand-purple/10 border-brand-purple/20 text-brand-purple' :
+                                  userProfile.galaxyLevel === 'NOVA' ? 'bg-brand-blue/10 border-brand-blue/20 text-brand-blue' :
+                                  'bg-slate-700/50 border-slate-600 text-slate-400'
+                                }`}>
+                                    <Crown className="w-3 h-3" /> {userProfile.galaxyLevel}
                                 </div>
                                 <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-yellow-500/10 border border-yellow-500/20 text-[10px] font-bold text-yellow-500 uppercase tracking-wider">
-                                    <Rocket className="w-3 h-3" /> Lvl {userProfile.isExpert ? '99' : '3'}
+                                    <Rocket className="w-3 h-3" /> {userProfile.role}
                                 </div>
                             </div>
                         </div>
