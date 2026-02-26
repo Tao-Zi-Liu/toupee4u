@@ -1,0 +1,13 @@
+# API Keys and Secrets
+src/config/secrets.ts
+
+# Dependencies
+node_modules/
+
+# Build
+dist/
+build/
+
+# Environment
+.env
+.env.local

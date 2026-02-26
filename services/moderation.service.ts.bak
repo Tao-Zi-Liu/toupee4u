@@ -1,0 +1,250 @@
+// services/moderation.service.ts
+// 内容审核服务
+
+import { GEMINI_API_KEY } from '../src/config/secrets';
+
+/**
+ * 敏感词列表（示例）
+ * 实际使用时应该更全面，可以从服务器动态加载
+ */
+const SENSITIVE_WORDS = [
+  // 脏话
+  'fuck', 'shit', 'damn', 'bitch', 'asshole',
+  // 侮辱性词汇
+  'stupid', 'idiot', 'moron', 'loser',
+  // 仇恨言论
+  'hate', 'kill', 'die',
+  // 添加更多...
+];
+
+/**
+ * 垃圾信息模式
+ */
+const SPAM_PATTERNS = [
+  /(.)\1{5,}/gi, // 重复字符 (aaaaa)
+  /https?:\/\/[^\s]+/gi, // URL链接（可选是否允许）
+  /\b\d{10,}\b/g, // 长数字（可能是电话号码）
+];
+
+/**
+ * 内容审核结果
+ */
+export interface ModerationResult {
+  isClean: boolean;
+  issues: string[];
+  severity: 'low' | 'medium' | 'high';
+  suggestions: string[];
+}
+
+/**
+ * 检测敏感词
+ */
+function detectSensitiveWords(text: string): string[] {
+  const lowerText = text.toLowerCase();
+  const found: string[] = [];
+  
+  SENSITIVE_WORDS.forEach(word => {
+    if (lowerText.includes(word.toLowerCase())) {
+      found.push(word);
+    }
+  });
+  
+  return found;
+}
+
+/**
+ * 检测垃圾信息
+ */
+function detectSpam(text: string): string[] {
+  const issues: string[] = [];
+  
+  SPAM_PATTERNS.forEach((pattern, index) => {
+    if (pattern.test(text)) {
+      switch(index) {
+        case 0:
+          issues.push('Excessive repeated characters');
+          break;
+        case 1:
+          issues.push('Suspicious links detected');
+          break;
+        case 2:
+          issues.push('Possible phone number or spam');
+          break;
+      }
+    }
+  });
+  
+  return issues;
+}
+
+/**
+ * 检测全大写（可能是shouting）
+ */
+function detectShouting(text: string): boolean {
+  const words = text.split(/\s+/);
+  const capsWords = words.filter(word => 
+    word.length > 3 && word === word.toUpperCase() && /[A-Z]/.test(word)
+  );
+  
+  // 如果超过50%的单词都是大写，认为是shouting
+  return capsWords.length > words.length * 0.5;
+}
+
+/**
+ * 基于规则的内容审核
+ */
+export function moderateContent(text: string): ModerationResult {
+  const issues: string[] = [];
+  const suggestions: string[] = [];
+  let severity: 'low' | 'medium' | 'high' = 'low';
+  
+  // 检查是否为空
+  if (!text.trim()) {
+    return {
+      isClean: false,
+      issues: ['Content is empty'],
+      severity: 'high',
+      suggestions: ['Please enter some content']
+    };
+  }
+  
+  // 检查长度
+  if (text.length < 10) {
+    issues.push('Content is too short');
+    suggestions.push('Please provide more details (at least 10 characters)');
+    severity = 'medium';
+  }
+  
+  // 检测敏感词
+  const sensitiveWords = detectSensitiveWords(text);
+  if (sensitiveWords.length > 0) {
+    issues.push(`Inappropriate language detected: ${sensitiveWords.join(', ')}`);
+    suggestions.push('Please remove offensive language');
+    severity = 'high';
+  }
+  
+  // 检测垃圾信息
+  const spamIssues = detectSpam(text);
+  if (spamIssues.length > 0) {
+    issues.push(...spamIssues);
+    suggestions.push('Please remove spam-like content');
+    severity = severity === 'high' ? 'high' : 'medium';
+  }
+  
+  // 检测shouting
+  if (detectShouting(text)) {
+    issues.push('Excessive use of capital letters');
+    suggestions.push('Please use normal capitalization');
+    severity = severity === 'high' ? 'high' : 'low';
+  }
+  
+  return {
+    isClean: issues.length === 0,
+    issues,
+    severity,
+    suggestions
+  };
+}
+
+/**
+ * AI内容审核（使用Gemini API）
+ */
+export async function aiModerateContent(text: string): Promise<ModerationResult> {
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: `You are a content moderator for a hair system/toupee community platform. Analyze the following content in ANY language and determine if it's appropriate.
+
+Content to review:
+"""
+${text}
+"""
+
+Respond ONLY with valid JSON in this exact format (no extra text, no markdown):
+{
+  "isClean": true or false,
+  "issues": ["list of specific issues found"],
+  "severity": "low" or "medium" or "high",
+  "suggestions": ["list of suggestions to improve the content"],
+  "reason": "brief explanation"
+}
+
+Consider issues in ANY language (English, Chinese, Japanese, etc.):
+- Offensive language or personal attacks
+- Spam or promotional content
+- Inappropriate topics (not related to hair systems/toupees/wigs)
+- Hate speech or discrimination
+- Threats or harassment
+- Excessive negativity or trolling
+- Medical misinformation
+- Profanity and vulgar language in any language
+
+Be culturally aware and understand context. Some criticism is okay if constructive.
+
+IMPORTANT: Your response must be appropriate regardless of the language used in the content.`
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.1,
+            maxOutputTokens: 1000,
+          }
+        })
+      }
+    );
+
+    const data = await response.json();
+    
+    if (!data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
+      throw new Error('Invalid Gemini API response');
+    }
+    
+    // 提取JSON响应
+    let resultText = data.candidates[0].content.parts[0].text;
+    
+    // 移除可能的markdown代码块标记
+    resultText = resultText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    
+    const result = JSON.parse(resultText);
+    
+    return {
+      isClean: result.isClean,
+      issues: result.issues || [],
+      severity: result.severity || 'low',
+      suggestions: result.suggestions || []
+    };
+    
+  } catch (error) {
+    console.error('AI moderation error:', error);
+    // 如果AI审核失败，降级到规则审核
+    return moderateContent(text);
+  }
+}
+
+/**
+ * 混合审核策略（AI优先）
+ */
+export async function smartModerate(text: string): Promise<ModerationResult> {
+  try {
+    // 直接使用AI审核（支持多语言）
+    return await aiModerateContent(text);
+  } catch (error) {
+    console.error('AI moderation failed, using rule-based fallback:', error);
+    // AI失败时降级到规则审核
+    return moderateContent(text);
+  }
+}
+
+/**
+ * 快速检查（用于实时提示）
+ */
+export function quickCheck(text: string): boolean {
+  return moderateContent(text).isClean;
+}

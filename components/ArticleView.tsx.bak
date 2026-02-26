@@ -1,0 +1,113 @@
+
+import React, { useState } from 'react';
+import { Article, UserTier, Expert } from '../types';
+import { 
+  Lock, 
+  Clock, 
+  ArrowLeft, 
+  ArrowRight, 
+  ThumbsUp, 
+  ThumbsDown,
+  Share2,
+  MessageSquare,
+  ShieldCheck,
+  ChevronRight,
+  ExternalLink,
+  BookOpen,
+  Sparkles,
+  Orbit
+} from 'lucide-react';
+import { Link } from 'react-router-dom';
+
+interface ArticleViewProps {
+  article: Article;
+  userTier?: UserTier;
+  expert?: Expert;
+  prevArticle?: { id: string; title: string; path: string };
+  nextArticle?: { id: string; title: string; path: string };
+}
+
+export const ArticleView: React.FC<ArticleViewProps> = ({ 
+  article, 
+  userTier = UserTier.NEBULA,
+  expert,
+  prevArticle,
+  nextArticle
+}) => {
+  const [activeHeading, setActiveHeading] = useState<string>('intro');
+  
+  const toc = [
+    { id: 'intro', title: 'Molecular Overview' },
+    { id: 'mechanics', title: 'Adhesion Mechanics' },
+    { id: 'application', title: 'Application Protocol' },
+    { id: 'longevity', title: 'Longevity Variables' }
+  ];
+
+  const tiers = [UserTier.NEBULA, UserTier.NOVA, UserTier.GALAXY, UserTier.SUPERNOVA];
+  const articleTierIndex = tiers.indexOf(article.tier);
+  const userTierIndex = tiers.indexOf(userTier);
+  const isLocked = userTierIndex < articleTierIndex;
+
+  return (
+    <div className="flex flex-col lg:flex-row gap-12 items-start">
+      <div className="flex-1 min-w-0 max-w-4xl">
+        <article className="space-y-10">
+          <div className="space-y-6">
+            <div className="flex flex-wrap items-center gap-4 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+               <span className="text-brand-blue flex items-center gap-1.5 bg-brand-blue/10 px-2.5 py-1 rounded-md border border-brand-blue/20">
+                  <ShieldCheck className="w-3.5 h-3.5" /> Physics Vetted
+               </span>
+               <span className="flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5" /> {article.readTime} Read
+               </span>
+               {article.tier !== UserTier.NEBULA && (
+                  <span className="flex items-center gap-1.5 text-brand-purple">
+                    <Orbit className="w-3.5 h-3.5" /> {article.tier} Tier
+                  </span>
+               )}
+            </div>
+
+            <h1 className="text-4xl md:text-6xl font-extrabold text-white tracking-tight leading-[1.1]">
+              {article.title}
+            </h1>
+          </div>
+
+          <div className="relative">
+            {isLocked ? (
+              <div className="relative">
+                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-dark-900/80 to-dark-900 z-10 pointer-events-none"></div>
+                 <div className="prose prose-lg prose-invert max-w-none opacity-20 select-none blur-[2px]">
+                    <h3>The Mechanics of Entropy</h3>
+                    <p>When analyzing the molecular structure of Swiss lace versus French lace denier...</p>
+                 </div>
+                 
+                 <div className="absolute inset-0 z-20 flex items-center justify-center p-6">
+                    <div className="w-full max-w-md bg-dark-800 border-2 border-brand-purple/30 rounded-3xl p-8 shadow-2xl text-center backdrop-blur-md">
+                        <div className="w-16 h-16 bg-brand-purple/20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-brand-purple">
+                             <Lock className="w-8 h-8" />
+                        </div>
+                        <h3 className="text-xl font-bold text-white mb-2">Astronomical Protocol Restricted</h3>
+                        <p className="text-slate-300 text-sm mb-8">
+                          This technical module contains proprietary "Physics of Hair" research available exclusively to <strong>{article.tier}</strong> members.
+                        </p>
+                        <Link 
+                            to="/membership" 
+                            className="block w-full py-4 bg-brand-purple hover:bg-purple-600 text-white rounded-xl font-bold transition-all shadow-lg shadow-purple-500/20"
+                        >
+                          Unlock Tier Access
+                        </Link>
+                    </div>
+                 </div>
+              </div>
+            ) : (
+              <div 
+                className="article-content max-w-none"
+                dangerouslySetInnerHTML={{ __html: article.content }} 
+              />
+            )}
+          </div>
+        </article>
+      </div>
+    </div>
+  );
+};
