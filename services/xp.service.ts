@@ -18,6 +18,7 @@ import {
   XP_ZOMBIE_CHECKIN_DAYS,
 } from '../types';
 
+
 // ── 工具函数 ─────────────────────────────────
 function todayStr(): string {
   return new Date().toISOString().slice(0, 10); // YYYY-MM-DD

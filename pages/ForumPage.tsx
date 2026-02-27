@@ -20,6 +20,7 @@ import {
 import { searchPosts, SearchFilters, saveSearchHistory } from '../services/search.service';
 import { getPosts, getRelativeTime, Post, checkUserLiked } from '../services/post.service';
 import { getCurrentUser } from '../services/auth.service';
+import { awardXP } from '../services/xp.service';
 import { checkIsFollowing, followUser, unfollowUser } from '../services/follow.service';
 
 export const ForumPage: React.FC = () => {
@@ -72,6 +73,23 @@ export const ForumPage: React.FC = () => {
   useEffect(() => {
     loadPosts();
   }, []);
+
+  // XP: 浏览帖子
+  const handleViewPost = async (postId: string) => {
+    const currentUser = getCurrentUser();
+    if (!currentUser) return;
+    await awardXP(currentUser.uid, 'VIEW_POST', postId);
+  };
+
+  // XP: 点赞帖子（在现有点赞逻辑基础上叠加XP）
+  const handleLikeXP = async (postId: string) => {
+    const currentUser = getCurrentUser();
+    if (!currentUser) return;
+    if (!userLikes.has(postId)) {
+      // 点赞时才给XP，取消点赞不扣分
+      await awardXP(currentUser.uid, 'LIKE_POST', postId);
+    }
+  };
 
   const handleSearch = async () => {
     if (!searchKeyword.trim() && selectedCategory === 'all') {
@@ -270,7 +288,8 @@ export const ForumPage: React.FC = () => {
         ) : filteredTopics.map((topic: any) => (
             <Link 
                 key={topic.id}
-                to={`/forum/post/${topic.id}`} 
+                to={`/forum/post/${topic.id}`}
+                onClick={() => handleViewPost(topic.id)}
                 className="block bg-dark-800 rounded-2xl p-5 border border-dark-700 hover:border-brand-blue/50 transition cursor-pointer group shadow-lg shadow-black/5">
                 <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-3">
@@ -328,12 +347,18 @@ export const ForumPage: React.FC = () => {
                             ))}
                         </div>
                         <div className="flex gap-4 text-slate-500 text-xs font-bold">
-                            <span className={`flex items-center gap-1.5 transition-colors ${
-                              userLikes.has(topic.id) ? 'text-red-500' : 'text-slate-500 hover:text-white'
-                            }`}>
-                              <ThumbsUp className={`w-3.5 h-3.5 ${userLikes.has(topic.id) ? 'fill-current' : ''}`} /> 
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleLikeXP(topic.id);
+                              }}
+                              className={`flex items-center gap-1.5 transition-colors ${
+                                userLikes.has(topic.id) ? 'text-red-500' : 'text-slate-500 hover:text-white'
+                              }`}>
+                              <ThumbsUp className={`w-3.5 h-3.5 ${userLikes.has(topic.id) ? 'fill-current' : ''}`} />
                               {topic.likes}
-                            </span>
+                            </button>
                             <span className="flex items-center gap-1.5 hover:text-white transition-colors"><MessageSquare className="w-3.5 h-3.5" /> {topic.comments}</span>
                             <span className="flex items-center gap-1.5 hover:text-white transition-colors"><Eye className="w-3.5 h-3.5" /> {topic.views || 0}</span>
                         </div>

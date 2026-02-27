@@ -8,6 +8,13 @@ import { UserTier } from '../types';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase.config';
 
+// XP 门槛：付费 + XP 双重条件才能升级
+const XP_UNLOCK_THRESHOLDS: Partial<Record<UserTier, number>> = {
+  [UserTier.NOVA]: 200,
+  [UserTier.GALAXY]: 800,
+  [UserTier.SUPERNOVA]: 2000,
+};
+
 // ✅ 修复：键名使用 UserTier 枚举值（'Nebula'、'Nova' 等），而不是 'NEBULA'、'NOVA'
 const TIER_CONFIG: Record<UserTier, {
   name: string;
@@ -186,6 +193,13 @@ export const MembershipPage: React.FC = () => {
   const tierOrder = [UserTier.NEBULA, UserTier.NOVA, UserTier.GALAXY, UserTier.SUPERNOVA];
   const currentTierIndex = tierOrder.indexOf(currentTier);
 
+  // 检查某个等级的 XP 是否达标
+  const getXPStatus = (tier: UserTier): { required: number; current: number; met: boolean; needed: number } => {
+    const required = XP_UNLOCK_THRESHOLDS[tier] ?? 0;
+    const current = xpStats?.totalXp ?? 0;
+    return { required, current, met: current >= required, needed: Math.max(0, required - current) };
+  };
+
   return (
     <div className="max-w-7xl mx-auto space-y-12 pb-20">
       
@@ -255,7 +269,9 @@ export const MembershipPage: React.FC = () => {
           const Icon = config.icon;
           const isCurrent = tier === currentTier;
           const isUpgrade = index > currentTierIndex;
-          const canChange = !isCurrent && tier !== UserTier.NEBULA;
+          const xpStatus = getXPStatus(tier);
+          const xpMet = tier === UserTier.NEBULA || xpStatus.met;
+          const canChange = !isCurrent && tier !== UserTier.NEBULA && xpMet;
 
           return (
             <div
@@ -296,6 +312,32 @@ export const MembershipPage: React.FC = () => {
                 })()}
               </div>
 
+              {/* XP 门槛要求 */}
+              {tier !== UserTier.NEBULA && (
+                <div className={`mb-5 p-3 rounded-xl border ${xpMet ? 'border-green-500/20 bg-green-500/5' : 'border-amber-500/20 bg-amber-500/5'}`}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">⚡ XP Required</span>
+                    <span className={`text-xs font-bold ${xpMet ? 'text-green-400' : 'text-amber-400'}`}>
+                      {xpStatus.current} / {xpStatus.required} XP
+                    </span>
+                  </div>
+                  <div className="h-1.5 bg-dark-900 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-700 ${xpMet ? 'bg-green-500' : 'bg-amber-500'}`}
+                      style={{ width: `${Math.min(100, (xpStatus.current / xpStatus.required) * 100)}%` }}
+                    />
+                  </div>
+                  {!xpMet && (
+                    <p className="text-amber-400 text-xs mt-1.5 font-medium">
+                      Need {xpStatus.needed} more XP to unlock
+                    </p>
+                  )}
+                  {xpMet && (
+                    <p className="text-green-400 text-xs mt-1.5 font-medium">✓ XP requirement met!</p>
+                  )}
+                </div>
+              )}
+
               <ul className="space-y-3 mb-8">
                 {config.features.map((feature, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm text-slate-300">
@@ -313,6 +355,8 @@ export const MembershipPage: React.FC = () => {
                     ? 'bg-dark-700 text-slate-500 cursor-not-allowed'
                     : tier === UserTier.NEBULA
                     ? 'bg-dark-700 text-slate-500 cursor-not-allowed'
+                    : !xpMet
+                    ? 'bg-dark-700 text-amber-500/70 cursor-not-allowed border border-amber-500/20'
                     : upgrading
                     ? 'bg-dark-700 text-slate-500 cursor-not-allowed'
                     : isUpgrade
@@ -326,6 +370,8 @@ export const MembershipPage: React.FC = () => {
                   'Current Plan'
                 ) : tier === UserTier.NEBULA ? (
                   'Free Tier'
+                ) : !xpMet ? (
+                  <>⚡ Need {xpStatus.needed} more XP</>
                 ) : isUpgrade ? (
                   <>Upgrade Now <ArrowRight className="w-4 h-4" /></>
                 ) : (
@@ -341,6 +387,10 @@ export const MembershipPage: React.FC = () => {
       <div className="bg-dark-800 rounded-3xl border border-dark-700 p-8 max-w-3xl mx-auto">
         <h3 className="text-2xl font-bold text-white mb-6">Frequently Asked Questions</h3>
         <div className="space-y-4">
+          <div>
+            <h4 className="text-white font-semibold mb-1">Why do I need XP to upgrade?</h4>
+            <p className="text-slate-400 text-sm">We believe great communities are built by engaged members. XP requirements ensure that premium tiers are available to members who actively contribute — Nova requires 200 XP, Galaxy 800 XP, and Supernova 2000 XP. Earn XP by reading articles, commenting, and participating daily.</p>
+          </div>
           <div>
             <h4 className="text-white font-semibold mb-1">Can I cancel anytime?</h4>
             <p className="text-slate-400 text-sm">Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.</p>
