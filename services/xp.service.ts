@@ -147,13 +147,14 @@ export async function awardXP(
     }
 
     // ── 写入XP记录 ──
-    const record: XPRecord = {
+    // targetId 可能为 undefined，Firestore 不接受 undefined 字段
+    const record: Record<string, any> = {
       userId,
       action,
       delta: actualDelta,
-      targetId,
       createdAt: serverTimestamp(),
     };
+    if (targetId !== undefined) record.targetId = targetId;
     await addDoc(collection(db, 'xpRecords'), record);
 
     // ── 更新用户XP Stats ──

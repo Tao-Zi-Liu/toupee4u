@@ -3,6 +3,7 @@ import { ForYouPage } from './pages/ForYouPage';
 import { onAuthChange, getCompleteUserProfile, getCurrentUser } from './services/auth.service';
 import { subscribeToNotifications, markAsRead, markAllAsRead } from './services/notification.service';
 import { UserRole, GalaxyLevel, MembershipTier } from './types';
+import { dailyCheckin, getUserXPStats } from './services/xp.service';
 import { logoutUser } from './services/auth.service';
 import { AiAssistant } from './components/AiAssistant';
 import { AccessGate } from './components/AccessGate';
@@ -78,6 +79,13 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     galaxyLevel: 'NEBULA' as GalaxyLevel,
     membershipTier: 'free' as MembershipTier
 });
+  const [checkinModal, setCheckinModal] = useState<{
+    show: boolean;
+    xpEarned: number;
+    consecutiveDays: number;
+    isZombie: boolean;
+    currentXP: number;
+  }>({ show: false, xpEarned: 0, consecutiveDays: 0, isZombie: false, currentXP: 0 });
 
 useEffect(() => {
     // 监听Firebase认证状态
@@ -96,6 +104,24 @@ useEffect(() => {
                     galaxyLevel: completeProfile.galaxyLevel,
                     membershipTier: completeProfile.membershipTier
                 });
+
+                // 登录时触发每日签到
+                try {
+                    const checkin = await dailyCheckin(firebaseUser.uid);
+                    const stats = await getUserXPStats(firebaseUser.uid);
+                    if (checkin.success) {
+                        // 今天首次登录，显示签到弹窗
+                        setCheckinModal({
+                            show: true,
+                            xpEarned: checkin.xpEarned,
+                            consecutiveDays: checkin.consecutiveDays,
+                            isZombie: checkin.isZombie,
+                            currentXP: stats?.availableXp ?? 0
+                        });
+                    }
+                } catch (e) {
+                    // 签到失败不影响登录流程
+                }
             }
         } else {
             // 用户未登录
@@ -163,6 +189,44 @@ useEffect(() => {
 
   return (
     <div className="min-h-screen bg-dark-900 flex text-slate-300 font-sans">
+      {/* 每日签到弹窗 */}
+      {checkinModal.show && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-dark-800 border-2 border-brand-blue/30 rounded-3xl p-8 max-w-sm w-full mx-4 text-center shadow-2xl animate-pulse-once">
+            <div className="text-5xl mb-4">
+              {checkinModal.isZombie ? '😴' : checkinModal.consecutiveDays >= 7 ? '🔥' : '⚡'}
+            </div>
+            <h3 className="text-xl font-bold text-white mb-1">
+              {checkinModal.isZombie ? 'Welcome Back!' : 'Daily Check-in!'}
+            </h3>
+            {checkinModal.isZombie ? (
+              <p className="text-slate-400 text-sm mb-4">
+                Good to see you again! Start engaging to earn XP on your next check-in.
+              </p>
+            ) : (
+              <>
+                <p className="text-slate-400 text-sm mb-2">
+                  You earned <span className="text-brand-blue font-bold text-lg">+{checkinModal.xpEarned} XP</span>
+                </p>
+                {checkinModal.consecutiveDays > 1 && (
+                  <p className="text-amber-400 text-sm font-medium mb-2">
+                    🔥 {checkinModal.consecutiveDays} day streak!
+                  </p>
+                )}
+                <p className="text-slate-500 text-xs mb-4">
+                  Total XP: <span className="text-white font-bold">{checkinModal.currentXP}</span>
+                </p>
+              </>
+            )}
+            <button
+              onClick={() => setCheckinModal(prev => ({ ...prev, show: false }))}
+              className="w-full py-2.5 bg-brand-blue hover:bg-blue-600 text-white font-bold rounded-xl transition-colors text-sm"
+            >
+              Let's Go!
+            </button>
+          </div>
+        </div>
+      )}
       <Sidebar 
         isOpen={isSidebarOpen} 
         toggle={() => setIsSidebarOpen(!isSidebarOpen)} 

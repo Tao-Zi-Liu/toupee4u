@@ -112,6 +112,26 @@ export const ProfilePage: React.FC = () => {
   const [discountEligibility, setDiscountEligibility] = useState<any>(null);
   const [followTab, setFollowTab] = useState<'following' | 'followers'>('following');
 
+  const loadXPData = async () => {
+    const currentUser = getCurrentUser();
+    if (!currentUser) return;
+    setXpLoading(true);
+    try {
+      const [stats, history, discount] = await Promise.all([
+        getUserXPStats(currentUser.uid),
+        getXPHistory(currentUser.uid, 15),
+        checkDiscountEligibility(currentUser.uid)
+      ]);
+      setXpStats(stats);
+      setXpHistory(history);
+      setDiscountEligibility(discount);
+    } catch (error) {
+      console.error("Failed to load XP data:", error);
+    } finally {
+      setXpLoading(false);
+    }
+  };
+
   useEffect(() => {
     async function loadProfile() {
       const currentUser = getCurrentUser();
@@ -301,26 +321,6 @@ export const ProfilePage: React.FC = () => {
         });
       } catch (error) {
         console.error('Failed to load follow data:', error);
-      }
-    };
-
-    const loadXPData = async () => {
-      const currentUser = getCurrentUser();
-      if (!currentUser) return;
-      setXpLoading(true);
-      try {
-        const [stats, history, discount] = await Promise.all([
-          getUserXPStats(currentUser.uid),
-          getXPHistory(currentUser.uid, 15),
-          checkDiscountEligibility(currentUser.uid)
-        ]);
-        setXpStats(stats);
-        setXpHistory(history);
-        setDiscountEligibility(discount);
-      } catch (error) {
-        console.error("Failed to load XP data:", error);
-      } finally {
-        setXpLoading(false);
       }
     };
 
