@@ -33,7 +33,8 @@ export async function createNotification(
   }
 
   try {
-    await addDoc(collection(db, 'notifications'), {
+    // 过滤 undefined 字段，Firestore 不接受 undefined
+    const data: Record<string, any> = {
       recipientId,
       senderId,
       senderName,
@@ -41,11 +42,12 @@ export async function createNotification(
       type,
       targetType,
       targetId,
-      targetTitle,
-      content,
       isRead: false,
       createdAt: serverTimestamp()
-    });
+    };
+    if (targetTitle !== undefined) data.targetTitle = targetTitle;
+    if (content !== undefined) data.content = content;
+    await addDoc(collection(db, 'notifications'), data);
   } catch (error) {
     console.error('Failed to create notification:', error);
   }

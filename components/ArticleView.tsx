@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { getCurrentUser } from '../services/auth.service';
+import { awardXP } from '../services/xp.service';
 import { Article, UserTier, Expert } from '../types';
 import {
   Lock, Clock, ShieldCheck, Orbit, List, ChevronRight, X
@@ -70,6 +72,9 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
   const [activeHeading, setActiveHeading] = useState<string>('');
   const [showMobileToc, setShowMobileToc] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const [xpAwarded, setXpAwarded] = useState(false);
+  const [readProgress, setReadProgress] = useState(0); // 0-100 阅读进度
 
   // ── 相关文章 ──────────────────────────────────
   const [relatedArticles, setRelatedArticles] = useState<{
@@ -81,6 +86,65 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
   const articleTierIndex = tiers.indexOf(article.tier);
   const userTierIndex = tiers.indexOf(userTier);
   const isLocked = userTierIndex < articleTierIndex;
+
+  // ── 阅读完成：时间 + 滚动到底部双重验证 ────────
+  useEffect(() => {
+    if (isLocked || xpAwarded) return;
+
+    // 从 readTime 解析最低阅读时间（如 "5 min" → 至少150秒，给50%宽容）
+    const parseMinSeconds = (readTime: string): number => {
+      const match = readTime?.match(/(\d+)/);
+      const minutes = match ? parseInt(match[1]) : 3;
+      return Math.max(30, Math.floor(minutes * 60 * 0.5)); // 最少30秒
+    };
+    const minSeconds = parseMinSeconds(article.readTime);
+
+    // 计时器：进入页面就开始计时
+    let timeSpent = 0;
+    let reachedBottom = false;
+    let timerMet = false;
+
+    const timer = setInterval(() => {
+      timeSpent += 1;
+      setReadProgress(Math.min(100, Math.floor((timeSpent / minSeconds) * 100)));
+      if (timeSpent >= minSeconds) {
+        timerMet = true;
+        // 时间已满，如果也已到底部则直接触发
+        if (reachedBottom && !xpAwarded) {
+          triggerXP();
+        }
+      }
+    }, 1000);
+
+    const triggerXP = async () => {
+      const currentUser = getCurrentUser();
+      if (currentUser) {
+        setXpAwarded(true);
+        await awardXP(currentUser.uid, 'READ_KB_ARTICLE', article.id);
+      }
+    };
+
+    // IntersectionObserver：检测是否滚动到底部
+    if (!bottomRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          reachedBottom = true;
+          // 到底部时，如果时间也已满则触发
+          if (timerMet && !xpAwarded) {
+            triggerXP();
+          }
+        }
+      },
+      { threshold: 0.8 }
+    );
+    observer.observe(bottomRef.current);
+
+    return () => {
+      clearInterval(timer);
+      observer.disconnect();
+    };
+  }, [article.id, article.readTime, isLocked, xpAwarded]);
 
   // ── 提取TOC ───────────────────────────────────
   useEffect(() => {
@@ -253,6 +317,29 @@ export const ArticleView: React.FC<ArticleViewProps> = ({
                 dangerouslySetInnerHTML={{ __html: processedContent }}
               />
             )}
+          </div>
+
+          {/* ── 阅读完成标记 + XP 提示 ── */}
+          <div ref={bottomRef} className="py-2">
+            {xpAwarded ? (
+              <div className="flex items-center justify-center gap-2 py-3 px-4 bg-green-500/10 border border-green-500/20 rounded-xl text-green-400 text-sm font-medium">
+                <span>⚡</span>
+                <span>+10 XP earned for reading this article!</span>
+              </div>
+            ) : !isLocked && readProgress > 0 && readProgress < 100 ? (
+              <div className="py-3 px-4 bg-dark-900 border border-dark-700 rounded-xl">
+                <div className="flex items-center justify-between mb-1.5 text-xs text-slate-500">
+                  <span>Reading progress</span>
+                  <span>{readProgress}%</span>
+                </div>
+                <div className="h-1 bg-dark-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-brand-blue rounded-full transition-all duration-1000"
+                    style={{ width: `${readProgress}%` }}
+                  />
+                </div>
+              </div>
+            ) : null}
           </div>
 
           {/* ── 上下篇导航 ── */}
