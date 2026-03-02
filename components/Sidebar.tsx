@@ -234,11 +234,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
         {!isCollapsed && (
           <div className="px-4 pb-4 space-y-1">
             <div className="flex items-center gap-3 text-[10px] text-slate-600">
-              <Link to="/policy" onClick={handleItemClick} className="hover:text-slate-400 transition-colors">Policy</Link>
+              <NavLink to="/policy" className="hover:text-slate-400 transition-colors">Community Policy</NavLink>
               <span>·</span>
-              <Link to="/policy" onClick={handleItemClick} className="hover:text-slate-400 transition-colors">Terms</Link>
+              <NavLink to="/policy" className="hover:text-slate-400 transition-colors">Terms</NavLink>
               <span>·</span>
-              <Link to="/policy" onClick={handleItemClick} className="hover:text-slate-400 transition-colors">Privacy</Link>
+              <NavLink to="/policy" className="hover:text-slate-400 transition-colors">Privacy</NavLink>
             </div>
             <p className="text-[10px] text-slate-700">© {new Date().getFullYear()} Toupee4U. All rights reserved.</p>
           </div>

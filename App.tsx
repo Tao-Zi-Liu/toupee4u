@@ -49,6 +49,8 @@ import { VoyagerQuizPage } from './pages/VoyagerQuizPage';
 import { ProfessionalSetupPage } from './pages/ProfessionalSetupPage';
 import { KBMigration } from './components/KBMigration';
 import { PolicyPage } from './pages/PolicyPage';
+import { TermsPage } from './pages/TermsPage';
+import { PrivacyPage } from './pages/PrivacyPage';
 
 // SECRET URL FOR STAFF ONLY
 const SECRET_ADMIN_URL = "/terminal/x92-quantum-override";
@@ -446,6 +448,8 @@ const AppRoutes = () => {
       <Route path="/experts/:id" element={<ExpertProfilePage />} />
       <Route path="/governance" element={<GovernancePage />} />
       <Route path="/policy" element={<PolicyPage />} />
+      <Route path="/terms" element={<TermsPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/kb-migrate" element={<KBMigration />} />
       
       {/* PROTECTED ADMIN ROUTES */}
