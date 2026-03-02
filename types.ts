@@ -299,3 +299,13 @@ export interface UserXPStats {
   };
   updatedAt: any;
 }
+
+// 排行榜条目
+export interface LeaderboardEntry {
+  userId: string;
+  displayName: string;
+  photoURL: string;
+  galaxyLevel: string;
+  xp: number;
+  rank: number;
+}

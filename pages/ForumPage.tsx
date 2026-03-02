@@ -1,26 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  MessageSquare, 
-  ThumbsUp, 
-  Clock, 
-  Hash, 
-  MoreHorizontal, 
-  Eye, 
-  Search, 
-  Filter, 
-  X, 
-  Flame, 
-  ArrowDownUp, 
-  UserPlus,
-  // Added RefreshCw to fix line 265 error
-  RefreshCw 
-} from 'lucide-react';
+import { MessageSquare,ThumbsUp,Clock,Hash,MoreHorizontal,Eye,Search,Filter,X,Flame,ArrowDownUp,UserPlus, RefreshCw } from 'lucide-react';
 import { searchPosts, SearchFilters, saveSearchHistory } from '../services/search.service';
-import { getPosts, getRelativeTime, Post, checkUserLiked } from '../services/post.service';
+import { getPosts, getRelativeTime, Post, checkUserLiked, togglePostLike } from '../services/post.service';
 import { getCurrentUser } from '../services/auth.service';
 import { awardXP } from '../services/xp.service';
+import { XPLeaderboard } from '../components/XPLeaderboard';
 import { checkIsFollowing, followUser, unfollowUser } from '../services/follow.service';
 
 export const ForumPage: React.FC = () => {
@@ -32,6 +18,7 @@ export const ForumPage: React.FC = () => {
   const [realPosts, setRealPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [userLikes, setUserLikes] = useState<Set<string>>(new Set());
+  const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
 
   const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -66,7 +53,14 @@ export const ForumPage: React.FC = () => {
       }
       setUserLikes(likes);
     }
-    
+
+    // 初始化点赞数
+    const counts: Record<string, number> = {};
+    for (const post of posts) {
+      counts[post.id] = post.likes ?? 0;
+    }
+    setLikeCounts(counts);
+
     setLoading(false);
   };
 
@@ -81,13 +75,46 @@ export const ForumPage: React.FC = () => {
     await awardXP(currentUser.uid, 'VIEW_POST', postId);
   };
 
-  // XP: 点赞帖子（在现有点赞逻辑基础上叠加XP）
-  const handleLikeXP = async (postId: string) => {
+  // 点赞：写入Firestore + 更新UI + 触发XP
+  const handleLike = async (e: React.MouseEvent, postId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
     const currentUser = getCurrentUser();
     if (!currentUser) return;
-    if (!userLikes.has(postId)) {
-      // 点赞时才给XP，取消点赞不扣分
-      await awardXP(currentUser.uid, 'LIKE_POST', postId);
+
+    const wasLiked = userLikes.has(postId);
+
+    // 乐观更新UI
+    setUserLikes(prev => {
+      const next = new Set(prev);
+      wasLiked ? next.delete(postId) : next.add(postId);
+      return next;
+    });
+    setLikeCounts(prev => ({
+      ...prev,
+      [postId]: (prev[postId] ?? 0) + (wasLiked ? -1 : 1)
+    }));
+
+    try {
+      const result = await togglePostLike(postId, currentUser.uid);
+      // 用服务端返回的真实数字同步
+      setLikeCounts(prev => ({ ...prev, [postId]: result.newLikeCount }));
+
+      // 只有点赞时才给XP（取消不扣）
+      if (result.liked) {
+        await awardXP(currentUser.uid, 'LIKE_POST', postId);
+      }
+    } catch {
+      // 失败回滚
+      setUserLikes(prev => {
+        const next = new Set(prev);
+        wasLiked ? next.add(postId) : next.delete(postId);
+        return next;
+      });
+      setLikeCounts(prev => ({
+        ...prev,
+        [postId]: (prev[postId] ?? 0) + (wasLiked ? 1 : -1)
+      }));
     }
   };
 
@@ -278,8 +305,11 @@ export const ForumPage: React.FC = () => {
         );
       })()}
 
-      {/* Discussion List */}
-      <div className="space-y-4">
+      {/* Main + Sidebar layout */}
+      <div className="flex gap-6 items-start">
+        <div className="flex-1 min-w-0">
+        {/* Discussion List */}
+        <div className="space-y-4">
         {loading ? (
           <div className="text-center py-24 flex flex-col items-center gap-4">
             <RefreshCw className="w-10 h-10 text-brand-blue animate-spin" />
@@ -348,16 +378,12 @@ export const ForumPage: React.FC = () => {
                         </div>
                         <div className="flex gap-4 text-slate-500 text-xs font-bold">
                             <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleLikeXP(topic.id);
-                              }}
+                              onClick={(e) => handleLike(e, topic.id)}
                               className={`flex items-center gap-1.5 transition-colors ${
                                 userLikes.has(topic.id) ? 'text-red-500' : 'text-slate-500 hover:text-white'
                               }`}>
                               <ThumbsUp className={`w-3.5 h-3.5 ${userLikes.has(topic.id) ? 'fill-current' : ''}`} />
-                              {topic.likes}
+                              {likeCounts[topic.id] ?? topic.likes}
                             </button>
                             <span className="flex items-center gap-1.5 hover:text-white transition-colors"><MessageSquare className="w-3.5 h-3.5" /> {topic.comments}</span>
                             <span className="flex items-center gap-1.5 hover:text-white transition-colors"><Eye className="w-3.5 h-3.5" /> {topic.views || 0}</span>
@@ -400,6 +426,13 @@ export const ForumPage: React.FC = () => {
             Load Older Signals
         </button>
       </div>
+        </div>{/* end flex-1 */}
+
+        {/* Right Sidebar - Leaderboard */}
+        <div className="hidden lg:block w-72 flex-shrink-0 sticky top-6">
+          <XPLeaderboard />
+        </div>
+      </div>{/* end flex layout */}
     </div>
   );
 };
