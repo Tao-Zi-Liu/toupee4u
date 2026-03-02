@@ -249,6 +249,7 @@ export const XP_RULES: Record<XPActionType, number> = {
 export const XP_DAILY_LIMITS: Partial<Record<XPActionType, number>> = {
   VIEW_POST: 5,
   LIKE_POST: 10,
+  COMMENT: 40,  // 每天最多5条评论得XP（5 × 8 = 40）
 };
 
 // 发帖所需最低XP门槛

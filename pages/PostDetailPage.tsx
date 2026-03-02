@@ -38,6 +38,7 @@ import {
 } from '../services/post.service';
 import { getCurrentUser, getCompleteUserProfile, searchUsers } from '../services/auth.service';
 import { createNotification } from '../services/notification.service';
+import { awardXP } from '../services/xp.service';
 import { toggleBookmark, checkBookmarked } from '../services/bookmark.service';
 import { checkIsFollowing, followUser, unfollowUser } from '../services/follow.service';
 import { ImageLightbox } from '../components/ImageLightbox';
@@ -241,7 +242,10 @@ export const PostDetailPage: React.FC = () => {
       setCommentLikes(prev => ({ ...prev, [commentId]: false }));
       setComments(prev => [...prev, newComment]);
       setCommentContent('');
-      
+
+      // 评论者获得 XP
+      await awardXP(currentUser.uid, 'COMMENT', commentId);
+
       if (post && post.authorId !== currentUser.uid) {
         await createNotification(
           post.authorId,
@@ -270,18 +274,27 @@ export const PostDetailPage: React.FC = () => {
       setIsLiked(result.liked);
       setLikeCount(result.newLikeCount);
       
-      if (result.liked && post && post.authorId !== currentUser.uid) {
-        const profile = await getCompleteUserProfile(currentUser.uid);
-        await createNotification(
-          post.authorId,
-          currentUser.uid,
-          profile.displayName,
-          profile.photoURL,
-          'like',
-          'post',
-          postId,
-          post.title
-        );
+      if (result.liked && post) {
+        // 点赞者获得 XP
+        await awardXP(currentUser.uid, 'LIKE_POST', postId);
+
+        // 作者收到点赞获得 XP（不给自己点赞）
+        if (post.authorId !== currentUser.uid) {
+          await awardXP(post.authorId, 'RECEIVED_LIKE', postId);
+
+          // 发送通知
+          const profile = await getCompleteUserProfile(currentUser.uid);
+          await createNotification(
+            post.authorId,
+            currentUser.uid,
+            profile.displayName,
+            profile.photoURL,
+            'like',
+            'post',
+            postId,
+            post.title
+          );
+        }
       }
     } finally {
       setLikeLoading(false);

@@ -221,14 +221,28 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
 
       </div>
 
-      {/* Collapse Toggle (Desktop Only) */}
-      <div className="hidden lg:flex p-4 border-t border-dark-700">
-        <button 
-          onClick={toggleCollapse}
-          className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'justify-end'} p-2 rounded-lg text-slate-500 hover:bg-dark-800 hover:text-white transition-colors`}
-        >
-           {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
-        </button>
+      {/* Collapse Toggle + Footer (Desktop Only) */}
+      <div className="hidden lg:block border-t border-dark-700">
+        <div className="flex p-4">
+          <button 
+            onClick={toggleCollapse}
+            className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'justify-end'} p-2 rounded-lg text-slate-500 hover:bg-dark-800 hover:text-white transition-colors`}
+          >
+            {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+          </button>
+        </div>
+        {!isCollapsed && (
+          <div className="px-4 pb-4 space-y-1">
+            <div className="flex items-center gap-3 text-[10px] text-slate-600">
+              <NavLink to="/policy" className="hover:text-slate-400 transition-colors">Community Policy</NavLink>
+              <span>·</span>
+              <NavLink to="/policy" className="hover:text-slate-400 transition-colors">Terms</NavLink>
+              <span>·</span>
+              <NavLink to="/policy" className="hover:text-slate-400 transition-colors">Privacy</NavLink>
+            </div>
+            <p className="text-[10px] text-slate-700">© {new Date().getFullYear()} Toupee4U. All rights reserved.</p>
+          </div>
+        )}
       </div>
     </aside>
   );
