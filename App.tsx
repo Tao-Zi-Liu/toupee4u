@@ -48,6 +48,7 @@ import { SelectRolePage } from './pages/SelectRolePage';
 import { VoyagerQuizPage } from './pages/VoyagerQuizPage';
 import { ProfessionalSetupPage } from './pages/ProfessionalSetupPage';
 import { KBMigration } from './components/KBMigration';
+import { PolicyPage } from './pages/PolicyPage';
 
 // SECRET URL FOR STAFF ONLY
 const SECRET_ADMIN_URL = "/terminal/x92-quantum-override";
@@ -106,17 +107,24 @@ useEffect(() => {
                 });
 
                 // 登录时触发每日签到
+                // 用 sessionStorage 区分"真实登录"和"页面刷新"
+                // 页面刷新时 sessionStorage 仍存在，真实登录后 sessionStorage 是新的
+                const sessionKey = `checkin_shown_${firebaseUser.uid}`;
+                const alreadyShownThisSession = sessionStorage.getItem(sessionKey);
+
                 try {
                     const checkin = await dailyCheckin(firebaseUser.uid);
                     const stats = await getUserXPStats(firebaseUser.uid);
-                    if (checkin.success) {
-                        // 今天首次登录，显示签到弹窗
+
+                    // 只有今天首次签到成功才弹窗（checkin.success 保证今天第一次）
+                    if (!alreadyShownThisSession && checkin.success) {
+                        sessionStorage.setItem(sessionKey, '1');
                         setCheckinModal({
                             show: true,
-                            xpEarned: checkin.xpEarned,
-                            consecutiveDays: checkin.consecutiveDays,
-                            isZombie: checkin.isZombie,
-                            currentXP: stats?.availableXp ?? 0
+                            xpEarned: checkin.xpEarned ?? 0,
+                            consecutiveDays: checkin.consecutiveDays ?? 0,
+                            isZombie: checkin.isZombie ?? false,
+                            currentXP: stats?.availableXp ?? 0,
                         });
                     }
                 } catch (e) {
@@ -213,6 +221,7 @@ useEffect(() => {
                     🔥 {checkinModal.consecutiveDays} day streak!
                   </p>
                 )}
+
                 <p className="text-slate-500 text-xs mb-4">
                   Total XP: <span className="text-white font-bold">{checkinModal.currentXP}</span>
                 </p>
@@ -436,6 +445,7 @@ const AppRoutes = () => {
       <Route path="/experts/apply" element={<ExpertApplicationPage />} />
       <Route path="/experts/:id" element={<ExpertProfilePage />} />
       <Route path="/governance" element={<GovernancePage />} />
+      <Route path="/policy" element={<PolicyPage />} />
       <Route path="/kb-migrate" element={<KBMigration />} />
       
       {/* PROTECTED ADMIN ROUTES */}

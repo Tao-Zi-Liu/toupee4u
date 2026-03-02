@@ -46,8 +46,8 @@ export const RegisterPage: React.FC = () => {
       setSuccess(true);
       
       setTimeout(() => {
-        navigate('/onboarding/voyager-quiz');
-      }, 1500);
+        navigate('/');
+      }, 2000);
     } catch (err: any) {
       setError(err.message || 'Registration failed');
     } finally {
@@ -64,7 +64,7 @@ export const RegisterPage: React.FC = () => {
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">Account Created!</h2>
           <p className="text-slate-400 mb-4">
-            Setting up your personalized profile...
+            Welcome to Toupee4U. Redirecting...
           </p>
           <Loader className="w-6 h-6 animate-spin mx-auto text-brand-blue" />
         </div>
@@ -85,7 +85,7 @@ export const RegisterPage: React.FC = () => {
             <Zap className="w-8 h-8 fill-current" />
           </div>
           <h1 className="text-2xl font-bold text-white mb-2">Join the Collective</h1>
-          <p className="text-slate-300 text-sm">Begin your journey. Personalize your experience in 2 minutes.</p>
+          <p className="text-slate-300 text-sm">Begin your journey from Observer to Quantum State.</p>
         </div>
 
         {error && (
@@ -174,7 +174,7 @@ export const RegisterPage: React.FC = () => {
                />
              </div>
              <label htmlFor="terms" className="text-xs text-slate-300 leading-snug">
-                I agree to the <a href="#" className="text-white hover:underline">Terms of Service</a> and acknowledge the "Physics of Hair" methodology.
+                I agree to the <a href="#/policy" className="text-white hover:underline font-semibold">Community Policy</a> and acknowledge the "Physics of Hair" methodology.
              </label>
           </div>
 

@@ -18,7 +18,8 @@ import {
   Terminal,
   Search,
   BookA,
-  Cpu
+  Cpu,
+  FileText
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -187,6 +188,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
               {!isCollapsed && <span>Upgrade to Nova</span>}
             </Link>
           </nav>
+        </div>
+
+        {/* POLICY */}
+        <div className="pt-2">
+          <NavLink
+            to="/policy"
+            onClick={handleItemClick}
+            className={({ isActive }) =>
+              `group flex items-center px-3 py-2 text-xs font-medium rounded-lg transition-all duration-200 whitespace-nowrap ${
+                isActive ? 'text-slate-300 bg-dark-800' : 'text-slate-600 hover:text-slate-400 hover:bg-dark-800'
+              } ${isCollapsed ? 'justify-center' : ''}`
+            }
+            title={isCollapsed ? 'Community Policy' : ''}
+          >
+            <FileText className={`h-4 w-4 flex-shrink-0 ${isCollapsed ? '' : 'mr-2'}`} />
+            {!isCollapsed && <span>Community Policy</span>}
+          </NavLink>
         </div>
 
         {/* SYSTEM (Hidden Terminal) */}
