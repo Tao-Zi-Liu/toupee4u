@@ -50,7 +50,11 @@ import { ProfessionalSetupPage } from './pages/ProfessionalSetupPage';
 import { KBMigration } from './components/KBMigration';
 import { PolicyPage } from './pages/PolicyPage';
 import { TermsPage } from './pages/TermsPage';
+import { ExpertApplyPage } from './pages/ExpertApplyPage';
 import { PrivacyPage } from './pages/PrivacyPage';
+import { ExpertDashboardPage } from './pages/ExpertDashboardPage';
+import { AdminNewsReview } from './pages/admin/AdminNewsReview';
+import { NewsPage } from './pages/NewsPage';
 
 // SECRET URL FOR STAFF ONLY
 const SECRET_ADMIN_URL = "/terminal/x92-quantum-override";
@@ -102,7 +106,7 @@ useEffect(() => {
                     name: completeProfile.displayName,
                     handle: `@${completeProfile.displayName.toLowerCase().replace(/\s/g, '_')}`,
                     avatar: completeProfile.photoURL,
-                    isExpert: completeProfile.role === 'ARCHITECT' || completeProfile.role === 'SOURCE',
+                    isExpert: completeProfile.isExpert === true,
                     role: completeProfile.role,
                     galaxyLevel: completeProfile.galaxyLevel,
                     membershipTier: completeProfile.membershipTier
@@ -240,7 +244,9 @@ useEffect(() => {
       )}
       <Sidebar 
         isOpen={isSidebarOpen} 
-        toggle={() => setIsSidebarOpen(!isSidebarOpen)} 
+        toggle={() => setIsSidebarOpen(!isSidebarOpen)}
+        isExpert={userProfile.isExpert}
+        userTier={userProfile.galaxyLevel}
       />
       
       {isSidebarOpen && (
@@ -298,7 +304,7 @@ useEffect(() => {
                 
                 {/* Notification Panel - 稍后添加完整面板 */}
                 {showNotifications && (
-                  <div className="absolute right-0 top-full mt-2 w-96 bg-dark-800 border border-dark-700 rounded-xl shadow-2xl z-50 max-h-[500px] overflow-hidden" style={{zIndex: 51}}>
+                  <div className="absolute right-0 top-full mt-2 w-96 bg-dark-800 border border-dark-700 rounded-xl shadow-2xl z-50 max-h-[500px] overflow-hidden">
                     <div className="p-4 border-b border-dark-700 flex items-center justify-between">
                       <h3 className="font-bold text-white">Notifications</h3>
                       {unreadCount > 0 && (
@@ -307,8 +313,6 @@ useEffect(() => {
                             const currentUser = getCurrentUser();
                             if (currentUser) {
                               await markAllAsRead(currentUser.uid);
-                              setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-                              setUnreadCount(0);
                             }
                           }}
                           className="text-xs text-brand-blue hover:text-blue-400"
@@ -332,19 +336,13 @@ useEffect(() => {
                             }`}
                             onClick={async () => {
                               await markAsRead(notif.id);
-                              setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, isRead: true } : n));
-                              setUnreadCount(prev => Math.max(0, prev - 1));
                               setShowNotifications(false);
                               window.location.href = `#/forum/post/${notif.targetId}`;
                             }}
                           >
                             <div className="flex gap-3">
-                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-blue to-brand-purple flex items-center justify-center text-white font-bold text-sm flex-shrink-0 overflow-hidden">
-                                {notif.senderAvatar ? (
-                                  <img src={notif.senderAvatar} alt={notif.senderName} className="w-full h-full object-cover" />
-                                ) : (
-                                  <span>{notif.senderName?.split(' ').map((n: string) => n[0]).join('') || '?'}</span>
-                                )}
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-blue to-brand-purple flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                                {notif.senderName?.split(' ').map((n: string) => n[0]).join('') || '?'}
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className="text-sm text-slate-300">
@@ -359,7 +357,7 @@ useEffect(() => {
                                   </p>
                                 )}
                                 <p className="text-xs text-slate-600 mt-1">
-                                  {notif.createdAt?.toDate ? (() => { const d = notif.createdAt.toDate(); const diff = Date.now() - d.getTime(); const mins = Math.floor(diff/60000); const hrs = Math.floor(diff/3600000); const days = Math.floor(diff/86400000); return mins < 1 ? 'Just now' : mins < 60 ? mins + 'm ago' : hrs < 24 ? hrs + 'h ago' : days + 'd ago'; })() : 'Just now'}
+                                  {notif.createdAt?.toDate ? new Date(notif.createdAt.toDate()).toLocaleString() : 'Just now'}
                                 </p>
                               </div>
                               {!notif.isRead && (
@@ -373,9 +371,6 @@ useEffect(() => {
                   </div>
                 )}
               </div>
-            {showNotifications && (
-              <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
-            )}
             
             <div className="relative group py-2">
                 <button className="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-blue to-brand-purple p-[2px] cursor-pointer hover:scale-105 transition-transform block">
@@ -456,12 +451,15 @@ const AppRoutes = () => {
       <Route path="/for-you" element={<ForYouPage />} />
       <Route path="/experts" element={<ExpertsPage />} />
       <Route path="/experts/apply" element={<ExpertApplicationPage />} />
-      <Route path="/experts/:id" element={<ExpertProfilePage />} />
+      <Route path="/expert/dashboard" element={<ExpertDashboardPage />} />
       <Route path="/governance" element={<GovernancePage />} />
       <Route path="/policy" element={<PolicyPage />} />
       <Route path="/terms" element={<TermsPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
+              <Route path="/expert/apply" element={<ExpertApplyPage />} />
+              <Route path="/expert/:uid" element={<ExpertProfilePage />} />
       <Route path="/kb-migrate" element={<KBMigration />} />
+      <Route path="/news" element={<NewsPage />} />
       
       {/* PROTECTED ADMIN ROUTES */}
       <Route path="/admin" element={<StaffGate><AdminDashboard /></StaffGate>} />
@@ -472,6 +470,7 @@ const AppRoutes = () => {
       <Route path="/admin/deployment" element={<StaffGate><AdminDeployment /></StaffGate>} />
       <Route path="/admin/analytics" element={<StaffGate><AdminAnalytics /></StaffGate>} />
       <Route path="/admin/users" element={<StaffGate><AdminUsers /></StaffGate>} />
+      <Route path="/admin/news" element={<AdminNewsReview />} />
       <Route path="*" element={<Navigate to="/" replace />} />
       <Route path="/onboarding/voyager-quiz" element={<VoyagerQuizPage />} />
       <Route path="/onboarding/professional-setup" element={<ProfessionalSetupPage />} />

@@ -19,13 +19,16 @@ import {
   Search,
   BookA,
   Cpu,
-  FileText
+  FileText,
+  Star
 } from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;
   toggle: () => void;
   highlightGovernance?: boolean;
+  isExpert?: boolean;
+  userTier?: string;  // 'NEBULA' | 'NOVA' | 'GALAXY' | 'SUPERNOVA'
 }
 
 const AI_QUOTES = [
@@ -38,7 +41,7 @@ const AI_QUOTES = [
 
 const SECRET_ADMIN_URL = "/terminal/x92-quantum-override";
 
-export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, isExpert = false, userTier = 'NEBULA' }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isKbExpanded, setIsKbExpanded] = useState(false);
   const [quoteIndex, setQuoteIndex] = useState(0);
@@ -179,14 +182,41 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
         <div>
           {!isCollapsed && <p className="px-2 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-3">Premium</p>}
           <nav className="space-y-1">
-            <Link 
-              to="/membership" 
-              onClick={handleItemClick}
-              className={`group flex items-center px-3 py-2 text-sm font-bold rounded-lg transition-all duration-200 relative overflow-hidden whitespace-nowrap bg-brand-purple/10 text-brand-purple border border-brand-purple/20 hover:bg-brand-purple/20 ${isCollapsed ? 'justify-center' : ''}`}
-            >
-              <Crown className={`h-5 w-5 flex-shrink-0 transition-colors ${isCollapsed ? '' : 'mr-3'}`} />
-              {!isCollapsed && <span>Upgrade to Nova</span>}
-            </Link>
+            {/* 升级入口：仅 NEBULA 显示 */}
+            {userTier === 'NEBULA' && (
+              <Link 
+                to="/membership" 
+                onClick={handleItemClick}
+                className={`group flex items-center px-3 py-2 text-sm font-bold rounded-lg transition-all duration-200 relative overflow-hidden whitespace-nowrap bg-brand-purple/10 text-brand-purple border border-brand-purple/20 hover:bg-brand-purple/20 ${isCollapsed ? 'justify-center' : ''}`}
+              >
+                <Crown className={`h-5 w-5 flex-shrink-0 transition-colors ${isCollapsed ? '' : 'mr-3'}`} />
+                {!isCollapsed && <span>Upgrade to Nova</span>}
+              </Link>
+            )}
+            {/* 所有非Expert登录用户显示申请专家入口 */}
+            {!isExpert && (
+              <Link
+                to="/expert/apply"
+                onClick={handleItemClick}
+                className={`group flex items-center px-3 py-2 text-sm font-bold rounded-lg transition-all duration-200 relative overflow-hidden whitespace-nowrap bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 ${isCollapsed ? 'justify-center' : ''}`}
+                title={isCollapsed ? 'Become an Expert' : ''}
+              >
+                <Star className={`h-5 w-5 flex-shrink-0 transition-colors ${isCollapsed ? '' : 'mr-3'}`} />
+                {!isCollapsed && <span>Become an Expert</span>}
+              </Link>
+            )}
+            {/* Expert 用户显示工作台入口（占位） */}
+            {isExpert && (
+              <Link
+                to="/expert/dashboard"
+                onClick={handleItemClick}
+                className={`group flex items-center px-3 py-2 text-sm font-bold rounded-lg transition-all duration-200 relative overflow-hidden whitespace-nowrap bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 ${isCollapsed ? 'justify-center' : ''}`}
+                title={isCollapsed ? 'Expert Dashboard' : ''}
+              >
+                <Star className={`h-5 w-5 flex-shrink-0 ${isCollapsed ? '' : 'mr-3'}`} />
+                {!isCollapsed && <span>Expert Dashboard</span>}
+              </Link>
+            )}
           </nav>
         </div>
 

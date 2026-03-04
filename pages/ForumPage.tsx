@@ -306,7 +306,7 @@ export const ForumPage: React.FC = () => {
       })()}
 
       {/* Main + Sidebar layout */}
-      <div className="flex gap-6 items-start">
+      <div className="flex gap-6 items-start relative">
         <div className="flex-1 min-w-0">
         {/* Discussion List */}
         <div className="space-y-4">
@@ -429,7 +429,7 @@ export const ForumPage: React.FC = () => {
         </div>{/* end flex-1 */}
 
         {/* Right Sidebar - Leaderboard */}
-        <div className="hidden lg:block w-72 flex-shrink-0 sticky top-6">
+        <div className="hidden md:block md:w-64 lg:w-72 flex-shrink-0 lg:sticky lg:top-6">
           <XPLeaderboard />
         </div>
       </div>{/* end flex layout */}

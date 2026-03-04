@@ -64,11 +64,11 @@ export const KnowledgeMapPage: React.FC = () => {
   return (
     <div className="space-y-12 pb-12">
       {/* Header */}
-      <div className="text-center max-w-3xl mx-auto py-8">
+      <div className="text-center max-w-3xl mx-auto py-6 md:py-8 px-2">
         <div className="inline-flex items-center justify-center p-3 bg-brand-blue/10 rounded-2xl text-brand-blue mb-6 border border-brand-blue/20">
           <Brain className="w-8 h-8" />
         </div>
-        <h1 className="text-4xl md:text-5xl font-bold text-white mb-6 tracking-tight">
+        <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-white mb-4 md:mb-6 tracking-tight">
           The Knowledge Architecture
         </h1>
         <p className="text-lg text-slate-300 leading-relaxed mb-8">
@@ -101,7 +101,7 @@ export const KnowledgeMapPage: React.FC = () => {
 
           {/* ── Search Results Dropdown ── */}
           {hasSearched && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-dark-800 border border-dark-700 rounded-2xl shadow-2xl z-50 overflow-hidden max-h-[480px] overflow-y-auto text-left">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-dark-800 border border-dark-700 rounded-2xl shadow-2xl z-50 overflow-hidden max-h-[60vh] sm:max-h-[480px] overflow-y-auto text-left">
               {searching ? (
                 <div className="p-6 text-center text-slate-500 text-sm">Searching...</div>
               ) : searchResults.length === 0 ? (
@@ -171,7 +171,7 @@ export const KnowledgeMapPage: React.FC = () => {
                   <div key={category.id} className={`flex flex-col md:flex-row items-center gap-8 ${isEven ? '' : 'md:flex-row-reverse'}`}>
                     <div className="flex-1 w-full">
                       <Link to={`/kb/${category.id}`} className="block group">
-                        <div className="bg-dark-800 p-8 rounded-3xl border border-dark-700 hover:border-brand-blue transition-all duration-300 hover:shadow-2xl hover:shadow-brand-blue/10 relative overflow-hidden">
+                        <div className="bg-dark-800 p-5 md:p-8 rounded-3xl border border-dark-700 hover:border-brand-blue transition-all duration-300 hover:shadow-2xl hover:shadow-brand-blue/10 relative overflow-hidden">
                           <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500">
                             <category.icon className="w-32 h-32" />
                           </div>
@@ -213,7 +213,7 @@ export const KnowledgeMapPage: React.FC = () => {
           </div>
 
           {/* Footer CTA */}
-          <div className="bg-gradient-to-br from-dark-800 to-dark-900 rounded-3xl p-12 text-center border border-dark-700 relative overflow-hidden mt-12">
+          <div className="bg-gradient-to-br from-dark-800 to-dark-900 rounded-3xl p-6 md:p-12 text-center border border-dark-700 relative overflow-hidden mt-12">
             <div className="relative z-10">
               <h2 className="text-2xl font-bold text-white mb-4">Ready to engineer your look?</h2>
               <p className="text-slate-300 mb-8 max-w-xl mx-auto">

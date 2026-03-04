@@ -179,3 +179,30 @@ export async function deleteImages(paths: string[]): Promise<void> {
     throw error;
   }
 }
+/**
+ * 通用图片上传（用于专家作品集等场景）
+ */
+export async function uploadImage(
+  file: File,
+  storageFolderPath: string,
+  compress: boolean = true
+): Promise<string> {
+  if (!file.type.startsWith('image/')) throw new Error('File must be an image');
+  if (file.size > 5 * 1024 * 1024) throw new Error('Image must be less than 5MB');
+
+  let uploadFile: File | Blob = file;
+  if (compress && file.type !== 'image/gif') {
+    uploadFile = await compressImage(file);
+  }
+
+  const timestamp = Date.now();
+  const randomStr = Math.random().toString(36).substring(7);
+  const extension = file.name.split('.').pop() || 'jpg';
+  const filename = `${timestamp}_${randomStr}.${extension}`;
+
+  const storagePath = `${storageFolderPath}/${filename}`;
+  const storageRef = ref(storage, storagePath);
+
+  await uploadBytes(storageRef, uploadFile, { contentType: file.type });
+  return await getDownloadURL(storageRef);
+}

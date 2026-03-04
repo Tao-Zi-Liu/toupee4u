@@ -209,10 +209,10 @@ export const MembershipPage: React.FC = () => {
           <Crown className="w-4 h-4" />
           Membership Plans
         </div>
-        <h1 className="text-5xl font-extrabold text-white tracking-tight">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight">
           Unlock Your Full Potential
         </h1>
-        <p className="text-xl text-slate-300 max-w-2xl mx-auto">
+        <p className="text-base md:text-xl text-slate-300 max-w-2xl mx-auto">
           Choose the plan that fits your journey. Upgrade or downgrade anytime.
         </p>
       </div>
@@ -276,7 +276,7 @@ export const MembershipPage: React.FC = () => {
           return (
             <div
               key={tier}
-              className={`relative rounded-3xl p-8 border-2 transition-all ${
+              className={`relative rounded-3xl p-5 md:p-8 border-2 transition-all ${
                 isCurrent
                   ? `${config.borderColor} bg-${config.colorClass}-500/5`
                   : 'border-dark-700 bg-dark-800 hover:border-dark-600'
@@ -384,7 +384,7 @@ export const MembershipPage: React.FC = () => {
       </div>
 
       {/* FAQ */}
-      <div className="bg-dark-800 rounded-3xl border border-dark-700 p-8 max-w-3xl mx-auto">
+      <div className="bg-dark-800 rounded-3xl border border-dark-700 p-5 md:p-8 max-w-3xl mx-auto">
         <h3 className="text-2xl font-bold text-white mb-6">Frequently Asked Questions</h3>
         <div className="space-y-4">
           <div>

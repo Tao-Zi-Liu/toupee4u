@@ -393,7 +393,7 @@ export const ProfilePage: React.FC = () => {
             
             <div className="flex-1 mb-2">
               <div className="flex items-center gap-3 mb-1">
-                <h1 className="text-3xl font-bold text-white">{user.name}</h1>
+                <h1 className="text-2xl md:text-3xl font-bold text-white">{user.name}</h1>
                 {isExpert ? (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-500 border border-emerald-500/30 text-xs font-bold uppercase tracking-wider">
                         Verified Expert
@@ -443,7 +443,7 @@ export const ProfilePage: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex gap-8 border-b border-dark-700 overflow-x-auto">
+          <div className="flex gap-6 md:gap-8 border-b border-dark-700 overflow-x-auto scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
             {TABS.map((tab) => (
                 <button 
                     key={tab.id}
@@ -465,7 +465,7 @@ export const ProfilePage: React.FC = () => {
           {activeTab === 'overview' && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-dark-800 rounded-2xl border border-dark-700 p-6 relative overflow-hidden">
+                    <div className="bg-dark-800 rounded-2xl border border-dark-700 p-4 md:p-6 relative overflow-hidden">
                         <h3 className="text-lg font-bold text-white flex items-center gap-2 mb-6">
                             <Layers className="w-5 h-5 text-brand-blue" />
                             Current System Blueprint
@@ -541,11 +541,11 @@ export const ProfilePage: React.FC = () => {
             <div className="max-w-2xl space-y-6">
               
               {/* 头像设置 */}
-              <div className="bg-dark-800 rounded-2xl border border-dark-700 p-6">
+              <div className="bg-dark-800 rounded-2xl border border-dark-700 p-4 md:p-6">
                 <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
                   <Camera className="w-5 h-5 text-brand-blue" /> Profile Photo
                 </h3>
-                <div className="flex items-center gap-6">
+                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
                   <div className="relative">
                     <img
                       src={avatar}
@@ -579,7 +579,7 @@ export const ProfilePage: React.FC = () => {
               </div>
 
               {/* 基本信息设置 */}
-              <div className="bg-dark-800 rounded-2xl border border-dark-700 p-6">
+              <div className="bg-dark-800 rounded-2xl border border-dark-700 p-4 md:p-6">
                 <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
                   <Edit3 className="w-5 h-5 text-brand-blue" /> Basic Information
                 </h3>
@@ -834,7 +834,7 @@ export const ProfilePage: React.FC = () => {
               ) : (
                 <>
                   {/* 总体统计 */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="bg-dark-800 rounded-xl border border-dark-700 p-5 text-center">
                       <p className="text-3xl font-bold text-white">{readingStats.totalArticlesRead}</p>
                       <p className="text-slate-500 text-sm mt-1">Articles Read</p>
@@ -875,7 +875,7 @@ export const ProfilePage: React.FC = () => {
 
                   {/* 最近阅读 */}
                   {readingStats.recentlyRead.length > 0 && (
-                    <div className="bg-dark-800 rounded-2xl border border-dark-700 p-6">
+                    <div className="bg-dark-800 rounded-2xl border border-dark-700 p-4 md:p-6">
                       <h4 className="text-white font-bold mb-4">Recently Read</h4>
                       <div className="space-y-3">
                         {readingStats.recentlyRead.map((item: any) => (
@@ -996,8 +996,8 @@ export const ProfilePage: React.FC = () => {
               </div>
 
               {/* XP 概览 */}
-              <div className="grid grid-cols-3 gap-4">
-                <div className="bg-dark-800 border border-dark-700 rounded-2xl p-5 text-center">
+              <div className="grid grid-cols-3 gap-2 md:gap-4">
+                <div className="bg-dark-800 border border-dark-700 rounded-2xl p-3 md:p-5 text-center">
                   <div className="text-3xl font-bold text-white">{xpStats?.availableXp ?? 0}</div>
                   <div className="text-slate-500 text-xs mt-1">Available XP</div>
                 </div>

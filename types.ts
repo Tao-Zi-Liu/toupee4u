@@ -309,3 +309,206 @@ export interface LeaderboardEntry {
   xp: number;
   rank: number;
 }
+
+// ============================================
+// 专家系统（Expert System）
+// ============================================
+
+// 专家从业类型
+export type ExpertType = 
+  | 'SALON_OWNER'        // 沙龙店主
+  | 'STYLIST'            // 发型师
+  | 'MANUFACTURER_REP'   // 厂商代表
+  | 'DISTRIBUTOR'        // 经销商
+  | 'INDEPENDENT';       // 独立从业者
+
+export const EXPERT_TYPE_LABELS: Record<ExpertType, string> = {
+  SALON_OWNER: 'Salon Owner',
+  STYLIST: 'Hair Stylist',
+  MANUFACTURER_REP: 'Manufacturer Rep',
+  DISTRIBUTOR: 'Distributor',
+  INDEPENDENT: 'Independent Professional',
+};
+
+// 专家擅长领域
+export type ExpertSpecialty =
+  | 'LACE_SYSTEMS'       // 蕾丝发系
+  | 'POLY_SKIN'          // 仿皮发系
+  | 'MONO_BASE'          // 单丝底
+  | 'ADHESIVES'          // 粘合剂
+  | 'MAINTENANCE'        // 日常维护
+  | 'COLORING'           // 染色
+  | 'CUSTOM_CUTTING'     // 定制修剪
+  | 'SCALP_CARE'         // 头皮护理
+  | 'INJECTION_TYING';   // 注射结/手工编织
+
+export const EXPERT_SPECIALTY_LABELS: Record<ExpertSpecialty, string> = {
+  LACE_SYSTEMS: 'Lace Systems',
+  POLY_SKIN: 'Poly Skin Systems',
+  MONO_BASE: 'Mono Base',
+  ADHESIVES: 'Adhesives & Bonding',
+  MAINTENANCE: 'Maintenance & Care',
+  COLORING: 'Coloring & Dyeing',
+  CUSTOM_CUTTING: 'Custom Cutting',
+  SCALP_CARE: 'Scalp Care',
+  INJECTION_TYING: 'Injection / Hand-tied',
+};
+
+// 咨询方式
+export type ConsultationMode =
+  | 'VIDEO'    // 视频通话
+  | 'VOICE'    // 语音通话
+  | 'TEXT'     // 站内文字
+  | 'IN_PERSON'; // 线下到店
+
+// 专家申请状态
+export type ExpertApplicationStatus = 
+  | 'DRAFT'       // 用户保存草稿（第一步完成未提交）
+  | 'STEP1'       // 第一步已提交，等待审核
+  | 'STEP2'       // 第一步通过，等待提交作品
+  | 'REVIEWING'   // 作品审核中
+  | 'APPROVED'    // 已通过
+  | 'REJECTED';   // 已拒绝
+
+// 专家申请记录
+export interface ExpertApplication {
+  id?: string;
+  userId: string;
+  displayName: string;
+  email: string;
+  
+  // 第一步：基本信息
+  expertType: ExpertType;
+  yearsOfExperience: number;
+  serviceCity: string;
+  serviceCountry: string;
+  specialties: ExpertSpecialty[];
+  bio: string;                  // 个人简介
+  credentials: string;          // 资质证书描述
+  consultationModes: ConsultationMode[];
+  
+  // 第二步：作品集
+  portfolioImages: string[];    // 图片URLs
+  sampleArticleTitle?: string;  // 示范文章标题
+  sampleArticleContent?: string; // 示范文章内容
+  
+  // 审核
+  status: ExpertApplicationStatus;
+  adminNote?: string;           // 管理员备注
+  rejectionReason?: string;
+  
+  createdAt: any;
+  updatedAt: any;
+  approvedAt?: any;
+}
+
+// 专家公开主页 Profile（审核通过后创建）
+export interface ExpertProfile {
+  userId: string;
+  displayName: string;
+  photoURL: string;
+  
+  // 从业信息
+  expertType: ExpertType;
+  yearsOfExperience: number;
+  serviceCity: string;
+  serviceCountry: string;
+  specialties: ExpertSpecialty[];
+  bio: string;
+  credentials: string;
+  
+  // 作品集
+  portfolioImages: string[];
+  
+  // 咨询设置
+  consultationModes: ConsultationMode[];
+  consultationEnabled: boolean;  // 是否开放预约
+  consultationPrice?: number;    // 站长统一设定
+  
+  // 统计
+  publishedArticleCount: number;
+  totalConsultations: number;
+  
+  // 状态
+  isActive: boolean;
+  createdAt: any;
+  updatedAt: any;
+}
+// ── 专家投稿草稿 ──────────────────────────────
+export type ExpertDraftStatus = 'DRAFT' | 'PENDING_REVIEW' | 'PUBLISHED' | 'REJECTED';
+
+export interface ExpertDraft {
+  id?: string;
+  authorId: string;
+  title: string;
+  content: string;
+  category: string;
+  tags: string[];
+  coverImage?: string;
+  status: ExpertDraftStatus;
+  adminNote?: string;
+  createdAt: any;
+  updatedAt: any;
+  submittedAt?: any;
+  publishedAt?: any;
+}
+// ============================================
+// 新闻资讯系统（News System）
+// ============================================
+
+export type NewsStatus = 'PENDING' | 'PUBLISHED' | 'REJECTED';
+
+export type NewsCategory =
+  | 'Market Trends'
+  | 'Technology'
+  | 'Products'
+  | 'Industry'
+  | 'Research';
+
+// 营销风险标记
+export interface MarketingFlag {
+  type: 'BRAND_PR' | 'PROMOTIONAL' | 'SOFT_AD' | 'CONFLICT_OF_INTEREST';
+  reason: string;  // 具体原因说明
+}
+
+// 编辑评论
+export interface EditorialNote {
+  standpoint: string;   // 来源立场/背景
+  significance: string; // 值得关注的原因
+  caution?: string;     // 需要保持怀疑的地方
+}
+
+// 新闻资讯简报
+export interface NewsArticle {
+  id?: string;
+
+  // 内容
+  title: string;
+  summary: string;          // AI 精简后的摘要（3-4句）
+  editorialNote: EditorialNote;  // 编辑评论
+  category: NewsCategory;
+  tags: string[];
+
+  // 来源
+  sourceUrl: string;
+  sourceName: string;       // 出版物名称
+  sourceDate?: string;      // 原文发布日期 YYYY-MM-DD
+  urlVerified: boolean;     // 链接是否已验证可访问
+  urlVerifiedAt?: any;
+
+  // 营销过滤
+  marketingFlags: MarketingFlag[];   // 检测到的营销风险
+  isClean: boolean;                  // true = 无营销内容
+
+  // 生成信息
+  generatedDate: string;    // YYYY-MM-DD
+  generatedBy: 'AI_GEMINI' | 'AI_GEMINI_MANUAL';
+
+  // 审核
+  status: NewsStatus;
+  adminNote?: string;       // 审核备注
+
+  // 时间戳
+  createdAt: any;
+  publishedAt?: any;
+}
