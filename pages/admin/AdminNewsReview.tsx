@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Newspaper, RefreshCw, Play, CheckCircle, XCircle, ExternalLink,
   AlertTriangle, ShieldAlert, Loader, Clock, Calendar, Filter,
-  Sparkles, MessageSquare, Link2, Link2Off, Plus, X, EyeOff
+  Sparkles, MessageSquare, Link2, Link2Off, Plus, X, EyeOff, BrainCircuit
 } from 'lucide-react';
 import { collection, query, orderBy, getDocs, where } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
@@ -56,8 +56,22 @@ export const AdminNewsReview: React.FC = () => {
   const [extraTopics, setExtraTopics] = useState<string[]>([]);
   const [topicInput, setTopicInput] = useState('');
   const [showTopicEditor, setShowTopicEditor] = useState(false);
+  const [insightGenerating, setInsightGenerating] = useState(false);
 
   const functions = getFunctions();
+
+  const handleGenerateInsights = async () => {
+    setInsightGenerating(true);
+    try {
+      const fn = httpsCallable(functions, 'generateInsightsManual');
+      const result: any = await fn();
+      alert(`✅ Generated ${result.data.count} insights for ${result.data.date}`);
+    } catch (err: any) {
+      alert(`❌ Insight generation failed: ${err.message}`);
+    } finally {
+      setInsightGenerating(false);
+    }
+  };
 
   const loadArticles = async () => {
     setLoading(true);
@@ -194,6 +208,11 @@ export const AdminNewsReview: React.FC = () => {
             }`}>
             <Filter className="w-4 h-4" />
             Topics {extraTopics.length > 0 && <span className="bg-brand-purple text-white text-[10px] px-1.5 py-0.5 rounded-full">{extraTopics.length}</span>}
+          </button>
+          <button onClick={handleGenerateInsights} disabled={insightGenerating}
+            className="flex items-center gap-2 px-4 py-2 bg-brand-purple/20 hover:bg-brand-purple/30 border border-brand-purple/30 disabled:opacity-50 text-brand-purple rounded-xl text-sm font-bold transition-all">
+            {insightGenerating ? <Loader className="w-4 h-4 animate-spin" /> : <BrainCircuit className="w-4 h-4" />}
+            {insightGenerating ? 'Generating...' : 'Gen Insights'}
           </button>
           <button onClick={handleGenerate} disabled={generating}
             className="flex items-center gap-2 px-4 py-2 bg-brand-blue hover:bg-blue-600 disabled:opacity-50 text-white rounded-xl text-sm font-bold transition-all">

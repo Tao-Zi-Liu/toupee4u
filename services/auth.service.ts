@@ -1,19 +1,22 @@
 // services/auth.service.ts
-// 用户认证服务：注册、登录、登出（支持新的角色和等级系统）
-
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  User as FirebaseUser
+  User as FirebaseUser,
+  GoogleAuthProvider,
+  signInWithPopup,
+  sendEmailVerification,
+  sendPasswordResetEmail,
+  reload,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, getDocs, collection, serverTimestamp } from 'firebase/firestore';
 import { initUserXPStats } from './xp.service';
 import { auth, db } from '../firebase.config';
-import { 
-  User, 
-  UserRole, 
+import {
+  User,
+  UserRole,
   GalaxyLevel,
   MembershipTier,
   VoyagerProfile,
@@ -24,13 +27,54 @@ import {
   ActivityLevel
 } from '../types';
 
-/**
- * 注册新用户
- * @param email 邮箱
- * @param password 密码
- * @param displayName 显示名称
- * @param role 用户角色（可选，默认为VOYAGER）
- */
+// ── Providers ─────────────────────────────────
+const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: 'select_account' });
+
+// ── 创建用户 Firestore 档案（内部复用）────────
+async function createUserProfile(
+  uid: string,
+  email: string,
+  displayName: string,
+  photoURL: string,
+  role: UserRole = 'VOYAGER'
+): Promise<User> {
+  const user: User = {
+    userId: uid,
+    email,
+    displayName,
+    photoURL: photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=random`,
+    role,
+    galaxyLevel: 'NEBULA',
+    xp: 0,
+    membershipTier: 'free',
+    createdAt: serverTimestamp(),
+    lastLoginAt: serverTimestamp(),
+  };
+
+  await setDoc(doc(db, 'users', uid), user);
+
+  if (role === 'VOYAGER') {
+    await setDoc(doc(db, 'voyagerProfiles', uid), {
+      userId: uid,
+      contentTags: [],
+      quizCompleted: false,
+    });
+  } else if (role === 'ARCHITECT') {
+    await setDoc(doc(db, 'architectProfiles', uid), {
+      userId: uid,
+      businessName: '',
+      location: { city: '', country: '' },
+      skills: [],
+      verificationStatus: 'PENDING',
+    });
+  }
+
+  await initUserXPStats(uid);
+  return user;
+}
+
+// ── 邮箱+密码注册 ─────────────────────────────
 export async function registerUser(
   email: string,
   password: string,
@@ -38,188 +82,178 @@ export async function registerUser(
   role: UserRole = 'VOYAGER'
 ): Promise<User> {
   try {
-    // 1. 在Firebase Auth创建用户
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const firebaseUser = userCredential.user;
+    const credential = await createUserWithEmailAndPassword(auth, email, password);
+    const firebaseUser = credential.user;
 
-    // 2. 创建主用户档案
-    const user: User = {
-      userId: firebaseUser.uid,
-      email: firebaseUser.email || email,
-      displayName: displayName,
-      photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=random`,
-      
-      // 新增字段
-      role: role,
-      galaxyLevel: 'NEBULA',  // 注册即为星云等级
-      xp: 0,                   // 初始经验值为0
-      
-      // 付费会员默认为free
-      membershipTier: 'free',
-      
-      createdAt: serverTimestamp(),
-      lastLoginAt: serverTimestamp()
-    };
+    // 发送验证邮件
+    await sendEmailVerification(firebaseUser, {
+      url: `${window.location.origin}/login?verified=true`,
+    });
 
-    // 3. 保存到 Firestore users collection
-    await setDoc(doc(db, 'users', firebaseUser.uid), user);
-
-    // 4. 根据角色创建对应的扩展Profile
-    if (role === 'VOYAGER') {
-      const voyagerProfile: VoyagerProfile = {
-        userId: firebaseUser.uid,
-        contentTags: [],
-        quizCompleted: false
-      };
-      await setDoc(doc(db, 'voyagerProfiles', firebaseUser.uid), voyagerProfile);
-    } else if (role === 'ARCHITECT') {
-      const architectProfile: Partial<ArchitectProfile> = {
-        userId: firebaseUser.uid,
-        businessName: '',
-        location: {
-          city: '',
-          country: ''
-        },
-        skills: [],
-        verificationStatus: 'PENDING'
-      };
-      await setDoc(doc(db, 'architectProfiles', firebaseUser.uid), architectProfile);
-    }
-    // 5. 初始化XP积分档案
-    await initUserXPStats(firebaseUser.uid);
+    const user = await createUserProfile(
+      firebaseUser.uid, email, displayName,
+      firebaseUser.photoURL || '', role
+    );
 
     return user;
   } catch (error: any) {
-    console.error('❌ Registration error:', error);
     throw new Error(getErrorMessage(error.code));
   }
 }
 
-/**
- * 登录用户
- */
+// ── Google 登录 ───────────────────────────────
+export async function loginWithGoogle(): Promise<CompleteUserProfile> {
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    const firebaseUser = result.user;
+
+    // 检查是否已有档案
+    const existing = await getDoc(doc(db, 'users', firebaseUser.uid));
+
+    if (!existing.exists()) {
+      // 首次 Google 登录，创建档案
+      await createUserProfile(
+        firebaseUser.uid,
+        firebaseUser.email || '',
+        firebaseUser.displayName || 'New Voyager',
+        firebaseUser.photoURL || '',
+      );
+    } else {
+      // 更新最后登录时间
+      await setDoc(doc(db, 'users', firebaseUser.uid), {
+        lastLoginAt: serverTimestamp(),
+        photoURL: firebaseUser.photoURL || existing.data().photoURL,
+      }, { merge: true });
+    }
+
+    const profile = await getCompleteUserProfile(firebaseUser.uid);
+    if (!profile) throw new Error('Failed to load user profile');
+    return profile;
+  } catch (error: any) {
+    if (error.code === 'auth/popup-closed-by-user') throw new Error('Sign-in cancelled');
+    throw new Error(getErrorMessage(error.code));
+  }
+}
+
+// ── 邮箱+密码登录 ─────────────────────────────
 export async function loginUser(
   email: string,
   password: string
 ): Promise<CompleteUserProfile> {
   try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const firebaseUser = userCredential.user;
+    const credential = await signInWithEmailAndPassword(auth, email, password);
+    const firebaseUser = credential.user;
 
-    // 获取完整的用户档案
-    const completeProfile = await getCompleteUserProfile(firebaseUser.uid);
-
-    if (!completeProfile) {
-      throw new Error('User profile not found');
+    // 检查邮箱验证状态
+    if (!firebaseUser.emailVerified) {
+      await signOut(auth);
+      throw new Error('EMAIL_NOT_VERIFIED');
     }
 
-    // 更新最后登录时间
     await setDoc(doc(db, 'users', firebaseUser.uid), {
       lastLoginAt: serverTimestamp()
     }, { merge: true });
 
-    return completeProfile;
+    const profile = await getCompleteUserProfile(firebaseUser.uid);
+    if (!profile) throw new Error('User profile not found');
+    return profile;
   } catch (error: any) {
-    console.error('❌ Login error:', error);
+    if (error.message === 'EMAIL_NOT_VERIFIED') throw error;
     throw new Error(getErrorMessage(error.code));
   }
 }
 
-/**
- * 登出
- */
+// ── 重发验证邮件 ──────────────────────────────
+export async function resendVerificationEmail(email: string, password: string): Promise<void> {
+  try {
+    const credential = await signInWithEmailAndPassword(auth, email, password);
+    await sendEmailVerification(credential.user, {
+      url: `${window.location.origin}/login?verified=true`,
+    });
+    await signOut(auth);
+  } catch (error: any) {
+    throw new Error(getErrorMessage(error.code));
+  }
+}
+
+// ── 忘记密码 ──────────────────────────────────
+export async function sendPasswordReset(email: string): Promise<void> {
+  try {
+    await sendPasswordResetEmail(auth, email, {
+      url: `${window.location.origin}/login`,
+    });
+  } catch (error: any) {
+    throw new Error(getErrorMessage(error.code));
+  }
+}
+
+// ── 登出 ──────────────────────────────────────
 export async function logoutUser(): Promise<void> {
   try {
     await signOut(auth);
   } catch (error: any) {
-    console.error('❌ Logout error:', error);
     throw new Error('Failed to log out');
   }
 }
 
-/**
- * 获取基础用户档案
- */
+// ── Profile 读取 ──────────────────────────────
 export async function getUserProfile(uid: string): Promise<User | null> {
   try {
-    const docRef = doc(db, 'users', uid);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      return docSnap.data() as User;
-    }
-
-    return null;
-  } catch (error) {
-    console.error('❌ Error fetching user profile:', error);
+    const snap = await getDoc(doc(db, 'users', uid));
+    return snap.exists() ? snap.data() as User : null;
+  } catch {
     return null;
   }
 }
 
-/**
- * 获取完整的用户档案（包括扩展Profile）
- */
 export async function getCompleteUserProfile(uid: string): Promise<CompleteUserProfile | null> {
   try {
-    // 1. 获取基础用户信息
     const user = await getUserProfile(uid);
     if (!user) return null;
 
-    const completeProfile: CompleteUserProfile = { ...user };
+    const complete: CompleteUserProfile = { ...user };
 
-    // 2. 根据角色获取扩展Profile
     if (user.role === 'VOYAGER') {
-      const voyagerDoc = await getDoc(doc(db, 'voyagerProfiles', uid));
-      if (voyagerDoc.exists()) {
-        completeProfile.voyagerProfile = voyagerDoc.data() as VoyagerProfile;
-      }
+      const snap = await getDoc(doc(db, 'voyagerProfiles', uid));
+      if (snap.exists()) complete.voyagerProfile = snap.data() as VoyagerProfile;
     } else if (user.role === 'ARCHITECT') {
-      const architectDoc = await getDoc(doc(db, 'architectProfiles', uid));
-      if (architectDoc.exists()) {
-        completeProfile.architectProfile = architectDoc.data() as ArchitectProfile;
-      }
+      const snap = await getDoc(doc(db, 'architectProfiles', uid));
+      if (snap.exists()) complete.architectProfile = snap.data() as ArchitectProfile;
     }
 
-    return completeProfile;
-  } catch (error) {
-    console.error('❌ Error fetching complete user profile:', error);
+    return complete;
+  } catch {
     return null;
   }
 }
 
-/**
- * 监听认证状态变化
- */
+// ── Auth 监听 ─────────────────────────────────
 export function onAuthChange(callback: (user: FirebaseUser | null) => void) {
   return onAuthStateChanged(auth, callback);
 }
 
-/**
- * 获取当前登录用户
- */
 export function getCurrentUser(): FirebaseUser | null {
   return auth.currentUser;
 }
 
-/**
- * 错误消息转换
- */
+// ── 错误消息 ──────────────────────────────────
 function getErrorMessage(errorCode: string): string {
-  const errorMessages: { [key: string]: string } = {
-    'auth/email-already-in-use': 'This email is already registered',
-    'auth/invalid-email': 'Invalid email address',
-    'auth/weak-password': 'Password must be at least 6 characters',
-    'auth/user-not-found': 'No account found with this email',
-    'auth/wrong-password': 'Incorrect password',
-    'auth/too-many-requests': 'Too many attempts. Please try again later',
-    'auth/network-request-failed': 'Network error. Please check your connection'
+  const messages: Record<string, string> = {
+    'auth/email-already-in-use':    'This email is already registered',
+    'auth/invalid-email':           'Invalid email address',
+    'auth/weak-password':           'Password must be at least 6 characters',
+    'auth/user-not-found':          'No account found with this email',
+    'auth/wrong-password':          'Incorrect password',
+    'auth/invalid-credential':      'Incorrect email or password',
+    'auth/too-many-requests':       'Too many attempts. Please try again later',
+    'auth/network-request-failed':  'Network error. Please check your connection',
+    'auth/popup-blocked':           'Popup was blocked. Please allow popups for this site',
+    'auth/account-exists-with-different-credential': 'An account already exists with this email',
   };
-
-  return errorMessages[errorCode] || 'An error occurred. Please try again';
+  return messages[errorCode] || 'An error occurred. Please try again';
 }
-/**
- * 更新Voyager Profile（保存Quiz数据）
- */
+
+// ── 以下保持原有函数不变 ──────────────────────
 export async function updateVoyagerProfile(
   userId: string,
   quizData: {
@@ -228,109 +262,52 @@ export async function updateVoyagerProfile(
     activityLevel: ActivityLevel;
   }
 ): Promise<void> {
-  try {
-    const voyagerProfileRef = doc(db, 'voyagerProfiles', userId);
-    
-    // 根据Quiz数据生成内容标签
-    const contentTags: string[] = [];
-    
-    // 根据经验等级添加标签
-    if (quizData.experienceLevel === 'NEWBIE') {
-      contentTags.push('WIKI_BASICS', 'GETTING_STARTED', 'TUTORIALS');
-    } else {
-      contentTags.push('ADVANCED_TECHNIQUES', 'EXPERT_TIPS', 'COMMUNITY_DISCUSSIONS');
-    }
-    
-    // 根据活动强度添加标签
-    if (quizData.activityLevel === 'HIGH') {
-      contentTags.push('ADHESIVES_SWEAT_PROOF', 'SPORTS_ACTIVITIES', 'MAINTENANCE_INTENSIVE');
-    } else if (quizData.activityLevel === 'MEDIUM') {
-      contentTags.push('DAILY_MAINTENANCE', 'STANDARD_ADHESIVES');
-    } else {
-      contentTags.push('GENTLE_CARE', 'BASIC_MAINTENANCE');
-    }
-    
-    // 根据发量类型添加标签
-    contentTags.push(`PATTERN_${quizData.hairPattern}`);
-    
-    // 生成匹配组（用于推荐同类人）
-    const matchGroup = `GROUP_${quizData.hairPattern}_${quizData.experienceLevel}`;
-    
-    // 更新Firestore
-    await setDoc(voyagerProfileRef, {
-      hairPattern: quizData.hairPattern,
-      experienceLevel: quizData.experienceLevel,
-      activityLevel: quizData.activityLevel,
-      contentTags: contentTags,
-      matchGroup: matchGroup,
-      quizCompleted: true,
-      quizCompletedAt: serverTimestamp()
-    }, { merge: true });
-  } catch (error) {
-    console.error('❌ Error updating voyager profile:', error);
-    throw new Error('Failed to save quiz data');
+  const contentTags: string[] = [];
+  if (quizData.experienceLevel === 'NEWBIE') {
+    contentTags.push('WIKI_BASICS', 'GETTING_STARTED', 'TUTORIALS');
+  } else {
+    contentTags.push('ADVANCED_TECHNIQUES', 'EXPERT_TIPS', 'COMMUNITY_DISCUSSIONS');
   }
-}
-/**
- * 更新用户基础资料
- */
-export async function updateUserProfile(
-  userId: string,
-  updates: {
-    displayName?: string;
-    bio?: string;
-    photoURL?: string;
+  if (quizData.activityLevel === 'HIGH') {
+    contentTags.push('ADHESIVES_SWEAT_PROOF', 'SPORTS_ACTIVITIES', 'MAINTENANCE_INTENSIVE');
+  } else if (quizData.activityLevel === 'MEDIUM') {
+    contentTags.push('DAILY_MAINTENANCE', 'STANDARD_ADHESIVES');
+  } else {
+    contentTags.push('GENTLE_CARE', 'BASIC_MAINTENANCE');
   }
-): Promise<void> {
-  try {
-    const userRef = doc(db, 'users', userId);
-    const updateData: any = {};
-    
-    if (updates.displayName !== undefined) updateData.displayName = updates.displayName;
-    if (updates.bio !== undefined) updateData.bio = updates.bio;
-    if (updates.photoURL !== undefined) updateData.photoURL = updates.photoURL;
-    
-    await setDoc(userRef, updateData, { merge: true });
-  } catch (error) {
-    console.error('❌ Error updating user profile:', error);
-    throw new Error('Failed to update profile');
-  }
+  contentTags.push(`PATTERN_${quizData.hairPattern}`);
+  const matchGroup = `GROUP_${quizData.hairPattern}_${quizData.experienceLevel}`;
+  await setDoc(doc(db, 'voyagerProfiles', userId), {
+    ...quizData,
+    contentTags,
+    matchGroup,
+    quizCompleted: true,
+    quizCompletedAt: serverTimestamp(),
+  }, { merge: true });
 }
 
-/**
- * 搜索用户（用于@提及功能）
- */
+export async function updateUserProfile(
+  userId: string,
+  updates: { displayName?: string; bio?: string; photoURL?: string }
+): Promise<void> {
+  const updateData: any = {};
+  if (updates.displayName !== undefined) updateData.displayName = updates.displayName;
+  if (updates.bio !== undefined) updateData.bio = updates.bio;
+  if (updates.photoURL !== undefined) updateData.photoURL = updates.photoURL;
+  await setDoc(doc(db, 'users', userId), updateData, { merge: true });
+}
+
 export async function searchUsers(keyword: string): Promise<{
-  userId: string;
-  displayName: string;
-  photoURL: string;
-  galaxyLevel: string;
+  userId: string; displayName: string; photoURL: string; galaxyLevel: string;
 }[]> {
-  try {
-    if (!keyword.trim()) return [];
-    
-    const usersRef = collection(db, 'users');
-    const snapshot = await getDocs(usersRef);
-    
-    const results: any[] = [];
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      if (
-        data.displayName &&
-        data.displayName.toLowerCase().includes(keyword.toLowerCase())
-      ) {
-        results.push({
-          userId: doc.id,
-          displayName: data.displayName,
-          photoURL: data.photoURL || '',
-          galaxyLevel: data.galaxyLevel || 'NEBULA'
-        });
-      }
-    });
-    
-    return results.slice(0, 5); // 最多返回5个结果
-  } catch (error) {
-    console.error('Failed to search users:', error);
-    return [];
-  }
+  if (!keyword.trim()) return [];
+  const snapshot = await getDocs(collection(db, 'users'));
+  const results: any[] = [];
+  snapshot.forEach(d => {
+    const data = d.data();
+    if (data.displayName?.toLowerCase().includes(keyword.toLowerCase())) {
+      results.push({ userId: d.id, displayName: data.displayName, photoURL: data.photoURL || '', galaxyLevel: data.galaxyLevel || 'NEBULA' });
+    }
+  });
+  return results.slice(0, 5);
 }

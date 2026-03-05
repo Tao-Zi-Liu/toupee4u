@@ -1,5 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { getTodayInsights, getPersonalizedInsight, DailyInsight } from '../services/insight.service';
+import { auth } from '../firebase.config';
 import { Link, NavLink } from 'react-router-dom';
 import { 
   MessageSquare, 
@@ -20,8 +22,7 @@ import {
   BookA,
   Cpu,
   FileText,
-  Star, 
-  Video
+  Star
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -32,27 +33,54 @@ interface SidebarProps {
   userTier?: string;  // 'NEBULA' | 'NOVA' | 'GALAXY' | 'SUPERNOVA'
 }
 
-const AI_QUOTES = [
-  "Swiss lace denier is thinner than French, decreasing lifespan but maximizing refraction.",
-  "Ghost Bond Platinum requires exactly 4 thin layers to reach optimal tensile strength.",
-  "UV oxidation at 450nm wavelength is the primary cause of red undertones in #1B hair.",
-  "Poly skin thickness of 0.03mm reaches 'zero-perceptibility' at a distance of 12 inches.",
-  "Sulfate-free hydration is not a suggestion; it is a molecular requirement for non-living fiber."
-];
+// AI Insights are loaded dynamically from Firestore + Gemini
 
 const SECRET_ADMIN_URL = "/terminal/x92-quantum-override";
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, isExpert = false, userTier = 'NEBULA' }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isKbExpanded, setIsKbExpanded] = useState(false);
-  const [quoteIndex, setQuoteIndex] = useState(0);
+  const [insights, setInsights] = useState<DailyInsight[]>([]);
+  const [insightIndex, setInsightIndex] = useState(0);
+  const [insightLoading, setInsightLoading] = useState(true);
 
+  const [user, setUser] = useState<any>(null);
+          useEffect(() => {
+            const unsub = auth.onAuthStateChanged(u => setUser(u));
+            return unsub;
+          }, []);
+
+  // 加载每日 insights + 个性化 insight
   useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      setInsightLoading(true);
+      const daily = await getTodayInsights();
+      if (cancelled) return;
+
+      if (user) {
+        // 已登录：加入个性化 insight
+        const personalized = await getPersonalizedInsight();
+        if (!cancelled) {
+          setInsights(personalized ? [...daily, personalized] : daily);
+        }
+      } else {
+        setInsights(daily);
+      }
+      setInsightLoading(false);
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [user?.uid]);
+
+  // 10秒轮播
+  useEffect(() => {
+    if (insights.length === 0) return;
     const interval = setInterval(() => {
-      setQuoteIndex(prev => (prev + 1) % AI_QUOTES.length);
+      setInsightIndex(prev => (prev + 1) % insights.length);
     }, 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [insights.length]);
 
   const toggleCollapse = () => setIsCollapsed(!isCollapsed);
 
@@ -114,15 +142,39 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, isExpert = fal
             </button>
 
             {!isCollapsed && (
-              <div className="p-3 bg-dark-800 rounded-xl border border-dark-700 relative overflow-hidden group animate-in fade-in slide-in-from-top-1">
-                <div className="flex items-center gap-2 text-[10px] font-bold text-brand-purple uppercase tracking-wider mb-2">
-                  <Sparkles className="w-3 h-3" /> AI Insight
+              <div className="p-3 bg-dark-800 rounded-xl border border-dark-700 relative overflow-hidden animate-in fade-in slide-in-from-top-1">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-brand-purple uppercase tracking-wider">
+                    <Sparkles className="w-3 h-3" /> Toupee4u Insight
+                  </div>
+                  {insights.length > 1 && (
+                    <div className="flex gap-0.5">
+                      {insights.map((_, i) => (
+                        <button key={i} onClick={() => setInsightIndex(i)}
+                          className={`w-1 h-1 rounded-full transition-all ${i === insightIndex ? 'bg-brand-purple' : 'bg-dark-600'}`} />
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <p className="text-[11px] leading-relaxed text-slate-300 italic font-medium">
-                  "{AI_QUOTES[quoteIndex]}"
-                </p>
+                {insightLoading ? (
+                  <div className="flex items-center gap-2 text-[10px] text-slate-500">
+                    <Sparkles className="w-3 h-3 animate-pulse" /> Generating insights...
+                  </div>
+                ) : insights.length > 0 ? (
+                  <div className="space-y-1">
+                    <span className="text-base">{insights[insightIndex]?.emoji}</span>
+                    <p className="text-[11px] leading-relaxed text-slate-300 font-medium">
+                      {insights[insightIndex]?.text}
+                    </p>
+                    {insights[insightIndex]?.type === 'PERSONALIZED' && (
+                      <p className="text-[9px] text-brand-purple font-bold uppercase tracking-wider">✨ For you</p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-slate-500 italic">Check back soon for today's insights.</p>
+                )}
                 <div className="absolute -right-2 -bottom-2 opacity-5">
-                   <Sparkles className="w-12 h-12" />
+                  <Sparkles className="w-12 h-12" />
                 </div>
               </div>
             )}
@@ -136,7 +188,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, isExpert = fal
               <NavItem to="/for-you" icon={Sparkles} label="For You" isCollapsed={isCollapsed} onClick={handleItemClick} />
               <NavItem to="/forum" icon={MessageSquare} label="Forums" isCollapsed={isCollapsed} onClick={handleItemClick} />
               <NavItem to="/news" icon={Newspaper} label="News" isCollapsed={isCollapsed} onClick={handleItemClick} />
-              <NavItem to="/videos" icon={Video} label="Videos" isCollapsed={isCollapsed} onClick={handleItemClick} />
             </nav>
           </div>
 

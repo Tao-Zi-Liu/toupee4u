@@ -40,6 +40,7 @@ import { AdminDeployment } from './pages/admin/AdminDeployment';
 import { AdminPortal } from './pages/admin/AdminPortal';
 import { AdminAnalytics } from './pages/admin/AdminAnalytics';
 import { AdminUsers } from './pages/admin/AdminUsers';
+import { AdminUserDetail } from './pages/admin/AdminUserDetail';
 import { CommandPalette } from './components/CommandPalette';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import { Menu, Search, Bell, User, LogIn, LogOut, Crown, Rocket, ShieldAlert } from 'lucide-react';
@@ -471,6 +472,7 @@ const AppRoutes = () => {
       <Route path="/admin/deployment" element={<StaffGate><AdminDeployment /></StaffGate>} />
       <Route path="/admin/analytics" element={<StaffGate><AdminAnalytics /></StaffGate>} />
       <Route path="/admin/users" element={<StaffGate><AdminUsers /></StaffGate>} />
+      <Route path="/admin/users/:userId" element={<StaffGate><AdminUserDetail /></StaffGate>} />
       <Route path="/admin/news" element={<StaffGate><AdminNewsReview /></StaffGate>} />
       <Route path="/admin/videos" element={<StaffGate><AdminVideoDesk /></StaffGate>} />
       <Route path="*" element={<Navigate to="/" replace />} />
