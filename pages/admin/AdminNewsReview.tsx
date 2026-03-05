@@ -2,29 +2,26 @@
 import React, { useState, useEffect } from 'react';
 import {
   Newspaper, RefreshCw, Play, CheckCircle, XCircle, ExternalLink,
-  AlertTriangle, ShieldAlert, Loader, ChevronDown, ChevronUp,
-  Link2, Link2Off, Clock, Calendar, Tag, Filter, Sparkles,
-  Eye, EyeOff, MessageSquare
+  AlertTriangle, ShieldAlert, Loader, Clock, Calendar, Filter,
+  Sparkles, MessageSquare, Link2, Link2Off, Plus, X, EyeOff
 } from 'lucide-react';
-import {
-  collection, query, orderBy, getDocs, where
-} from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, where } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { db } from '../../firebase.config';
 import { NewsArticle, NewsStatus, MarketingFlag } from '../../types';
 
-// ── 常量 ─────────────────────────────────────
 const STATUS_CONFIG: Record<NewsStatus, { label: string; color: string; dot: string }> = {
-  PENDING:   { label: 'Pending Review', color: 'text-amber-400 bg-amber-400/10 border-amber-400/20',   dot: 'bg-amber-400 animate-pulse' },
-  PUBLISHED: { label: 'Published',      color: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20', dot: 'bg-emerald-400' },
-  REJECTED:  { label: 'Rejected',       color: 'text-red-400 bg-red-400/10 border-red-400/20',          dot: 'bg-red-400' },
+  PENDING:     { label: 'Pending Review', color: 'text-amber-400 bg-amber-400/10 border-amber-400/20',       dot: 'bg-amber-400 animate-pulse' },
+  PUBLISHED:   { label: 'Published',      color: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20', dot: 'bg-emerald-400' },
+  REJECTED:    { label: 'Rejected',       color: 'text-red-400 bg-red-400/10 border-red-400/20',             dot: 'bg-red-400' },
+  UNPUBLISHED: { label: 'Unpublished',    color: 'text-slate-400 bg-slate-400/10 border-slate-400/20',       dot: 'bg-slate-400' },
 };
 
 const MARKETING_FLAG_CONFIG: Record<string, { label: string; color: string }> = {
-  BRAND_PR:              { label: 'Brand PR',          color: 'text-orange-400 bg-orange-400/10 border-orange-400/20' },
-  PROMOTIONAL:           { label: 'Promotional',       color: 'text-red-400 bg-red-400/10 border-red-400/20' },
-  SOFT_AD:               { label: 'Soft Ad',           color: 'text-pink-400 bg-pink-400/10 border-pink-400/20' },
-  CONFLICT_OF_INTEREST:  { label: 'Conflict of Interest', color: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20' },
+  BRAND_PR:             { label: 'Brand PR',           color: 'text-orange-400 bg-orange-400/10 border-orange-400/20' },
+  PROMOTIONAL:          { label: 'Promotional',        color: 'text-red-400 bg-red-400/10 border-red-400/20' },
+  SOFT_AD:              { label: 'Soft Ad',            color: 'text-pink-400 bg-pink-400/10 border-pink-400/20' },
+  CONFLICT_OF_INTEREST: { label: 'Conflict of Interest', color: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20' },
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -35,9 +32,17 @@ const CATEGORY_COLORS: Record<string, string> = {
   'Research':      'text-cyan-400 bg-cyan-400/10 border-cyan-400/20',
 };
 
+const DEFAULT_TOPICS = [
+  "hair replacement system industry news",
+  "hair system technology innovation",
+  "toupee wig market trends",
+  "hair loss treatment research 2025",
+  "hair system adhesive bonding new products",
+  "men hair replacement consumer trends",
+];
+
 type FilterStatus = 'ALL' | NewsStatus;
 
-// ── 主组件 ────────────────────────────────────
 export const AdminNewsReview: React.FC = () => {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,6 +53,9 @@ export const AdminNewsReview: React.FC = () => {
   const [rejectNote, setRejectNote] = useState('');
   const [showRejectInput, setShowRejectInput] = useState(false);
   const [adminNote, setAdminNote] = useState('');
+  const [extraTopics, setExtraTopics] = useState<string[]>([]);
+  const [topicInput, setTopicInput] = useState('');
+  const [showTopicEditor, setShowTopicEditor] = useState(false);
 
   const functions = getFunctions();
 
@@ -65,8 +73,7 @@ export const AdminNewsReview: React.FC = () => {
         );
       }
       const snap = await getDocs(q);
-      const data = snap.docs.map(d => ({ id: d.id, ...d.data() } as NewsArticle));
-      setArticles(data);
+      setArticles(snap.docs.map(d => ({ id: d.id, ...d.data() } as NewsArticle)));
     } finally {
       setLoading(false);
     }
@@ -74,18 +81,43 @@ export const AdminNewsReview: React.FC = () => {
 
   useEffect(() => { loadArticles(); }, [filterStatus]);
 
+  const addTopic = () => {
+    if (topicInput.trim() && extraTopics.length < 10 && !extraTopics.includes(topicInput.trim())) {
+      setExtraTopics(prev => [...prev, topicInput.trim()]);
+      setTopicInput('');
+    }
+  };
+
   const handleGenerate = async () => {
     setGenerating(true);
     try {
       const fn = httpsCallable(functions, 'generateNewsManual');
-      const result: any = await fn({});
+      const result: any = await fn({ extraTopics });
       alert(`✅ Generated ${result.data.count} articles. Refreshing...`);
       setFilterStatus('PENDING');
+      setExtraTopics([]);
+      setShowTopicEditor(false);
       await loadArticles();
     } catch (err: any) {
       alert(`❌ Generation failed: ${err.message}`);
     } finally {
       setGenerating(false);
+    }
+  };
+
+
+  const handleUnpublish = async (article: NewsArticle) => {
+    if (!article.id) return;
+    setActionLoading(true);
+    try {
+      const fn = httpsCallable(functions, 'unpublishNewsArticle');
+      await fn({ articleId: article.id });
+      setArticles(prev => prev.map(a => a.id === article.id ? { ...a, status: 'UNPUBLISHED' as NewsStatus } : a));
+      setSelectedArticle(null);
+    } catch (err: any) {
+      alert(`Unpublish failed: ${err.message}`);
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -138,7 +170,7 @@ export const AdminNewsReview: React.FC = () => {
     }
   };
 
-  const pending = articles.filter(a => a.status === 'PENDING').length;
+  const pending   = articles.filter(a => a.status === 'PENDING').length;
   const published = articles.filter(a => a.status === 'PUBLISHED').length;
 
   return (
@@ -156,6 +188,13 @@ export const AdminNewsReview: React.FC = () => {
             className="flex items-center gap-2 px-3 py-2 bg-dark-800 border border-dark-700 hover:border-dark-500 text-slate-400 hover:text-white rounded-xl text-sm font-bold transition-all">
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
+          <button onClick={() => setShowTopicEditor(prev => !prev)}
+            className={`flex items-center gap-2 px-4 py-2 border rounded-xl text-sm font-bold transition-all ${
+              showTopicEditor ? 'bg-brand-purple/10 border-brand-purple/30 text-brand-purple' : 'bg-dark-800 border-dark-700 text-slate-400 hover:text-white'
+            }`}>
+            <Filter className="w-4 h-4" />
+            Topics {extraTopics.length > 0 && <span className="bg-brand-purple text-white text-[10px] px-1.5 py-0.5 rounded-full">{extraTopics.length}</span>}
+          </button>
           <button onClick={handleGenerate} disabled={generating}
             className="flex items-center gap-2 px-4 py-2 bg-brand-blue hover:bg-blue-600 disabled:opacity-50 text-white rounded-xl text-sm font-bold transition-all">
             {generating ? <Loader className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
@@ -164,12 +203,55 @@ export const AdminNewsReview: React.FC = () => {
         </div>
       </div>
 
+      {/* Topic Editor */}
+      {showTopicEditor && (
+        <div className="bg-dark-800 border border-dark-700 rounded-2xl p-5 space-y-4">
+          <div>
+            <p className="text-xs font-bold text-white mb-1">Default Topics <span className="text-slate-500 font-normal">(always included)</span></p>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {DEFAULT_TOPICS.map(t => (
+                <span key={t} className="text-[11px] px-2.5 py-1 bg-dark-700 border border-dark-600 rounded-lg text-slate-400">{t}</span>
+              ))}
+            </div>
+          </div>
+          <div className="border-t border-dark-700 pt-4">
+            <p className="text-xs font-bold text-white mb-2">Extra Topics <span className="text-slate-500 font-normal">(this generation only, max 10)</span></p>
+            <div className="flex gap-2">
+              <input
+                value={topicInput}
+                onChange={e => setTopicInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') addTopic(); }}
+                placeholder="e.g. hair system APAC market 2025..."
+                className="flex-1 bg-dark-900 border border-dark-600 focus:border-brand-blue rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none"
+              />
+              <button onClick={addTopic}
+                className="flex items-center gap-1 px-3 py-2 bg-dark-700 hover:bg-dark-600 border border-dark-600 text-slate-300 rounded-xl text-xs font-bold transition-all">
+                <Plus className="w-3.5 h-3.5" /> Add
+              </button>
+            </div>
+            {extraTopics.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {extraTopics.map((t, i) => (
+                  <span key={i} className="flex items-center gap-1.5 text-xs px-2.5 py-1 bg-brand-blue/10 border border-brand-blue/20 text-brand-blue rounded-lg">
+                    {t}
+                    <button onClick={() => setExtraTopics(prev => prev.filter((_, idx) => idx !== i))}
+                      className="text-brand-blue/50 hover:text-brand-blue transition-colors">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: 'Pending Review', value: pending, color: 'text-amber-400', icon: Clock },
-          { label: 'Published', value: published, color: 'text-emerald-400', icon: CheckCircle },
-          { label: 'Total', value: articles.length, color: 'text-slate-300', icon: Newspaper },
+          { label: 'Pending Review', value: pending,           color: 'text-amber-400',   icon: Clock },
+          { label: 'Published',      value: published,         color: 'text-emerald-400', icon: CheckCircle },
+          { label: 'Total',          value: articles.length,   color: 'text-slate-300',   icon: Newspaper },
         ].map(s => (
           <div key={s.label} className="bg-dark-800 border border-dark-700 rounded-2xl p-4 flex items-center gap-4">
             <s.icon className={`w-8 h-8 ${s.color} opacity-80`} />
@@ -183,7 +265,7 @@ export const AdminNewsReview: React.FC = () => {
 
       {/* Filter */}
       <div className="flex gap-1 bg-dark-800 border border-dark-700 rounded-xl p-1 w-fit">
-        {(['ALL', 'PENDING', 'PUBLISHED', 'REJECTED'] as FilterStatus[]).map(s => (
+        {(['ALL', 'PENDING', 'PUBLISHED', 'UNPUBLISHED', 'REJECTED'] as FilterStatus[]).map(s => (
           <button key={s} onClick={() => setFilterStatus(s)}
             className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
               filterStatus === s ? 'bg-dark-700 text-white' : 'text-slate-500 hover:text-slate-300'
@@ -210,7 +292,8 @@ export const AdminNewsReview: React.FC = () => {
             const sc = STATUS_CONFIG[article.status];
             const isSelected = selectedArticle?.id === article.id;
             return (
-              <div key={article.id} onClick={() => { setSelectedArticle(article); setShowRejectInput(false); setRejectNote(''); setAdminNote(''); }}
+              <div key={article.id}
+                onClick={() => { setSelectedArticle(article); setShowRejectInput(false); setRejectNote(''); setAdminNote(''); }}
                 className={`cursor-pointer p-4 rounded-2xl border transition-all ${
                   isSelected ? 'border-brand-blue bg-brand-blue/5' : 'border-dark-700 bg-dark-800 hover:border-dark-500'
                 }`}>
@@ -225,16 +308,8 @@ export const AdminNewsReview: React.FC = () => {
                           <ShieldAlert className="w-3 h-3" /> Marketing
                         </span>
                       )}
-                      {article.urlVerified === true && (
-                        <span className="flex items-center gap-1 text-[10px] text-emerald-400">
-                          <Link2 className="w-3 h-3" /> Verified
-                        </span>
-                      )}
-                      {article.urlVerified === false && article.urlVerifiedAt && (
-                        <span className="flex items-center gap-1 text-[10px] text-red-400">
-                          <Link2Off className="w-3 h-3" /> Dead Link
-                        </span>
-                      )}
+                      {article.urlVerified === true && <span className="flex items-center gap-1 text-[10px] text-emerald-400"><Link2 className="w-3 h-3" /> Verified</span>}
+                      {article.urlVerified === false && article.urlVerifiedAt && <span className="flex items-center gap-1 text-[10px] text-red-400"><Link2Off className="w-3 h-3" /> Dead Link</span>}
                     </div>
                     <p className="font-bold text-white text-sm line-clamp-2">{article.title}</p>
                     <p className="text-xs text-slate-500 mt-1">{article.sourceName} · {article.generatedDate}</p>
@@ -253,7 +328,6 @@ export const AdminNewsReview: React.FC = () => {
         {selectedArticle && (
           <div className="w-[420px] flex-shrink-0">
             <div className="bg-dark-800 border border-dark-700 rounded-2xl overflow-hidden">
-              {/* Panel Header */}
               <div className="p-4 border-b border-dark-700 flex items-center justify-between">
                 <span className={`flex items-center gap-1.5 text-[10px] font-bold px-2 py-1 rounded-full border ${STATUS_CONFIG[selectedArticle.status].color}`}>
                   <span className={`w-1.5 h-1.5 rounded-full ${STATUS_CONFIG[selectedArticle.status].dot}`} />
@@ -262,10 +336,7 @@ export const AdminNewsReview: React.FC = () => {
                 <button onClick={() => setSelectedArticle(null)} className="text-slate-600 hover:text-white text-xs">✕</button>
               </div>
 
-              {/* Panel Content */}
               <div className="p-4 space-y-4 max-h-[60vh] overflow-y-auto">
-
-                {/* Title & Category */}
                 <div>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${CATEGORY_COLORS[selectedArticle.category] || 'text-slate-400 bg-dark-700 border-dark-600'}`}>
                     {selectedArticle.category}
@@ -273,13 +344,11 @@ export const AdminNewsReview: React.FC = () => {
                   <h3 className="font-bold text-white text-sm mt-2 leading-snug">{selectedArticle.title}</h3>
                 </div>
 
-                {/* Summary */}
                 <div>
                   <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Summary</p>
                   <p className="text-sm text-slate-300 leading-relaxed">{selectedArticle.summary}</p>
                 </div>
 
-                {/* Editorial Note */}
                 {selectedArticle.editorialNote && (
                   <div className="bg-dark-700/50 rounded-xl p-3 space-y-2">
                     <p className="text-[10px] font-bold text-brand-purple uppercase tracking-wider flex items-center gap-1">
@@ -306,11 +375,10 @@ export const AdminNewsReview: React.FC = () => {
                   </div>
                 )}
 
-                {/* Marketing Flags */}
                 {selectedArticle.marketingFlags?.length > 0 && (
                   <div>
                     <p className="text-[10px] font-bold text-orange-400 uppercase tracking-wider mb-2 flex items-center gap-1">
-                      <ShieldAlert className="w-3 h-3" /> Marketing Flags Detected
+                      <ShieldAlert className="w-3 h-3" /> Marketing Flags
                     </p>
                     <div className="space-y-1.5">
                       {selectedArticle.marketingFlags.map((flag: MarketingFlag, i: number) => (
@@ -325,18 +393,14 @@ export const AdminNewsReview: React.FC = () => {
                   </div>
                 )}
 
-                {/* Tags */}
                 {selectedArticle.tags?.length > 0 && (
                   <div className="flex flex-wrap gap-1.5">
                     {selectedArticle.tags.map((tag: string) => (
-                      <span key={tag} className="text-[10px] px-2 py-0.5 bg-dark-700 border border-dark-600 rounded-full text-slate-400">
-                        #{tag}
-                      </span>
+                      <span key={tag} className="text-[10px] px-2 py-0.5 bg-dark-700 border border-dark-600 rounded-full text-slate-400">#{tag}</span>
                     ))}
                   </div>
                 )}
 
-                {/* Source */}
                 <div className="bg-dark-700/50 rounded-xl p-3 space-y-2">
                   <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Source</p>
                   <div className="flex items-center justify-between">
@@ -349,15 +413,10 @@ export const AdminNewsReview: React.FC = () => {
                       )}
                     </div>
                     <div className="flex items-center gap-2">
-                      {/* URL 验证状态 */}
                       {selectedArticle.urlVerified === true ? (
-                        <span className="flex items-center gap-1 text-[10px] text-emerald-400">
-                          <Link2 className="w-3 h-3" /> Verified
-                        </span>
+                        <span className="flex items-center gap-1 text-[10px] text-emerald-400"><Link2 className="w-3 h-3" /> Verified</span>
                       ) : selectedArticle.urlVerified === false && selectedArticle.urlVerifiedAt ? (
-                        <span className="flex items-center gap-1 text-[10px] text-red-400">
-                          <Link2Off className="w-3 h-3" /> Dead Link
-                        </span>
+                        <span className="flex items-center gap-1 text-[10px] text-red-400"><Link2Off className="w-3 h-3" /> Dead Link</span>
                       ) : (
                         <span className="text-[10px] text-slate-600">Unverified</span>
                       )}
@@ -375,7 +434,6 @@ export const AdminNewsReview: React.FC = () => {
                   </a>
                 </div>
 
-                {/* Admin Note */}
                 <div>
                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Admin Note (optional)</label>
                   <textarea value={adminNote} onChange={e => setAdminNote(e.target.value)} rows={2}
@@ -384,7 +442,16 @@ export const AdminNewsReview: React.FC = () => {
                 </div>
               </div>
 
-              {/* Actions */}
+              {selectedArticle.status === 'PUBLISHED' && (
+                <div className="p-4 border-t border-dark-700">
+                  <button onClick={() => handleUnpublish(selectedArticle)} disabled={actionLoading}
+                    className="w-full py-2.5 bg-dark-700 hover:bg-dark-600 border border-dark-600 hover:border-slate-500 text-slate-400 hover:text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2">
+                    {actionLoading ? <Loader className="w-4 h-4 animate-spin" /> : <EyeOff className="w-4 h-4" />}
+                    Unpublish
+                  </button>
+                </div>
+              )}
+
               {selectedArticle.status === 'PENDING' && (
                 <div className="p-4 border-t border-dark-700 space-y-2">
                   <button onClick={() => handlePublish(selectedArticle)} disabled={actionLoading}
@@ -392,7 +459,6 @@ export const AdminNewsReview: React.FC = () => {
                     {actionLoading ? <Loader className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                     Publish Article
                   </button>
-
                   {!showRejectInput ? (
                     <button onClick={() => setShowRejectInput(true)}
                       className="w-full py-2 bg-dark-700 hover:bg-dark-600 border border-dark-600 text-slate-400 hover:text-red-400 font-bold rounded-xl text-sm transition-all">
@@ -409,7 +475,7 @@ export const AdminNewsReview: React.FC = () => {
                           Confirm Reject
                         </button>
                         <button onClick={() => { setShowRejectInput(false); setRejectNote(''); }}
-                          className="px-4 py-2 bg-dark-700 text-slate-400 font-bold rounded-xl text-sm transition-all">
+                          className="px-4 py-2 bg-dark-700 text-slate-400 font-bold rounded-xl text-sm">
                           Cancel
                         </button>
                       </div>

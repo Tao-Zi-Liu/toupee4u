@@ -29,7 +29,6 @@ import { GovernancePage } from './pages/GovernancePage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { KnowledgeMapPage } from './pages/KnowledgeMapPage';
-import { IndustryNewsPage } from './pages/IndustryNewsPage';
 import { GlossaryPage } from './pages/GlossaryPage';
 import { GovernanceModal } from './components/GovernanceModal';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
@@ -55,6 +54,8 @@ import { PrivacyPage } from './pages/PrivacyPage';
 import { ExpertDashboardPage } from './pages/ExpertDashboardPage';
 import { AdminNewsReview } from './pages/admin/AdminNewsReview';
 import { NewsPage } from './pages/NewsPage';
+import { AdminVideoDesk } from './pages/admin/AdminVideoDesk';
+import { VideosPage } from './pages/VideosPage';
 
 // SECRET URL FOR STAFF ONLY
 const SECRET_ADMIN_URL = "/terminal/x92-quantum-override";
@@ -439,7 +440,6 @@ const AppRoutes = () => {
       <Route path="/forum/post/:postId" element={<PostDetailPage />} />
       <Route path="/forum/new" element={<CreateDiscussionPage />} />
       <Route path="/lab" element={<LabPage />} />
-      <Route path="/news" element={<IndustryNewsPage />} />
       <Route path="/knowledge-map" element={<KnowledgeMapPage />} />
       <Route path="/kb/glossary" element={<GlossaryPage />} />
       <Route path="/kb/:categoryId" element={<CategoryPage />} />
@@ -460,6 +460,7 @@ const AppRoutes = () => {
               <Route path="/expert/:uid" element={<ExpertProfilePage />} />
       <Route path="/kb-migrate" element={<KBMigration />} />
       <Route path="/news" element={<NewsPage />} />
+      <Route path="/videos" element={<VideosPage />} />
       
       {/* PROTECTED ADMIN ROUTES */}
       <Route path="/admin" element={<StaffGate><AdminDashboard /></StaffGate>} />
@@ -470,7 +471,8 @@ const AppRoutes = () => {
       <Route path="/admin/deployment" element={<StaffGate><AdminDeployment /></StaffGate>} />
       <Route path="/admin/analytics" element={<StaffGate><AdminAnalytics /></StaffGate>} />
       <Route path="/admin/users" element={<StaffGate><AdminUsers /></StaffGate>} />
-      <Route path="/admin/news" element={<AdminNewsReview />} />
+      <Route path="/admin/news" element={<StaffGate><AdminNewsReview /></StaffGate>} />
+      <Route path="/admin/videos" element={<StaffGate><AdminVideoDesk /></StaffGate>} />
       <Route path="*" element={<Navigate to="/" replace />} />
       <Route path="/onboarding/voyager-quiz" element={<VoyagerQuizPage />} />
       <Route path="/onboarding/professional-setup" element={<ProfessionalSetupPage />} />

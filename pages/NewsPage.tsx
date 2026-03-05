@@ -3,9 +3,11 @@ import React, { useState, useEffect } from 'react';
 import {
   Newspaper, ExternalLink, ChevronRight, ShieldCheck,
   AlertTriangle, Calendar, Tag, Filter, Loader,
-  BookOpen, TrendingUp, Microscope, Package, Building2, Search
+  BookOpen, TrendingUp, Microscope, Package, Building2, Search, Play, X
 } from 'lucide-react';
 import { collection, query, where, orderBy, getDocs, limit } from 'firebase/firestore';
+import { getPublishedVideos } from '../services/video.service';
+import { VideoPost, VIDEO_PLATFORM_CONFIG } from '../types';
 import { db } from '../firebase.config';
 import { NewsArticle, NewsCategory } from '../types';
 
@@ -28,6 +30,8 @@ export const NewsPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedArticle, setSelectedArticle] = useState<NewsArticle | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [sideVideos, setSideVideos] = useState<VideoPost[]>([]);
+  const [playingVideo, setPlayingVideo] = useState<VideoPost | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -36,7 +40,7 @@ export const NewsPage: React.FC = () => {
         const q = query(
           collection(db, 'newsArticles'),
           where('status', '==', 'PUBLISHED'),
-          orderBy('publishedAt', 'desc'),
+          orderBy('createdAt', 'desc'),
           limit(50)
         );
         const snap = await getDocs(q);
@@ -46,6 +50,7 @@ export const NewsPage: React.FC = () => {
       }
     };
     load();
+    getPublishedVideos(6).then(setSideVideos);
   }, []);
 
   const filtered = articles.filter(a => {
@@ -63,6 +68,23 @@ export const NewsPage: React.FC = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
+      {/* Video Player Modal */}
+      {playingVideo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4" onClick={() => setPlayingVideo(null)}>
+          <div className="relative w-full max-w-3xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-3">
+              <p className="font-bold text-white text-sm truncate flex-1 pr-4">{playingVideo.title}</p>
+              <button onClick={() => setPlayingVideo(null)} className="p-2 bg-dark-800 border border-dark-700 text-slate-400 hover:text-white rounded-lg">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="aspect-video w-full bg-black rounded-2xl overflow-hidden">
+              <iframe src={playingVideo.embedUrl} className="w-full h-full" allowFullScreen
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" title={playingVideo.title} />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Header */}
       <div className="space-y-2">
@@ -174,14 +196,52 @@ export const NewsPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Right: Detail Panel */}
-          <div className="lg:col-span-1">
+          {/* Right: Detail Panel + Videos */}
+          <div className="lg:col-span-1 space-y-4">
             {selectedArticle ? (
               <ArticleDetail article={selectedArticle} onClose={() => setSelectedArticle(null)} />
             ) : (
               <div className="bg-dark-800 border border-dark-700 rounded-2xl p-6 text-center space-y-3 sticky top-6">
                 <Newspaper className="w-10 h-10 text-slate-600 mx-auto" />
                 <p className="text-slate-500 text-sm">Select an article to read the full analysis</p>
+              </div>
+            )}
+
+            {/* Video Sidebar */}
+            {sideVideos.length > 0 && (
+              <div className="sticky top-6 bg-dark-800 border border-dark-700 rounded-2xl overflow-hidden">
+                <div className="px-4 py-3 border-b border-dark-700 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Play className="w-4 h-4 text-brand-blue" />
+                    <span className="text-xs font-bold text-white">Related Videos</span>
+                  </div>
+                  <a href="/videos" className="text-[10px] text-brand-blue hover:underline font-bold">See all →</a>
+                </div>
+                <div className="divide-y divide-dark-700">
+                  {sideVideos.map(v => {
+                    const pCfg = VIDEO_PLATFORM_CONFIG[v.platform];
+                    return (
+                      <div key={v.id} onClick={() => setPlayingVideo(v)}
+                        className="flex items-center gap-3 p-3 cursor-pointer hover:bg-dark-700/50 transition-all group">
+                        <div className="w-20 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-dark-700 relative">
+                          {v.thumbnailUrl
+                            ? <img src={v.thumbnailUrl} alt={v.title} className="w-full h-full object-cover" />
+                            : <div className="w-full h-full flex items-center justify-center text-slate-600"><Play className="w-5 h-5" /></div>
+                          }
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 flex items-center justify-center transition-all">
+                            <Play className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 fill-white" />
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <span className={`text-[9px] font-bold px-1 py-0.5 rounded border ${pCfg.bg} ${pCfg.color} mb-1 inline-block`}>
+                            {pCfg.label}
+                          </span>
+                          <p className="text-xs font-bold text-slate-300 line-clamp-2 leading-snug group-hover:text-white transition-colors">{v.title}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>

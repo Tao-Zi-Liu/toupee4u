@@ -456,7 +456,7 @@ export interface ExpertDraft {
 // 新闻资讯系统（News System）
 // ============================================
 
-export type NewsStatus = 'PENDING' | 'PUBLISHED' | 'REJECTED';
+export type NewsStatus = 'PENDING' | 'PUBLISHED' | 'REJECTED' | 'UNPUBLISHED';
 
 export type NewsCategory =
   | 'Market Trends'
@@ -512,3 +512,67 @@ export interface NewsArticle {
   createdAt: any;
   publishedAt?: any;
 }
+// ============================================
+// 视频系统（Video System）
+// 追加到 types.ts 末尾
+// ============================================
+
+export type VideoPlatform =
+  | 'YOUTUBE'
+  | 'YOUTUBE_SHORTS'
+  | 'TIKTOK'
+  | 'INSTAGRAM'
+  | 'FACEBOOK';
+
+export type VideoStatus = 'PENDING' | 'PUBLISHED' | 'UNPUBLISHED';
+
+export type VideoCategory =
+  | 'Tutorial'
+  | 'Review'
+  | 'News'
+  | 'Transformation'
+  | 'Maintenance'
+  | 'Community';
+
+export interface VideoPost {
+  id?: string;
+
+  // 内容
+  title: string;
+  description?: string;
+  category: VideoCategory;
+  tags: string[];
+
+  // 平台信息
+  platform: VideoPlatform;
+  originalUrl: string;
+  videoId: string;
+  embedUrl: string;
+  thumbnailUrl: string;
+
+  // 来源账号（可选）
+  channelName?: string;
+  channelUrl?: string;
+
+  // 状态
+  status: VideoStatus;
+  adminNote?: string;
+  featured: boolean;
+
+  // 时间戳
+  createdAt: any;
+  updatedAt: any;
+  publishedAt?: any;
+}
+
+export const VIDEO_PLATFORM_CONFIG: Record<VideoPlatform, {
+  label: string;
+  color: string;
+  bg: string;
+}> = {
+  YOUTUBE:        { label: 'YouTube',        color: 'text-red-400',    bg: 'bg-red-400/10 border-red-400/20' },
+  YOUTUBE_SHORTS: { label: 'YT Shorts',      color: 'text-red-400',    bg: 'bg-red-400/10 border-red-400/20' },
+  TIKTOK:         { label: 'TikTok',         color: 'text-pink-400',   bg: 'bg-pink-400/10 border-pink-400/20' },
+  INSTAGRAM:      { label: 'Instagram',      color: 'text-purple-400', bg: 'bg-purple-400/10 border-purple-400/20' },
+  FACEBOOK:       { label: 'Facebook',       color: 'text-blue-400',   bg: 'bg-blue-400/10 border-blue-400/20' },
+};

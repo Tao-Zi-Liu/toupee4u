@@ -20,7 +20,8 @@ import {
   BookA,
   Cpu,
   FileText,
-  Star
+  Star, 
+  Video
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -135,6 +136,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, isExpert = fal
               <NavItem to="/for-you" icon={Sparkles} label="For You" isCollapsed={isCollapsed} onClick={handleItemClick} />
               <NavItem to="/forum" icon={MessageSquare} label="Forums" isCollapsed={isCollapsed} onClick={handleItemClick} />
               <NavItem to="/news" icon={Newspaper} label="News" isCollapsed={isCollapsed} onClick={handleItemClick} />
+              <NavItem to="/videos" icon={Video} label="Videos" isCollapsed={isCollapsed} onClick={handleItemClick} />
             </nav>
           </div>
 

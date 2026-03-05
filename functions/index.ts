@@ -140,10 +140,7 @@ async function generateNewsArticles(
   const searchTopics = [
     "hair replacement system industry news",
     "hair system technology innovation",
-    "toupee wig market trends",
-    "hair loss treatment research 2025",
     "hair system adhesive bonding new products",
-    "men hair replacement consumer trends",
   ];
 
   const allArticles: any[] = [];
@@ -155,7 +152,7 @@ async function generateNewsArticles(
       console.info(`Searching topic: ${topic}`);
 
       const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
+        model: "gemini-2.5-flash",
         contents: [{ role: "user", parts: [{ text: NEWS_PROMPT(topic) }] }],
         config: {
           tools: [{ googleSearch: {} }],
@@ -280,7 +277,7 @@ export const generateNewsManual = onCall(
   {
     secrets: ["GEMINI_API_KEY"],
     memory: "512MiB",
-    timeoutSeconds: 300,
+    timeoutSeconds: 540,
     region: "us-central1",
   },
   async (request) => {
@@ -396,6 +393,31 @@ export const rejectNewsArticle = onCall(
     await db.collection('newsArticles').doc(articleId).update({
       status: 'REJECTED',
       adminNote,
+    });
+
+    return { success: true };
+  }
+);
+
+/**
+ * 管理员将已发布文章下架
+ */
+export const unpublishNewsArticle = onCall(
+  { region: "us-central1" },
+  async (request) => {
+    if (!request.auth?.token?.isAdmin) {
+      throw new HttpsError('permission-denied', 'Admin only.');
+    }
+
+    const { articleId, adminNote } = z.object({
+      articleId: z.string(),
+      adminNote: z.string().optional(),
+    }).parse(request.data);
+
+    await db.collection('newsArticles').doc(articleId).update({
+      status: 'UNPUBLISHED',
+      adminNote: adminNote || "",
+      publishedAt: null,
     });
 
     return { success: true };
