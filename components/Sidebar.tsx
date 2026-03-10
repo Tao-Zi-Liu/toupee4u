@@ -28,6 +28,7 @@ import {
   Moon,
   Monitor
 } from 'lucide-react';
+import { Scan } from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;

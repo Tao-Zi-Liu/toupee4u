@@ -55,9 +55,13 @@ import { ExpertApplyPage } from './pages/ExpertApplyPage';
 import { PrivacyPage } from './pages/PrivacyPage';
 import { ExpertDashboardPage } from './pages/ExpertDashboardPage';
 import { AdminNewsReview } from './pages/admin/AdminNewsReview';
+import { HairAnalysisPage } from './pages/HairAnalysisPage';
+import { HairAnalysisFloat } from './components/HairAnalysisFloat';
 import { NewsPage } from './pages/NewsPage';
 import { AdminVideoDesk } from './pages/admin/AdminVideoDesk';
 import { VideosPage } from './pages/VideosPage';
+import { HairAnalysisPage } from './pages/HairAnalysisPage';
+import { HairAnalysisFloat } from './components/HairAnalysisFloat';
 
 // SECRET URL FOR STAFF ONLY
 const SECRET_ADMIN_URL = "/terminal/x92-quantum-override";
@@ -430,6 +434,7 @@ useEffect(() => {
 
       <MobileBottomNav />
       <AiAssistant />
+      <HairAnalysisFloat />
     </div>
   );
 };
@@ -463,6 +468,8 @@ const AppRoutes = () => {
       <Route path="/kb-migrate" element={<KBMigration />} />
       <Route path="/news" element={<NewsPage />} />
       <Route path="/videos" element={<VideosPage />} />
+      <Route path="/hair-analysis" element={<HairAnalysisPage />} />
+      <Route path="/hair-analysis" element={<HairAnalysisPage />} />
       
       {/* PROTECTED ADMIN ROUTES */}
       <Route path="/admin" element={<StaffGate><AdminDashboard /></StaffGate>} />
