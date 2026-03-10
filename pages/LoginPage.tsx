@@ -46,7 +46,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ isStaffTerminal = false })
     setError(''); setInfo('');
     setIsLoading(true);
     try {
-      await loginUser(email, password);
+      await loginUser(email, password, isStaffTerminal);
       if (isStaffTerminal) {
         localStorage.setItem('staff_session_token', 'authorized_master');
         navigate('/admin');

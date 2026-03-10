@@ -1,6 +1,6 @@
 // firebase.config.ts
 import { initializeApp } from 'firebase/app';
-import { getAuth, connectAuthEmulator } from "firebase/auth";
+import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
@@ -16,10 +16,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
-
-// 强制 Auth 使用标准 Google API 端点（绕过 Cloud Workstation 代理问题）
-(auth as any).config.apiHost = 'https://identitytoolkit.googleapis.com';
-
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 

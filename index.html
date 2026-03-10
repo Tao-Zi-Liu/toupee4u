@@ -57,14 +57,14 @@
             width: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: #0f172a; 
+            background: var(--scrollbar-track, #0f172a);
         }
         ::-webkit-scrollbar-thumb {
-            background: #334155; 
+            background: var(--scrollbar-thumb, #334155);
             border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #475569; 
+            background: var(--scrollbar-thumb-hover, #475569);
         }
         
         .staff-selection ::selection {
@@ -180,6 +180,63 @@
     width: 100%;
   }
   </style>
+    <style>
+      /* ── Theme CSS Variables ── */
+      :root, [data-theme="dark"] {
+        --bg-950: #020617;
+        --bg-900: #0f172a;
+        --bg-800: #1e293b;
+        --bg-700: #334155;
+        --bg-600: #475569;
+        --text-primary: #f1f5f9;
+        --text-secondary: #cbd5e1;
+        --text-muted: #64748b;
+        --border: #334155;
+        --scrollbar-track: #0f172a;
+        --scrollbar-thumb: #334155;
+        --scrollbar-thumb-hover: #475569;
+      }
+
+      [data-theme="light"] {
+        --bg-950: #f8fafc;
+        --bg-900: #ffffff;
+        --bg-800: #f1f5f9;
+        --bg-700: #e2e8f0;
+        --bg-600: #cbd5e1;
+        --text-primary: #0f172a;
+        --text-secondary: #334155;
+        --text-muted: #64748b;
+        --border: #e2e8f0;
+        --scrollbar-track: #f1f5f9;
+        --scrollbar-thumb: #cbd5e1;
+        --scrollbar-thumb-hover: #94a3b8;
+      }
+
+      /* Apply theme vars to body */
+      body {
+        background-color: var(--bg-900) !important;
+        color: var(--text-secondary) !important;
+        transition: background-color 0.2s ease, color 0.2s ease;
+      }
+
+      /* Override Tailwind dark colors with CSS vars in light mode */
+      [data-theme="light"] .bg-dark-950 { background-color: var(--bg-950) !important; }
+      [data-theme="light"] .bg-dark-900 { background-color: var(--bg-900) !important; }
+      [data-theme="light"] .bg-dark-800 { background-color: var(--bg-800) !important; }
+      [data-theme="light"] .bg-dark-700 { background-color: var(--bg-700) !important; }
+      [data-theme="light"] .border-dark-700 { border-color: var(--border) !important; }
+      [data-theme="light"] .border-dark-800 { border-color: var(--bg-700) !important; }
+      [data-theme="light"] .text-slate-300 { color: var(--text-secondary) !important; }
+      [data-theme="light"] .text-slate-400 { color: #475569 !important; }
+      [data-theme="light"] .text-slate-500 { color: #64748b !important; }
+      [data-theme="light"] .text-slate-600 { color: #94a3b8 !important; }
+      [data-theme="light"] .text-white { color: var(--text-primary) !important; }
+      [data-theme="light"] .hover\:bg-dark-700:hover { background-color: var(--bg-700) !important; }
+      [data-theme="light"] .hover\:bg-dark-800:hover { background-color: var(--bg-800) !important; }
+      [data-theme="light"] .bg-dark-900\/50 { background-color: rgba(255,255,255,0.5) !important; }
+      [data-theme="light"] .bg-dark-800\/50 { background-color: rgba(241,245,249,0.5) !important; }
+      [data-theme="light"] aside { box-shadow: 2px 0 8px rgba(0,0,0,0.08); }
+    </style>
   <link rel="stylesheet" href="/index.css">
 </head>
   <body class="bg-dark-900 text-slate-300 antialiased selection:bg-brand-blue selection:text-white">

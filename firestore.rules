@@ -1,47 +1,176 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper functions
+
+    // ── Helper Functions ──────────────────────
     function isSignedIn() {
       return request.auth != null;
     }
-    
+
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.isAdmin == true;
+    }
+
+    // ── Users ─────────────────────────────────
     match /users/{userId} {
       allow read: if isSignedIn();
-      allow write: if isOwner(userId);
+      allow write: if isOwner(userId) || isAdmin();
     }
 
     match /voyagerProfiles/{userId} {
       allow read: if isSignedIn();
-      allow write: if isOwner(userId);
+      allow write: if isOwner(userId) || isAdmin();
     }
 
+    match /architectProfiles/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(userId) || isAdmin();
+    }
+
+    // ── XP System ────────────────────────────
+    match /xpStats/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(userId) || isAdmin();
+    }
+
+    match /xpRecords/{recordId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+
+    // ── Posts & Comments ──────────────────────
     match /posts/{postId} {
       allow read: if true;
       allow create: if isSignedIn();
-      allow update, delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
+      allow update, delete: if isSignedIn() && (resource.data.authorId == request.auth.uid || isAdmin());
     }
 
     match /comments/{commentId} {
       allow read: if true;
       allow create: if isSignedIn();
-      allow update, delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
+      allow update, delete: if isSignedIn() && (resource.data.authorId == request.auth.uid || isAdmin());
     }
+
+    match /postLikes/{likeId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    // ── Knowledge Base ────────────────────────
+    match /kbCategories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /kbTopics/{topicId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /kbArticles/{articleId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /readingProgress/{progressId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+
+    // ── Expert System ─────────────────────────
+    match /expertApplications/{appId} {
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    match /expertProfiles/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /expertDrafts/{draftId} {
+      allow read: if isSignedIn() && (resource.data.authorId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && (resource.data.authorId == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // ── News System ───────────────────────────
     match /newsArticles/{articleId} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+      allow write: if isAdmin();
     }
+
+    match /newsTopics/{topicId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ── Video System ──────────────────────────
     match /videos/{videoId} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+      allow write: if isAdmin();
     }
+
+    // ── AI Insights ───────────────────────────
     match /dailyInsights/{date} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.token.isAdmin == true;
+      allow write: if isAdmin();
+    }
+
+    // ── Notifications ─────────────────────────
+    match /notifications/{notifId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow write: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // ── Bookmarks ─────────────────────────────
+    match /bookmarks/{bookmarkId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow write: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+    }
+
+    // ── Follows ───────────────────────────────
+    match /follows/{followId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+
+    // ── Moderation ────────────────────────────
+    match /moderationLogs/{logId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /reportedContent/{reportId} {
+      allow read: if isAdmin();
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+
+    // ── Leaderboard ───────────────────────────
+    match /leaderboard/{entryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ── Search ────────────────────────────────
+    match /searchIndex/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ── Settings ─────────────────────────────
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
   }
 }

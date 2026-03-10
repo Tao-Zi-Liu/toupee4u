@@ -85,15 +85,19 @@ export async function registerUser(
     const credential = await createUserWithEmailAndPassword(auth, email, password);
     const firebaseUser = credential.user;
 
-    // 发送验证邮件
-    await sendEmailVerification(firebaseUser, {
-      url: `${window.location.origin}/login?verified=true`,
-    });
-
     const user = await createUserProfile(
       firebaseUser.uid, email, displayName,
       firebaseUser.photoURL || '', role
     );
+
+    // 发送验证邮件（失败不影响注册）
+    try {
+      await sendEmailVerification(firebaseUser, {
+        url: `https://toupee4u-1bcab.web.app/login?verified=true`,
+      });
+    } catch (emailErr) {
+      console.warn('Verification email failed to send:', emailErr);
+    }
 
     return user;
   } catch (error: any) {
@@ -138,14 +142,15 @@ export async function loginWithGoogle(): Promise<CompleteUserProfile> {
 // ── 邮箱+密码登录 ─────────────────────────────
 export async function loginUser(
   email: string,
-  password: string
+  password: string,
+  skipEmailVerification: boolean = false
 ): Promise<CompleteUserProfile> {
   try {
     const credential = await signInWithEmailAndPassword(auth, email, password);
     const firebaseUser = credential.user;
 
-    // 检查邮箱验证状态
-    if (!firebaseUser.emailVerified) {
+    // 检查邮箱验证状态（Staff Terminal 跳过）
+    if (!skipEmailVerification && !firebaseUser.emailVerified) {
       await signOut(auth);
       throw new Error('EMAIL_NOT_VERIFIED');
     }

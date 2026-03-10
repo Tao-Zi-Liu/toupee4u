@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { getTodayInsights, getPersonalizedInsight, DailyInsight } from '../services/insight.service';
 import { auth } from '../firebase.config';
 import { Link, NavLink } from 'react-router-dom';
+import { useTheme, ThemeMode } from '../contexts/ThemeContext';
 import { 
   MessageSquare, 
   Newspaper, 
@@ -17,12 +18,15 @@ import {
   Layers,
   Microscope,
   PenTool,
-  Terminal,
   Search,
   BookA,
   Cpu,
   FileText,
-  Star
+  Star,
+  Terminal,
+  Sun,
+  Moon,
+  Monitor
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -35,10 +39,10 @@ interface SidebarProps {
 
 // AI Insights are loaded dynamically from Firestore + Gemini
 
-const SECRET_ADMIN_URL = "/terminal/x92-quantum-override";
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, isExpert = false, userTier = 'NEBULA' }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const { theme, resolvedTheme, setTheme } = useTheme();
   const [isKbExpanded, setIsKbExpanded] = useState(false);
   const [insights, setInsights] = useState<DailyInsight[]>([]);
   const [insightIndex, setInsightIndex] = useState(0);
@@ -290,17 +294,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, isExpert = fal
           </NavLink>
         </div>
 
-        {/* SYSTEM (Hidden Terminal) */}
-        <div className="pt-4 border-t border-dark-700/50">
-          <Link 
-            to={SECRET_ADMIN_URL} 
-            onClick={handleItemClick}
-            className={`group flex items-center px-3 py-2 text-sm font-bold rounded-lg transition-all duration-200 relative overflow-hidden whitespace-nowrap bg-brand-emerald/5 text-brand-emerald border border-brand-emerald/20 hover:bg-brand-emerald/20 ${isCollapsed ? 'justify-center' : ''}`}
-          >
-            <Cpu className={`h-5 w-5 flex-shrink-0 transition-colors ${isCollapsed ? 'animate-pulse' : 'mr-3'}`} />
-            {!isCollapsed && <span>System Terminal</span>}
-          </Link>
-        </div>
 
       </div>
 
@@ -313,6 +306,40 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, isExpert = fal
           >
             {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
           </button>
+        </div>
+        {/* Theme Switcher */}
+        <div className="px-3 pb-3">
+          {!isCollapsed ? (
+            <div className="flex items-center gap-1 bg-dark-900 rounded-xl p-1 border border-dark-700">
+              {([
+                { mode: 'light', icon: Sun, label: 'Light' },
+                { mode: 'system', icon: Monitor, label: 'Auto' },
+                { mode: 'dark', icon: Moon, label: 'Dark' },
+              ] as { mode: ThemeMode; icon: React.ElementType; label: string }[]).map(({ mode, icon: Icon, label }) => (
+                <button
+                  key={mode}
+                  onClick={() => setTheme(mode)}
+                  title={label}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all ${
+                    theme === mode
+                      ? 'bg-dark-700 text-white shadow'
+                      : 'text-slate-500 hover:text-slate-300'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  {label}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <button
+              onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+              className="w-full flex items-center justify-center p-2 rounded-xl text-slate-500 hover:text-white hover:bg-dark-800 transition-all"
+              title="Toggle theme"
+            >
+              {resolvedTheme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+          )}
         </div>
         {!isCollapsed && (
           <div className="px-4 pb-4 space-y-1">

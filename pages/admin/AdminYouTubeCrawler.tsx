@@ -74,7 +74,7 @@ export const AdminYouTubeCrawler: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationLogs, setGenerationLogs] = useState<string[]>([]);
   const [generatedHtml, setGeneratedHtml] = useState('');
-  const [targetCategory, setTargetCategory] = useState(categories[0].id);
+  const [targetCategory, setTargetCategory] = useState(categories[0]?.id || '');
   const [articleTitle, setArticleTitle] = useState('');
 
   const logEndRef = useRef<HTMLDivElement>(null);

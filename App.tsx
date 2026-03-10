@@ -10,6 +10,7 @@ import { AccessGate } from './components/AccessGate';
 import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { DataProvider } from './contexts/DataContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { Sidebar } from './components/Sidebar';
 import { Home } from './pages/Home';
 import { CategoryPage } from './pages/CategoryPage';
@@ -485,6 +486,7 @@ const AppRoutes = () => {
 const App: React.FC = () => {
   return (
     <HashRouter>
+      <ThemeProvider>
       <DataProvider>
         <AccessGate>
           <Routes>
@@ -503,6 +505,7 @@ const App: React.FC = () => {
           </Routes>
         </AccessGate>
       </DataProvider>
+      </ThemeProvider>
     </HashRouter>
   );
 };
