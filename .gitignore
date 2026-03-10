@@ -11,3 +11,5 @@ build/
 # Environment
 .env
 .env.localserviceAccountKey.json
+.env
+.env.local

@@ -62,7 +62,7 @@ async function analyzeHairWithGemini(base64Image: string, mimeType: string): Pro
 
 Be precise. If you cannot determine something reliably, use the closest match and note it in analysisNotes. Return ONLY the JSON object, no markdown, no explanation.`;
 
-  const apiKey = "AIzaSyBOEps_kaRrHFl7oN22ZfzcqgGnzu74YpQ";
+  const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
   const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
