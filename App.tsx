@@ -60,8 +60,7 @@ import { HairAnalysisFloat } from './components/HairAnalysisFloat';
 import { NewsPage } from './pages/NewsPage';
 import { AdminVideoDesk } from './pages/admin/AdminVideoDesk';
 import { VideosPage } from './pages/VideosPage';
-import { HairAnalysisPage } from './pages/HairAnalysisPage';
-import { HairAnalysisFloat } from './components/HairAnalysisFloat';
+import StyleAdvisorPage from './pages/StyleAdvisorPage';
 
 // SECRET URL FOR STAFF ONLY
 const SECRET_ADMIN_URL = "/terminal/x92-quantum-override";
@@ -469,6 +468,7 @@ const AppRoutes = () => {
       <Route path="/news" element={<NewsPage />} />
       <Route path="/videos" element={<VideosPage />} />
       <Route path="/hair-analysis" element={<HairAnalysisPage />} />
+              <Route path="/style-advisor" element={<StyleAdvisorPage />} />
       <Route path="/hair-analysis" element={<HairAnalysisPage />} />
       
       {/* PROTECTED ADMIN ROUTES */}

@@ -28,7 +28,7 @@ import {
   Moon,
   Monitor
 } from 'lucide-react';
-import { Scan } from 'lucide-react';
+import { Scan, Wand2 } from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -233,6 +233,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, isExpert = fal
             </div>
 
             <NavItem to="/consultations" icon={Users} label="Expert Consultations" isCollapsed={isCollapsed} onClick={handleItemClick} />
+            <NavItem to="/style-advisor" icon={Wand2} label="Style Advisor" isCollapsed={isCollapsed} onClick={handleItemClick} />
           </nav>
         </div>
 
