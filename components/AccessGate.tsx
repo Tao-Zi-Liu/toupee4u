@@ -93,7 +93,7 @@ export const AccessGate: React.FC<AccessGateProps> = ({ children }) => {
               {error && (
                 <div className="flex items-center gap-2 text-red-400 text-xs font-bold mt-2 animate-in fade-in slide-in-from-top-1">
                     <AlertCircle className="w-4 h-4" />
-                    <span>Invalid Protocol Key. Try: quantum2025</span>
+                    <span>Invalid Protocol Key. Access denied.</span>
                 </div>
               )}
             </div>

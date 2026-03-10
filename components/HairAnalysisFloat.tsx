@@ -12,7 +12,7 @@ export const HairAnalysisFloat: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-24 right-5 z-50 flex flex-col items-end gap-2 lg:bottom-10">
+    <div className="fixed bottom-36 right-5 z-50 flex flex-col items-end gap-2 lg:bottom-24">
       {/* 展开的提示卡片 */}
       {expanded && (
         <div className="bg-dark-800 border border-brand-blue/30 rounded-2xl p-4 shadow-2xl w-52 animate-in slide-in-from-bottom-2 duration-200">

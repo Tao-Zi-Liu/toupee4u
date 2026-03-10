@@ -22,7 +22,7 @@ Keep responses concise (under 200 words) unless asked for a detailed guide.
 export const askTheTruthEngine = async (query: string): Promise<string> => {
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const modelName = 'gemini-3-flash-preview';
+    const modelName = 'gemini-2.5-flash';
     
     let contextSummary = '';
     for (let i = 0; i < KB_CATEGORIES.length; i++) {
@@ -58,7 +58,7 @@ export const askTheTruthEngine = async (query: string): Promise<string> => {
 export const generateArticleFromVideo = async (videoData: { title: string; channel: string; description: string; comments: string[] }): Promise<string> => {
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const modelName = 'gemini-3-flash-preview';
+    const modelName = 'gemini-2.5-flash';
     
     let commentsStr = '';
     for (let j = 0; j < videoData.comments.length; j++) {

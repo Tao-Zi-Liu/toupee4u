@@ -69,7 +69,7 @@ export const AiAssistant: React.FC = () => {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className={`fixed bottom-8 right-8 p-4 rounded-2xl shadow-lg shadow-brand-blue/30 transition-all duration-300 z-50 group ${
+        className={`fixed bottom-8 right-24 p-4 rounded-2xl shadow-lg shadow-brand-blue/30 transition-all duration-300 z-50 group ${
           isOpen ? 'scale-0 opacity-0' : 'scale-100 opacity-100 bg-brand-blue text-white hover:bg-blue-600'
         }`}
       >
@@ -77,7 +77,7 @@ export const AiAssistant: React.FC = () => {
       </button>
 
       <div
-        className={`fixed bottom-8 right-8 w-96 max-w-[calc(100vw-48px)] bg-dark-800 rounded-2xl shadow-2xl border border-dark-700 overflow-hidden flex flex-col transition-all duration-300 z-50 ${
+        className={`fixed bottom-8 right-24 w-96 max-w-[calc(100vw-48px)] bg-dark-800 rounded-2xl shadow-2xl border border-dark-700 overflow-hidden flex flex-col transition-all duration-300 z-50 ${
           isOpen ? 'opacity-100 translate-y-0 h-[600px]' : 'opacity-0 translate-y-10 h-0 pointer-events-none'
         }`}
       >
