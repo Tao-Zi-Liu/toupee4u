@@ -137,7 +137,8 @@ Return ONLY the JSON object.`;
             { text: prompt }
           ]
         }],
-        generationConfig: { temperature: 0.2, maxOutputTokens: 4096 }
+        generationConfig: { temperature: 0.2, maxOutputTokens: 16384 },
+        thinkingConfig: { thinkingBudget: 0 }
       })
     }
   );
@@ -168,6 +169,12 @@ const StyleAdvisorPage: React.FC = () => {
   const [budget, setBudget] = useState('');
   const [result, setResult] = useState<StyleRecommendation | null>(null);
   const [error, setError] = useState('');
+  const [tryonResult, setTryonResult] = useState<string | null>(null);
+  const [tryonLoading, setTryonLoading] = useState(false);
+  const [selectedColor, setSelectedColor] = useState<string>('');
+  const [colorConfirmed, setColorConfirmed] = useState(false);
+  const [aiRecommendedColor, setAiRecommendedColor] = useState<string>('');
+  const [colorAnalyzing, setColorAnalyzing] = useState(false);
 
   const handleImageFile = (file: File) => {
     setImageMime(file.type || 'image/jpeg');
@@ -202,6 +209,8 @@ const StyleAdvisorPage: React.FC = () => {
     setBudget('');
     setResult(null);
     setError('');
+    setTryonResult(null);
+    setTryonLoading(false);
   };
 
   // ── Step 0: Photo Upload ──────────────────────────────────────────────────
@@ -593,6 +602,272 @@ const StyleAdvisorPage: React.FC = () => {
                 {tip}
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Ares Virtual Try-On */}
+        <div className="bg-dark-800 border border-dark-700 rounded-2xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-dark-700 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-brand-purple" />
+              <span className="text-sm font-bold text-white">Virtual Try-On Preview</span>
+              <span className="text-[10px] px-2 py-0.5 bg-brand-purple/10 border border-brand-purple/20 text-brand-purple rounded-full font-bold uppercase tracking-wider">AI</span>
+            </div>
+            <span className="text-xs text-slate-500">Powered by Ares Hair System</span>
+          </div>
+
+          {/* Product info */}
+          <div className="p-5 flex gap-4 border-b border-dark-700">
+            <img
+              src="https://www.lavividhair.com/cdn/shop/products/ares-french-lace-hair-replacement_1.jpg"
+              alt="Ares Hair System"
+              onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=120&h=120&fit=crop&crop=face'; }}
+              className="w-20 h-20 rounded-xl object-cover border border-dark-600 flex-shrink-0"
+            />
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-white text-sm">Ares French Lace Hair System</p>
+              <p className="text-xs text-slate-400 mt-1">French Lace + Skin Perimeter · Best for daily wear · Natural hairline</p>
+              <a
+                href="https://www.lavividhair.com/collections/men-hair-system/products/ares-men-s-non-surgical-hair-replacement-french-lace-with-skin-around-best-for-daily-wear"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 mt-2 text-xs font-bold text-brand-blue hover:underline"
+              >
+                View Product <ArrowRight className="w-3 h-3" />
+              </a>
+            </div>
+          </div>
+
+          {/* AI preview */}
+          <div className="p-5">
+
+            {/* Step A: Color selection (shown before generation) */}
+            {!tryonResult && !tryonLoading && (
+              <div className="space-y-4">
+                {/* AI color recommendation */}
+                {!colorConfirmed ? (
+                  <div className="space-y-3">
+                    <p className="text-sm font-bold text-white">Step 1 — Choose Your Hair Color</p>
+
+                    {/* Trigger AI color analysis when this section first renders */}
+                    {!aiRecommendedColor && !colorAnalyzing && (() => {
+                      // Side-effect via inline IIFE — triggers once
+                      setTimeout(async () => {
+                        setColorAnalyzing(true);
+                        try {
+                          const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
+                          const base64 = capturedImage!.split(',')[1];
+                          const colorPrompt = `Look at this person's photo. Based on their existing hair color (if visible) and skin tone, which ONE of these hair system color options would look most natural and match best?
+
+Options (respond with EXACTLY one of these values):
+- jet black (#1B)
+- natural black (#1)
+- dark brown (#2)
+- medium brown (#4)
+- light brown (#6)
+- dark blonde (#8)
+- salt and pepper (mix of gray and dark)
+- silver gray (#56)
+
+Respond with ONLY the matching value from the list above, nothing else.`;
+                          const res = await fetch(
+                            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+                            {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                contents: [{ parts: [
+                                  { inline_data: { mime_type: imageMime, data: base64 } },
+                                  { text: colorPrompt }
+                                ]}],
+                                generationConfig: { temperature: 0.1, maxOutputTokens: 32 }
+                              })
+                            }
+                          );
+                          const d = await res.json();
+                          const raw = d.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toLowerCase() || '';
+                          const VALID = ['jet black (#1b)', 'natural black (#1)', 'dark brown (#2)', 'medium brown (#4)', 'light brown (#6)', 'dark blonde (#8)', 'salt and pepper (mix of gray and dark)', 'silver gray (#56)'];
+                          const match = VALID.find(v => raw.includes(v.split('(')[0].trim()));
+                          const recommended = match || 'natural black (#1)';
+                          setAiRecommendedColor(recommended);
+                          setSelectedColor(recommended);
+                        } catch {
+                          setAiRecommendedColor('natural black (#1)');
+                          setSelectedColor('natural black (#1)');
+                        }
+                        setColorAnalyzing(false);
+                      }, 0);
+                      return null;
+                    })()}
+
+                    {colorAnalyzing ? (
+                      <div className="flex items-center gap-2 text-xs text-slate-400 py-1">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-brand-purple" />
+                        Analyzing your hair color from photo...
+                      </div>
+                    ) : aiRecommendedColor ? (
+                      <p className="text-xs text-slate-400">
+                        AI recommends <span className="text-brand-purple font-bold capitalize">{aiRecommendedColor.split('(')[0].trim()}</span> based on your photo.
+                        You can accept or pick a different shade below.
+                      </p>
+                    ) : null}
+                    {/* Color swatches */}
+                    <div className="grid grid-cols-4 gap-2">
+                      {[
+                        { label: 'Jet Black', value: 'jet black (#1B)', hex: '#0a0a0a' },
+                        { label: 'Natural Black', value: 'natural black (#1)', hex: '#1a1a1a' },
+                        { label: 'Dark Brown', value: 'dark brown (#2)', hex: '#2c1810' },
+                        { label: 'Medium Brown', value: 'medium brown (#4)', hex: '#5c3a1e' },
+                        { label: 'Light Brown', value: 'light brown (#6)', hex: '#8b5e3c' },
+                        { label: 'Dark Blonde', value: 'dark blonde (#8)', hex: '#c4956a' },
+                        { label: 'Salt & Pepper', value: 'salt and pepper (mix of gray and dark)', hex: '#808080' },
+                        { label: 'Silver Gray', value: 'silver gray (#56)', hex: '#b0b0b0' },
+                      ].map((color) => (
+                        <button
+                          key={color.value}
+                          onClick={() => setSelectedColor(color.value)}
+                          className={`flex flex-col items-center gap-1.5 p-2 rounded-xl border-2 transition-all ${
+                            selectedColor === color.value
+                              ? 'border-brand-purple bg-brand-purple/10'
+                              : 'border-dark-600 hover:border-dark-500'
+                          }`}
+                        >
+                          <div
+                            className="w-8 h-8 rounded-full border border-dark-500 flex-shrink-0"
+                            style={{ backgroundColor: color.hex }}
+                          />
+                          <span className="text-[10px] text-slate-400 text-center leading-tight">{color.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (!selectedColor) setSelectedColor('natural black (#1)');
+                        setColorConfirmed(true);
+                      }}
+                      className="w-full py-2.5 bg-dark-700 border border-dark-600 hover:border-brand-purple text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2"
+                    >
+                      Confirm Color & Continue →
+                    </button>
+                  </div>
+                ) : (
+                  /* Step B: confirmed color, ready to generate */
+                  <div className="text-center space-y-3">
+                    <div className="flex items-center justify-center gap-2 text-sm text-slate-300">
+                      <span>Selected:</span>
+                      <span className="font-bold text-brand-purple capitalize">{selectedColor.split('(')[0].trim()}</span>
+                      <button onClick={() => setColorConfirmed(false)} className="text-xs text-slate-500 hover:text-slate-300 underline">change</button>
+                    </div>
+                    <p className="text-xs text-slate-400">
+                      AI will generate a photorealistic preview of you wearing the Ares in this color.
+                    </p>
+                    <button
+                      onClick={async () => {
+                        setTryonLoading(true);
+                        try {
+                          const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
+                          const base64 = capturedImage!.split(',')[1];
+                          const colorDesc = selectedColor || 'natural black';
+                          const prompt = `You are a professional photo retoucher. Edit this portrait photo to show the person wearing a realistic hair replacement system (toupee/hair system).
+
+CRITICAL RULES:
+- Show ONLY the final worn result — natural hair appearance, no mesh, no lace netting, no cap base visible
+- The hairline must look completely natural and undetectable, as if it is real growing hair
+- Hair color: ${colorDesc}
+- Hair style: classic side part, medium density, natural flow
+- The hair should sit naturally on the scalp with realistic volume and shadow at the roots
+- Keep the person's face, skin, expression, and background EXACTLY the same
+- Do NOT show any product components (no lace, no poly base, no adhesive, no net)
+- Final result must look like a real candid photo of a person with a full head of natural hair`;
+
+                          const response = await fetch(
+                            `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key=${apiKey}`,
+                            {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                contents: [{
+                                  parts: [
+                                    { inline_data: { mime_type: imageMime, data: base64 } },
+                                    { text: prompt }
+                                  ]
+                                }],
+                                generationConfig: {
+                                  responseModalities: ['TEXT', 'IMAGE'],
+                                  temperature: 0.3
+                                }
+                              })
+                            }
+                          );
+                          const data = await response.json();
+                          const parts = data.candidates?.[0]?.content?.parts || [];
+                          const imagePart = parts.find((p: any) => p.inlineData?.mimeType?.startsWith('image/'));
+                          if (imagePart) {
+                            setTryonResult(`data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`);
+                          } else {
+                            setTryonResult('error:' + JSON.stringify(data).slice(0, 200));
+                          }
+                        } catch (e: any) {
+                          setTryonResult('error:' + e.message);
+                        }
+                        setTryonLoading(false);
+                      }}
+                      className="px-6 py-2.5 bg-gradient-to-r from-brand-purple to-brand-blue text-white font-bold rounded-xl text-sm hover:opacity-90 transition-all flex items-center gap-2 mx-auto shadow-lg shadow-brand-purple/20"
+                    >
+                      <Sparkles className="w-4 h-4" /> Generate My Preview
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {tryonLoading && (
+              <div className="flex flex-col items-center gap-3 py-6">
+                <Loader2 className="w-8 h-8 text-brand-purple animate-spin" />
+                <p className="text-sm text-slate-400">AI is visualizing the Ares on you...</p>
+              </div>
+            )}
+
+            {tryonResult && !tryonLoading && (
+              <div className="space-y-4">
+                {tryonResult.startsWith('error:') ? (
+                  <div className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-xl p-3">
+                    Generation failed. Please try again.
+                    <p className="text-xs text-slate-500 mt-1">{tryonResult.replace('error:', '')}</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <p className="text-xs text-slate-500 text-center">Before</p>
+                        <img src={capturedImage!} alt="Before" className="w-full rounded-xl object-cover aspect-square border border-dark-600" />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs text-slate-500 text-center">With Ares</p>
+                        <img src={tryonResult} alt="With Ares Hair System" className="w-full rounded-xl object-cover aspect-square border border-brand-purple/40" />
+                      </div>
+                    </div>
+                    <p className="text-xs text-slate-500 italic text-center">AI-generated preview · Results may vary</p>
+                  </div>
+                )}
+                <div className="flex gap-2 pt-2">
+                  <button
+                    onClick={() => { setTryonResult(null); setColorConfirmed(false); }}
+                    className="flex items-center gap-1.5 px-3 py-2 bg-dark-700 border border-dark-600 text-slate-400 hover:text-white rounded-lg text-xs font-bold transition-all"
+                  >
+                    <RefreshCw className="w-3 h-3" /> Regenerate
+                  </button>
+                  <a
+                    href="https://www.lavividhair.com/collections/men-hair-system/products/ares-men-s-non-surgical-hair-replacement-french-lace-with-skin-around-best-for-daily-wear"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 px-4 py-2 bg-brand-blue hover:bg-blue-600 text-white rounded-lg text-xs font-bold transition-all"
+                  >
+                    Order Ares Now <ArrowRight className="w-3 h-3" />
+                  </a>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

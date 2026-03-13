@@ -1,17 +1,71 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { AdminSidebar } from '../../components/admin/AdminSidebar';
-import { Bell, Search, Shield, LogOut, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Bell, Search, Shield, LogOut, PanelLeftClose, PanelLeftOpen, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+
+const IDLE_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+const WARNING_MS = 60 * 1000; // show warning 1 min before logout
 
 export const AdminPortal: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
+  const [showWarning, setShowWarning] = useState(false);
+  const [countdown, setCountdown] = useState(60);
 
-  const handleTerminate = () => {
+  const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const warningTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const countdownInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const handleTerminate = useCallback(() => {
     localStorage.removeItem('staff_session_token');
     localStorage.removeItem('toupee_auth');
     navigate('/');
-  };
+  }, [navigate]);
+
+  const clearAllTimers = useCallback(() => {
+    if (idleTimer.current) clearTimeout(idleTimer.current);
+    if (warningTimer.current) clearTimeout(warningTimer.current);
+    if (countdownInterval.current) clearInterval(countdownInterval.current);
+  }, []);
+
+  const startIdleTimer = useCallback(() => {
+    clearAllTimers();
+    setShowWarning(false);
+
+    // Warning at 29 minutes
+    warningTimer.current = setTimeout(() => {
+      setShowWarning(true);
+      setCountdown(60);
+      countdownInterval.current = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            if (countdownInterval.current) clearInterval(countdownInterval.current);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }, IDLE_TIMEOUT_MS - WARNING_MS);
+
+    // Logout at 30 minutes
+    idleTimer.current = setTimeout(() => {
+      handleTerminate();
+    }, IDLE_TIMEOUT_MS);
+  }, [clearAllTimers, handleTerminate]);
+
+  const resetTimer = useCallback(() => {
+    startIdleTimer();
+  }, [startIdleTimer]);
+
+  useEffect(() => {
+    const events = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'];
+    events.forEach(e => window.addEventListener(e, resetTimer, { passive: true }));
+    startIdleTimer();
+    return () => {
+      events.forEach(e => window.removeEventListener(e, resetTimer));
+      clearAllTimers();
+    };
+  }, [resetTimer, startIdleTimer, clearAllTimers]);
 
   return (
     <div className="min-h-screen bg-[#050505] flex text-slate-300 font-sans selection:bg-emerald-500 selection:text-black">
@@ -69,6 +123,42 @@ export const AdminPortal: React.FC<{ children: React.ReactNode }> = ({ children 
           </div>
         </main>
       </div>
+
+      {/* Idle Warning Modal */}
+      {showWarning && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm">
+          <div className="bg-[#0a0a0a] border border-amber-500/40 rounded-2xl p-8 max-w-sm w-full mx-4 shadow-2xl shadow-amber-500/10">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center">
+                <Clock className="w-5 h-5 text-amber-500" />
+              </div>
+              <div>
+                <h3 className="text-white font-bold text-sm">Session Expiring</h3>
+                <p className="text-slate-500 text-xs">Idle timeout detected</p>
+              </div>
+            </div>
+            <p className="text-slate-400 text-sm mb-6">
+              Your session will automatically terminate in{' '}
+              <span className="text-amber-400 font-mono font-bold text-base">{countdown}s</span>{' '}
+              due to inactivity.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={resetTimer}
+                className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-bold py-2.5 rounded-lg transition-colors"
+              >
+                Stay Logged In
+              </button>
+              <button
+                onClick={handleTerminate}
+                className="flex-1 bg-dark-800 hover:bg-red-500/10 border border-dark-700 hover:border-red-500/30 text-slate-400 hover:text-red-400 text-sm font-bold py-2.5 rounded-lg transition-colors"
+              >
+                Log Out Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

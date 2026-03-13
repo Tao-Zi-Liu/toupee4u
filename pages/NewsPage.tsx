@@ -11,6 +11,27 @@ import { VideoPost, VIDEO_PLATFORM_CONFIG } from '../types';
 import { db } from '../firebase.config';
 import { NewsArticle, NewsCategory } from '../types';
 
+function formatNewsDate(val: any): string {
+  if (!val) return '';
+  let d: Date;
+  if (val?.toDate) {
+    d = val.toDate();
+  } else if (typeof val === 'string') {
+    d = new Date(val);
+  } else if (val instanceof Date) {
+    d = val;
+  } else {
+    return String(val);
+  }
+  if (isNaN(d.getTime())) return String(val);
+  const date = d.toISOString().split('T')[0];
+  const hh = String(d.getUTCHours()).padStart(2, '0');
+  const mm = String(d.getUTCMinutes()).padStart(2, '0');
+  const ss = String(d.getUTCSeconds()).padStart(2, '0');
+  return `${date} ${hh}:${mm}:${ss} UTC`;
+}
+
+
 // ── 常量 ─────────────────────────────────────
 
 const CATEGORY_CONFIG: Record<string, { icon: React.ElementType; color: string; bg: string }> = {
@@ -44,7 +65,12 @@ export const NewsPage: React.FC = () => {
           limit(50)
         );
         const snap = await getDocs(q);
-        setArticles(snap.docs.map(d => ({ id: d.id, ...d.data() } as NewsArticle)));
+        setArticles(snap.docs.map(d => {
+        const data = d.data();
+        if (data.createdAt?.toDate) data.createdAt = data.createdAt.toDate().toISOString();
+        if (data.publishedAt?.toDate) data.publishedAt = data.publishedAt.toDate().toISOString();
+        return { id: d.id, ...data } as NewsArticle;
+      }));
       } finally {
         setLoading(false);
       }
@@ -169,11 +195,10 @@ export const NewsPage: React.FC = () => {
                   <div className="flex items-center justify-between pt-1">
                     <div className="flex items-center gap-3 text-xs text-slate-500">
                       <span className="font-semibold text-slate-400">{featured.sourceName}</span>
-                      {featured.sourceDate && (
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" /> {featured.sourceDate}
+                      <span className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {featured.createdAt && <span className="font-mono">{formatNewsDate(featured.createdAt)}</span>}
                         </span>
-                      )}
                     </div>
                     <span className="flex items-center gap-1 text-xs font-bold text-brand-blue group-hover:gap-2 transition-all">
                       Read analysis <ChevronRight className="w-3.5 h-3.5" />
@@ -275,7 +300,7 @@ const ArticleCard: React.FC<{
         </h3>
         <div className="flex items-center gap-3 text-xs text-slate-500">
           <span className="font-semibold">{article.sourceName}</span>
-          {article.sourceDate && <span>{article.sourceDate}</span>}
+          <span className="font-mono text-xs">{article.createdAt ? formatNewsDate(article.createdAt) : ''}</span>
         </div>
       </div>
       <ChevronRight className={`w-4 h-4 flex-shrink-0 mt-1 transition-all ${isSelected ? 'text-brand-blue' : 'text-slate-600 group-hover:text-slate-400'}`} />
@@ -362,9 +387,9 @@ const ArticleDetail: React.FC<{ article: NewsArticle; onClose: () => void }> = (
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs font-bold text-white">{article.sourceName}</p>
-            {article.sourceDate && (
+            {article.createdAt && (
               <p className="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5">
-                <Calendar className="w-3 h-3" /> {article.sourceDate}
+                <Calendar className="w-3 h-3" /> <span className="font-mono">{formatNewsDate(article.createdAt)}</span>
               </p>
             )}
           </div>

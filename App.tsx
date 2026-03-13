@@ -203,7 +203,7 @@ useEffect(() => {
   };
 
   // If it's an admin route, we completely bypass this public layout
-  if (location.pathname.startsWith('/admin')) {
+  if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/terminal')) {
       return <>{children}</>;
   }
 

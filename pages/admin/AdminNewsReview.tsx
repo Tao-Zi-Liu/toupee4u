@@ -10,6 +10,28 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
 import { db } from '../../firebase.config';
 import { NewsArticle, NewsStatus, MarketingFlag } from '../../types';
 
+// Format Firestore timestamp with date + time in UTC
+function formatNewsDate(val: any): string {
+  if (!val) return '';
+  let d: Date;
+  if (val?.toDate) {
+    d = val.toDate();
+  } else if (typeof val === 'string') {
+    d = new Date(val);
+  } else if (val instanceof Date) {
+    d = val;
+  } else {
+    return String(val);
+  }
+  if (isNaN(d.getTime())) return String(val);
+  const date = d.toISOString().split('T')[0];
+  const hh = String(d.getUTCHours()).padStart(2, '0');
+  const mm = String(d.getUTCMinutes()).padStart(2, '0');
+  const ss = String(d.getUTCSeconds()).padStart(2, '0');
+  return `${date} ${hh}:${mm}:${ss} UTC`;
+}
+
+
 const STATUS_CONFIG: Record<NewsStatus, { label: string; color: string; dot: string }> = {
   PENDING:     { label: 'Pending Review', color: 'text-amber-400 bg-amber-400/10 border-amber-400/20',       dot: 'bg-amber-400 animate-pulse' },
   PUBLISHED:   { label: 'Published',      color: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20', dot: 'bg-emerald-400' },
@@ -87,7 +109,15 @@ export const AdminNewsReview: React.FC = () => {
         );
       }
       const snap = await getDocs(q);
-      setArticles(snap.docs.map(d => ({ id: d.id, ...d.data() } as NewsArticle)));
+      setArticles(snap.docs.map(d => {
+        const data = d.data();
+        // Convert Firestore Timestamps to ISO strings so they survive React state
+        if (data.createdAt?.toDate) data.createdAt = data.createdAt.toDate().toISOString();
+        if (data.publishedAt?.toDate) data.publishedAt = data.publishedAt.toDate().toISOString();
+        if (data.rejectedAt?.toDate) data.rejectedAt = data.rejectedAt.toDate().toISOString();
+        if (data.updatedAt?.toDate) data.updatedAt = data.updatedAt.toDate().toISOString();
+        return { id: d.id, ...data } as NewsArticle;
+      }));
     } finally {
       setLoading(false);
     }
@@ -113,7 +143,16 @@ export const AdminNewsReview: React.FC = () => {
       setShowTopicEditor(false);
       await loadArticles();
     } catch (err: any) {
-      alert(`❌ Generation failed: ${err.message}`);
+      // deadline-exceeded 说明部分topic超时，但文章可能已写入Firestore
+      if (err?.message?.includes('deadline-exceeded') || err?.code === 'deadline-exceeded') {
+        alert('⚠️ Generation partially completed (some topics timed out). Refreshing to show available articles...');
+        setFilterStatus('PENDING');
+        setExtraTopics([]);
+        setShowTopicEditor(false);
+        await loadArticles();
+      } else {
+        alert(`❌ Generation failed: ${err.message}`);
+      }
     } finally {
       setGenerating(false);
     }
@@ -331,7 +370,7 @@ export const AdminNewsReview: React.FC = () => {
                       {article.urlVerified === false && article.urlVerifiedAt && <span className="flex items-center gap-1 text-[10px] text-red-400"><Link2Off className="w-3 h-3" /> Dead Link</span>}
                     </div>
                     <p className="font-bold text-white text-sm line-clamp-2">{article.title}</p>
-                    <p className="text-xs text-slate-500 mt-1">{article.sourceName} · {article.generatedDate}</p>
+                    <p className="text-xs text-slate-500 mt-1">{article.sourceName}{article.createdAt && <span className="font-mono ml-1">· {formatNewsDate(article.createdAt)}</span>}</p>
                   </div>
                   <span className={`flex-shrink-0 flex items-center gap-1.5 text-[10px] font-bold px-2 py-1 rounded-full border ${sc.color}`}>
                     <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />
@@ -425,11 +464,28 @@ export const AdminNewsReview: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs font-bold text-white">{selectedArticle.sourceName}</p>
-                      {selectedArticle.sourceDate && (
-                        <p className="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5">
-                          <Calendar className="w-3 h-3" /> {selectedArticle.sourceDate}
-                        </p>
-                      )}
+                      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5">
+                        {selectedArticle.sourceDate && (
+                          <span className="text-[10px] text-slate-500 flex items-center gap-1 whitespace-nowrap">
+                            <Calendar className="w-3 h-3" /> <span className="text-slate-400">Source:</span> {selectedArticle.sourceDate}
+                          </span>
+                        )}
+                        {selectedArticle.createdAt && (
+                          <span className="text-[10px] text-slate-500 flex items-center gap-1 whitespace-nowrap">
+                            <Clock className="w-3 h-3" /> <span className="text-slate-400">Created:</span> <span className="font-mono">{formatNewsDate(selectedArticle.createdAt)}</span>
+                          </span>
+                        )}
+                        {selectedArticle.publishedAt && (
+                          <span className="text-[10px] text-emerald-400 flex items-center gap-1 whitespace-nowrap">
+                            <Clock className="w-3 h-3" /> Published: <span className="font-mono">{formatNewsDate(selectedArticle.publishedAt)}</span>
+                          </span>
+                        )}
+                        {selectedArticle.rejectedAt && (
+                          <span className="text-[10px] text-red-400 flex items-center gap-1 whitespace-nowrap">
+                            <Clock className="w-3 h-3" /> Rejected: <span className="font-mono">{formatNewsDate(selectedArticle.rejectedAt)}</span>
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       {selectedArticle.urlVerified === true ? (
