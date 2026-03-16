@@ -59,6 +59,9 @@ import { HairAnalysisPage } from './pages/HairAnalysisPage';
 import { HairAnalysisFloat } from './components/HairAnalysisFloat';
 import { NewsPage } from './pages/NewsPage';
 import { AdminVideoDesk } from './pages/admin/AdminVideoDesk';
+import { PodcastPage } from './pages/PodcastPage';
+import { PodcastProvider } from './contexts/PodcastContext';
+import { AdminPodcastDesk } from './pages/admin/AdminPodcastDesk';
 import { VideosPage } from './pages/VideosPage';
 import StyleAdvisorPage from './pages/StyleAdvisorPage';
 
@@ -78,7 +81,7 @@ const StaffGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [showGovernanceModal, setShowGovernanceModal] = useState(true);
+  const [showGovernanceModal, setShowGovernanceModal] = useState(false);
   const location = useLocation();
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -462,13 +465,14 @@ const AppRoutes = () => {
       <Route path="/policy" element={<PolicyPage />} />
       <Route path="/terms" element={<TermsPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
-              <Route path="/expert/apply" element={<ExpertApplyPage />} />
-              <Route path="/expert/:uid" element={<ExpertProfilePage />} />
+      <Route path="/expert/apply" element={<ExpertApplyPage />} />
+      <Route path="/expert/:uid" element={<ExpertProfilePage />} />
       <Route path="/kb-migrate" element={<KBMigration />} />
       <Route path="/news" element={<NewsPage />} />
       <Route path="/videos" element={<VideosPage />} />
+      <Route path="/podcast" element={<PodcastPage />} />
       <Route path="/hair-analysis" element={<HairAnalysisPage />} />
-              <Route path="/style-advisor" element={<StyleAdvisorPage />} />
+      <Route path="/style-advisor" element={<StyleAdvisorPage />} />
       <Route path="/hair-analysis" element={<HairAnalysisPage />} />
       
       {/* PROTECTED ADMIN ROUTES */}
@@ -483,6 +487,7 @@ const AppRoutes = () => {
       <Route path="/admin/users/:userId" element={<StaffGate><AdminUserDetail /></StaffGate>} />
       <Route path="/admin/news" element={<StaffGate><AdminNewsReview /></StaffGate>} />
       <Route path="/admin/videos" element={<StaffGate><AdminVideoDesk /></StaffGate>} />
+      <Route path="/admin/podcast" element={<StaffGate><AdminPodcastDesk /></StaffGate>} />
       <Route path="*" element={<Navigate to="/" replace />} />
       <Route path="/onboarding/voyager-quiz" element={<VoyagerQuizPage />} />
       <Route path="/onboarding/professional-setup" element={<ProfessionalSetupPage />} />
@@ -495,6 +500,7 @@ const App: React.FC = () => {
     <HashRouter>
       <ThemeProvider>
       <DataProvider>
+        <PodcastProvider>
         <AccessGate>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
@@ -511,6 +517,7 @@ const App: React.FC = () => {
             } />
           </Routes>
         </AccessGate>
+        </PodcastProvider>
       </DataProvider>
       </ThemeProvider>
     </HashRouter>

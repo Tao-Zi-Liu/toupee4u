@@ -179,5 +179,11 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAdmin();
     }
+
+    // ── Podcasts ──────────────────────────────
+    match /podcasts/{podcastId} {
+      allow read: if resource.data.status == 'PUBLISHED' || isAdmin();
+      allow write: if isAdmin();
+    }
   }
 }

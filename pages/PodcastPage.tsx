@@ -1,11 +1,12 @@
 // pages/PodcastPage.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  Mic, Play, Pause, Volume2, VolumeX, SkipBack, SkipForward,
-  Clock, Calendar, Loader, Radio, X, List
+  Mic, Play, Pause,
+  Clock, Calendar, Loader, Radio, List
 } from 'lucide-react';
 import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import { db } from '../firebase.config';
+import { usePodcast } from '../contexts/PodcastContext';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -39,127 +40,6 @@ function formatDate(val: any): string {
   if (isNaN(d.getTime())) return '';
   return d.toISOString().split('T')[0];
 }
-
-// ── Floating Bottom Player ─────────────────────────────────────────────────────
-
-interface FloatingPlayerProps {
-  podcast: Podcast;
-  onClose: () => void;
-}
-
-const FloatingPlayer: React.FC<FloatingPlayerProps> = ({ podcast, onClose }) => {
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const [playing, setPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(podcast.duration || 0);
-  const [volume, setVolume] = useState(1);
-  const [muted, setMuted] = useState(false);
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    const onTime = () => setCurrentTime(audio.currentTime);
-    const onDuration = () => setDuration(audio.duration);
-    const onEnded = () => setPlaying(false);
-    audio.addEventListener('timeupdate', onTime);
-    audio.addEventListener('loadedmetadata', onDuration);
-    audio.addEventListener('ended', onEnded);
-    return () => {
-      audio.removeEventListener('timeupdate', onTime);
-      audio.removeEventListener('loadedmetadata', onDuration);
-      audio.removeEventListener('ended', onEnded);
-    };
-  }, []);
-
-  const togglePlay = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (playing) { audio.pause(); } else { audio.play(); }
-    setPlaying(!playing);
-  };
-
-  const seek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.currentTime = Number(e.target.value);
-    setCurrentTime(Number(e.target.value));
-  };
-
-  const skip = (secs: number) => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.currentTime = Math.max(0, Math.min(duration, audio.currentTime + secs));
-  };
-
-  const toggleMute = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.muted = !muted;
-    setMuted(!muted);
-  };
-
-  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
-
-  return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-dark-900/95 backdrop-blur-xl border-t border-dark-600/60 shadow-2xl">
-      <audio ref={audioRef} src={podcast.audioUrl} preload="metadata" />
-      {/* Progress bar */}
-      <div className="relative h-1 bg-dark-700 cursor-pointer">
-        <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-brand-blue to-purple-500 transition-all"
-          style={{ width: `${progress}%` }} />
-        <input type="range" min={0} max={duration || 100} value={currentTime}
-          onChange={seek}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-      </div>
-      <div className="flex items-center gap-4 px-4 py-3 max-w-7xl mx-auto">
-        {/* Cover */}
-        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-blue/30 to-purple-500/30 border border-dark-500 flex-shrink-0 flex items-center justify-center overflow-hidden">
-          {podcast.coverImage
-            ? <img src={podcast.coverImage} alt="" className="w-full h-full object-cover" />
-            : <Mic className="w-4 h-4 text-brand-blue" />}
-        </div>
-        {/* Info */}
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-bold text-white truncate">{podcast.title}</p>
-          <p className="text-[10px] text-slate-500 font-mono">{formatTime(currentTime)} / {formatTime(duration)}</p>
-        </div>
-        {/* Controls */}
-        <div className="flex items-center gap-2">
-          <button onClick={() => skip(-15)}
-            className="text-slate-400 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-dark-700">
-            <SkipBack className="w-4 h-4" />
-          </button>
-          <button onClick={togglePlay}
-            className="w-9 h-9 rounded-full bg-brand-blue hover:bg-brand-blue/80 flex items-center justify-center transition-all shadow-lg shadow-brand-blue/20">
-            {playing ? <Pause className="w-4 h-4 text-white" /> : <Play className="w-4 h-4 text-white ml-0.5" />}
-          </button>
-          <button onClick={() => skip(15)}
-            className="text-slate-400 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-dark-700">
-            <SkipForward className="w-4 h-4" />
-          </button>
-        </div>
-        {/* Volume */}
-        <div className="hidden sm:flex items-center gap-2">
-          <button onClick={toggleMute} className="text-slate-400 hover:text-white transition-colors">
-            {muted || volume === 0 ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-          </button>
-          <input type="range" min={0} max={1} step={0.05} value={muted ? 0 : volume}
-            onChange={(e) => {
-              const v = Number(e.target.value);
-              if (audioRef.current) audioRef.current.volume = v;
-              setVolume(v);
-              setMuted(v === 0);
-            }}
-            className="w-20 accent-brand-blue cursor-pointer" />
-        </div>
-        {/* Close */}
-        <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-dark-700">
-          <X className="w-4 h-4" />
-        </button>
-      </div>
-    </div>
-  );
-};
 
 // ── Embedded Player ────────────────────────────────────────────────────────────
 
@@ -283,7 +163,7 @@ export const PodcastPage: React.FC = () => {
   const [podcasts, setPodcasts] = useState<Podcast[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Podcast | null>(null);
-  const [floating, setFloating] = useState<Podcast | null>(null);
+  const { openFloating } = usePodcast();
 
   useEffect(() => {
     const load = async () => {
@@ -351,7 +231,7 @@ export const PodcastPage: React.FC = () => {
                   podcast={p}
                   selected={selected?.id === p.id}
                   onClick={() => setSelected(p)}
-                  onFloatPlay={() => { setSelected(p); setFloating(p); }}
+                  onFloatPlay={() => { setSelected(p); openFloating(p); }}
                 />
               ))}
             </div>
@@ -380,9 +260,9 @@ export const PodcastPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <EmbeddedPlayer key={selected.id} podcast={selected} onPlay={() => setFloating(null)} />
+                  <EmbeddedPlayer key={selected.id} podcast={selected} onPlay={() => {}} />
 
-                  <button onClick={() => setFloating(selected)}
+                  <button onClick={() => selected && openFloating(selected)}
                     className="w-full flex items-center justify-center gap-2 text-xs text-slate-500 hover:text-brand-blue transition-colors py-1">
                     <Play className="w-3 h-3" /> Open in mini player
                   </button>
@@ -400,14 +280,7 @@ export const PodcastPage: React.FC = () => {
                     </div>
                   )}
 
-                  {selected.transcript && (
-                    <div>
-                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Transcript</p>
-                      <div className="bg-dark-900/60 rounded-xl p-4 max-h-48 overflow-y-auto">
-                        <p className="text-xs text-slate-400 leading-relaxed whitespace-pre-wrap">{selected.transcript}</p>
-                      </div>
-                    </div>
-                  )}
+
                 </div>
               </div>
             )}
@@ -415,9 +288,7 @@ export const PodcastPage: React.FC = () => {
         )}
       </div>
 
-      {floating && (
-        <FloatingPlayer key={floating.id} podcast={floating} onClose={() => setFloating(null)} />
-      )}
+
     </div>
   );
 };

@@ -3,12 +3,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   Mic, Upload, Play, Pause, Trash2, Eye, EyeOff, Plus,
   Loader, Clock, Calendar, CheckCircle, X, Save, Radio,
-  FileAudio, AlertTriangle
+  FileAudio, AlertTriangle, Sparkles, RefreshCw
 } from 'lucide-react';
 import {
   collection, query, orderBy, getDocs, addDoc, updateDoc,
   deleteDoc, doc, serverTimestamp
 } from 'firebase/firestore';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
 import { db, storage } from '../../firebase.config';
 import { Podcast } from '../PodcastPage';
@@ -314,6 +315,27 @@ export const AdminPodcastDesk: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [filter, setFilter] = useState<'ALL' | 'PUBLISHED' | 'DRAFT'>('ALL');
+  const [generating, setGenerating] = useState(false);
+  const [generateMsg, setGenerateMsg] = useState('');
+
+  const handleGeneratePodcast = async () => {
+    setGenerating(true);
+    setGenerateMsg('');
+    try {
+      const fn = httpsCallable(getFunctions(), 'generatePodcastManual');
+      const result: any = await fn({});
+      if (result.data?.skipped) {
+        setGenerateMsg("⚠️ Already generated today's podcast.");
+      } else {
+        setGenerateMsg(`✅ Podcast generated! ~${result.data?.duration}s, ${result.data?.lines} lines.`);
+        await load();
+      }
+    } catch (err: any) {
+      setGenerateMsg(`❌ ${err.message}`);
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   const load = async () => {
     try {
@@ -390,11 +412,24 @@ export const AdminPodcastDesk: React.FC = () => {
           </div>
           <p className="text-xs text-slate-500">Upload and manage NotebookLM podcast episodes</p>
         </div>
-        <button onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-brand-blue hover:bg-brand-blue/80 rounded-xl text-xs font-bold text-white transition-all">
-          <Plus className="w-4 h-4" /> New Episode
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={handleGeneratePodcast} disabled={generating}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 rounded-xl text-xs font-bold text-white transition-all">
+            {generating ? <><Loader className="w-4 h-4 animate-spin" /> Generating...</> : <><Sparkles className="w-4 h-4" /> Generate Today's Podcast</>}
+          </button>
+          <button onClick={() => setShowForm(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-brand-blue hover:bg-brand-blue/80 rounded-xl text-xs font-bold text-white transition-all">
+            <Plus className="w-4 h-4" /> New Episode
+          </button>
+        </div>
       </div>
+
+      {/* Generate message */}
+      {generateMsg && (
+        <div className={`text-xs px-4 py-2.5 rounded-xl border ${generateMsg.startsWith('✅') ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : generateMsg.startsWith('⚠️') ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
+          {generateMsg}
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">

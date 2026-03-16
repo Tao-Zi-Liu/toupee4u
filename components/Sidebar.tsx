@@ -6,7 +6,7 @@ import { Link, NavLink } from 'react-router-dom';
 import { useTheme, ThemeMode } from '../contexts/ThemeContext';
 import { 
   MessageSquare, 
-  Newspaper, 
+  Newspaper, Radio,
   Plus, 
   ChevronDown, 
   ChevronRight, 
@@ -193,6 +193,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, isExpert = fal
               <NavItem to="/for-you" icon={Sparkles} label="For You" isCollapsed={isCollapsed} onClick={handleItemClick} />
               <NavItem to="/forum" icon={MessageSquare} label="Forums" isCollapsed={isCollapsed} onClick={handleItemClick} />
               <NavItem to="/news" icon={Newspaper} label="News" isCollapsed={isCollapsed} onClick={handleItemClick} />
+              <NavItem to="/podcast" icon={Radio} label="Podcast" isCollapsed={isCollapsed} onClick={handleItemClick} />
             </nav>
           </div>
 

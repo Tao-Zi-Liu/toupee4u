@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateInsightsManual = exports.generatePersonalizedInsight = exports.generateDailyInsights = exports.unpublishNewsArticle = exports.rejectNewsArticle = exports.publishNewsArticle = exports.verifyNewsUrl = exports.generateNewsManual = exports.generateDailyNews = exports.addXp = exports.onPostCreated = exports.onUserCreated = void 0;
+exports.generatePodcastManual = exports.generateInsightsManual = exports.generatePersonalizedInsight = exports.generateDailyInsights = exports.unpublishNewsArticle = exports.rejectNewsArticle = exports.publishNewsArticle = exports.verifyNewsUrl = exports.generateNewsManual = exports.generateDailyNews = exports.addXp = exports.onPostCreated = exports.onUserCreated = void 0;
 const https_1 = require("firebase-functions/v2/https");
 const firestore_1 = require("firebase-functions/v2/firestore");
 const scheduler_1 = require("firebase-functions/v2/scheduler");
@@ -638,5 +638,141 @@ exports.generateInsightsManual = (0, https_1.onCall)({
         generatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
     return { success: true, count: insights.length, date: today };
+});
+// ─────────────────────────────────────────────────────────────────────────────
+// PODCAST GENERATION
+// ─────────────────────────────────────────────────────────────────────────────
+const text_to_speech_1 = require("@google-cloud/text-to-speech");
+const storage_1 = require("firebase-admin/storage");
+const ttsClient = new text_to_speech_1.TextToSpeechClient();
+const PODCAST_SCRIPT_PROMPT = (articles) => `
+You are a podcast script writer for "The Hair System Daily" — a friendly, informative podcast about hair replacement systems, wigs, and hair loss solutions.
+
+Today's news articles:
+${articles.map((a, i) => `${i + 1}. TITLE: ${a.title}\nSUMMARY: ${a.summary}`).join('\n\n')}
+
+Write a natural, engaging 2-host podcast script (Host A: Alex, Host B: Sam) that covers these stories.
+Guidelines:
+- Warm, conversational tone — like two knowledgeable friends talking
+- 2-3 minutes when read aloud (~200-300 words total dialogue, MAX 15 exchanges)
+- Start with a brief intro, cover 2-3 stories briefly, end with a sign-off
+- Hosts react to each other, add context, occasionally add light humor
+- Make it feel like NotebookLM's Audio Overview style
+
+Return ONLY a JSON array, no markdown, no preamble:
+[
+  { "speaker": "A", "text": "Hey everyone, welcome to The Hair System Daily..." },
+  { "speaker": "B", "text": "..." },
+  ...
+]
+`;
+async function synthesizePodcastAudio(script) {
+    // Voice config for each host
+    const voices = {
+        A: { languageCode: "en-US", name: "en-US-Neural2-D", ssmlGender: "MALE" },
+        B: { languageCode: "en-US", name: "en-US-Neural2-F", ssmlGender: "FEMALE" },
+    };
+    const audioChunks = [];
+    for (const line of script) {
+        const voice = voices[line.speaker] || voices["A"];
+        const [response] = await ttsClient.synthesizeSpeech({
+            input: { text: line.text },
+            voice,
+            audioConfig: {
+                audioEncoding: "MP3",
+                speakingRate: line.speaker === "A" ? 1.0 : 0.92,
+            },
+        });
+        if (response.audioContent) {
+            audioChunks.push(Buffer.from(response.audioContent));
+        }
+    }
+    return Buffer.concat(audioChunks);
+}
+async function runPodcastGeneration() {
+    const today = new Date().toISOString().split("T")[0];
+    // Check if already generated today
+    const existing = await db.collection("podcasts")
+        .where("generatedDate", "==", today)
+        .limit(1)
+        .get();
+    if (!existing.empty) {
+        console.info(`Podcast already generated for ${today}`);
+        return { skipped: true };
+    }
+    // Fetch most recent published news articles (up to 6)
+    const newsSnap = await db.collection("newsArticles")
+        .where("status", "==", "PUBLISHED")
+        .orderBy("publishedAt", "desc")
+        .limit(6)
+        .get();
+    let articles = newsSnap.docs.map(d => d.data());
+    if (articles.length === 0) {
+        throw new Error("No articles available for podcast generation");
+    }
+    // Generate script with Gemini
+    const genAI = new genai_1.GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    const scriptResponse = await genAI.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: [{ role: "user", parts: [{ text: PODCAST_SCRIPT_PROMPT(articles) }] }],
+        config: {
+            temperature: 0.8,
+            maxOutputTokens: 4096,
+            thinkingConfig: { thinkingBudget: 0 },
+        },
+    });
+    const rawScript = scriptResponse.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
+    const cleanedScript = rawScript.replace(/```json/gi, "").replace(/```/g, "").trim();
+    const script = JSON.parse(cleanedScript);
+    if (!Array.isArray(script) || script.length === 0) {
+        throw new Error("Failed to generate podcast script");
+    }
+    // Synthesize audio
+    const audioBuffer = await synthesizePodcastAudio(script);
+    // Upload to Firebase Storage
+    const bucket = (0, storage_1.getStorage)().bucket();
+    const fileName = `podcasts/${today}_daily.mp3`;
+    const file = bucket.file(fileName);
+    await file.save(audioBuffer, { metadata: { contentType: "audio/mpeg" } });
+    await file.makePublic();
+    const audioUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+    // Calculate duration (rough estimate: ~150 words per minute)
+    const totalWords = script.reduce((sum, line) => sum + line.text.split(" ").length, 0);
+    const estimatedDuration = Math.round((totalWords / 150) * 60);
+    // Extract transcript
+    const transcript = script.map(line => `[${line.speaker === "A" ? "Alex" : "Sam"}] ${line.text}`).join("\n\n");
+    // Save to Firestore
+    await db.collection("podcasts").add({
+        title: `The Hair System Daily — ${today}`,
+        description: `Today's hair system and hair replacement news digest, featuring ${articles.length} stories.`,
+        audioUrl,
+        audioPath: fileName,
+        duration: estimatedDuration,
+        status: "PUBLISHED",
+        generatedDate: today,
+        script,
+        transcript,
+        tags: ["daily", "news", "hair system"],
+        episodeNumber: null,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        publishedAt: admin.firestore.FieldValue.serverTimestamp(),
+        sourceArticleCount: articles.length,
+    });
+    console.info(`Podcast generated for ${today}: ${script.length} lines, ~${estimatedDuration}s`);
+    return { success: true, date: today, lines: script.length, duration: estimatedDuration };
+}
+// Scheduled: every day at 8:00 AM UTC
+// generateDailyPodcast disabled - use manual trigger instead
+// Manual trigger from admin panel
+exports.generatePodcastManual = (0, https_1.onCall)({
+    region: "us-central1",
+    timeoutSeconds: 540,
+    memory: "512MiB",
+    secrets: ["GEMINI_API_KEY"],
+}, async (request) => {
+    if (!request.auth?.token?.isAdmin) {
+        throw new https_1.HttpsError("permission-denied", "Admin only.");
+    }
+    return await runPodcastGeneration();
 });
 //# sourceMappingURL=index.js.map
