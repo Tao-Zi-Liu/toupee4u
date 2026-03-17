@@ -77,6 +77,20 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // ── Knowledge Base (subcollection structure) ──
+    match /kb_categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+      match /kb_topics/{topicId} {
+        allow read: if true;
+        allow write: if isAdmin();
+        match /kb_articles/{articleId} {
+          allow read: if true;
+          allow write: if isAdmin();
+        }
+      }
+    }
+
     match /readingProgress/{progressId} {
       allow read: if isSignedIn();
       allow write: if isSignedIn();
