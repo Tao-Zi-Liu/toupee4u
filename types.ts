@@ -456,7 +456,7 @@ export interface ExpertDraft {
 // 新闻资讯系统（News System）
 // ============================================
 
-export type NewsStatus = 'PENDING' | 'PUBLISHED' | 'REJECTED' | 'UNPUBLISHED';
+export type NewsStatus = 'PENDING' | 'PUBLISHED' | 'REJECTED' | 'UNPUBLISHED' | 'DRAFT';
 
 export type NewsCategory =
   | 'Market Trends'
@@ -499,6 +499,7 @@ export interface NewsArticle {
   // 营销过滤
   marketingFlags: MarketingFlag[];   // 检测到的营销风险
   isClean: boolean;                  // true = 无营销内容
+  isFeatured?: boolean;              // true = 有权威机构背书
 
   // 生成信息
   generatedDate: string;    // YYYY-MM-DD

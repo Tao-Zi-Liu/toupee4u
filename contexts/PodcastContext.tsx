@@ -63,11 +63,21 @@ const FloatingPlayer: React.FC<{ podcast: Podcast; onClose: () => void }> = ({ p
     };
   }, []);
 
-  const togglePlay = () => {
+  const togglePlay = async () => {
     const audio = audioRef.current;
     if (!audio) return;
-    if (playing) { audio.pause(); } else { audio.play(); }
-    setPlaying(!playing);
+    if (playing) {
+      audio.pause();
+      setPlaying(false);
+    } else {
+      try {
+        await audio.play();
+        setPlaying(true);
+        onPlay();
+      } catch (err) {
+        console.error('Playback failed:', err);
+      }
+    }
   };
 
   const seek = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,7 +103,7 @@ const FloatingPlayer: React.FC<{ podcast: Podcast; onClose: () => void }> = ({ p
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-dark-900/95 backdrop-blur-xl border-t border-dark-600/60 shadow-2xl">
+    <div className="fixed bottom-16 lg:bottom-0 left-0 right-0 z-[115] bg-dark-900/95 backdrop-blur-xl border-t border-dark-600/60 shadow-2xl">
       <audio ref={audioRef} src={podcast.audioUrl} preload="metadata" />
       <div className="relative h-1 bg-dark-700 cursor-pointer">
         <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-brand-blue to-purple-500 transition-all"

@@ -41,6 +41,8 @@ const v1_1 = require("firebase-functions/v1");
 const admin = __importStar(require("firebase-admin"));
 const genai_1 = require("@google/genai");
 const zod_1 = require("zod");
+const text_to_speech_1 = require("@google-cloud/text-to-speech");
+const ttsClient = new text_to_speech_1.TextToSpeechClient();
 admin.initializeApp();
 const db = admin.firestore();
 // ── Schemas ───────────────────────────────────────────────────────────────────
@@ -166,6 +168,7 @@ For each article found, analyze it thoroughly and return a JSON array (raw JSON 
       }
     ],
     "isClean": true
+    "isFeatured": false
   }
 ]
 
@@ -175,6 +178,13 @@ Marketing detection rules - add a flag if ANY of these apply:
 - Article is written by the brand being discussed → CONFLICT_OF_INTEREST
 - Article has only positive framing with no critical analysis → SOFT_AD
 - Set "isClean": false if ANY flag is added, true if marketingFlags is empty
+
+Featured detection rules - set "isFeatured": true if ANY of these apply:
+- Source is a government agency, legislative body, or official health authority (e.g. FDA, NHS, state legislature)
+- Source is a major corporation (Fortune 500 or equivalent), large industry association, or academic institution
+- Source is a well-known non-profit, charity, or public interest organization
+- The article reports on a regulatory change, official policy, or scientific study with institutional backing
+- Otherwise set "isFeatured": false
 
 If no relevant recent news found for this topic, return: []
 Return ONLY the JSON array. No other text.
@@ -311,14 +321,15 @@ async function saveArticlesToFirestore(articles, source) {
             sourceDate: article.sourceDate || "",
             marketingFlags: Array.isArray(article.marketingFlags) ? article.marketingFlags : [],
             isClean: article.isClean !== false,
+            isFeatured: article.isFeatured === true,
             urlVerified: false, // 待管理员手动验证
             urlVerifiedAt: null,
             generatedDate: today,
             generatedBy: source,
-            status: 'PENDING',
-            adminNote: "",
+            status: article.isClean !== false ? 'PUBLISHED' : 'DRAFT',
+            adminNote: article.isClean !== false ? "" : "Auto-flagged: contains marketing content, pending review.",
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
-            publishedAt: null,
+            publishedAt: article.isClean !== false ? admin.firestore.FieldValue.serverTimestamp() : null,
         });
     }
     await batch.commit();
@@ -642,45 +653,58 @@ exports.generateInsightsManual = (0, https_1.onCall)({
 // ─────────────────────────────────────────────────────────────────────────────
 // PODCAST GENERATION
 // ─────────────────────────────────────────────────────────────────────────────
-const text_to_speech_1 = require("@google-cloud/text-to-speech");
 const storage_1 = require("firebase-admin/storage");
-const ttsClient = new text_to_speech_1.TextToSpeechClient();
-const PODCAST_SCRIPT_PROMPT = (articles) => `
-You are a podcast script writer for "The Hair System Daily" — a friendly, informative podcast about hair replacement systems, wigs, and hair loss solutions.
+const VOICE_POOLS = [
+    { A: { name: "en-US-Neural2-D", gender: "MALE", hostName: "Alex" }, B: { name: "en-US-Neural2-F", gender: "FEMALE", hostName: "Sam" } },
+    { A: { name: "en-US-Neural2-I", gender: "MALE", hostName: "Marcus" }, B: { name: "en-US-Neural2-C", gender: "FEMALE", hostName: "Elena" } },
+    { A: { name: "en-US-Neural2-J", gender: "MALE", hostName: "David" }, B: { name: "en-US-Neural2-H", gender: "FEMALE", hostName: "Chloe" } },
+    { A: { name: "en-US-Journey-D", gender: "MALE", hostName: "James" }, B: { name: "en-US-Journey-F", gender: "FEMALE", hostName: "Sarah" } }
+];
+const PODCAST_SCRIPT_PROMPT = (articles, hostA, hostB) => `
+You are a script writer for "The Hair System Daily", a premium, cutting-edge industry briefing for hair replacement professionals, stylists, and advanced users.
 
 Today's news articles:
 ${articles.map((a, i) => `${i + 1}. TITLE: ${a.title}\nSUMMARY: ${a.summary}`).join('\n\n')}
 
-Write a natural, engaging 2-host podcast script (Host A: Alex, Host B: Sam) that covers these stories.
+Write a 2-host industry briefing script (Host A: ${hostA}, Host B: ${hostB}) that covers these stories.
 Guidelines:
-- Warm, conversational tone — like two knowledgeable friends talking
-- 2-3 minutes when read aloud (~200-300 words total dialogue, MAX 15 exchanges)
-- Start with a brief intro, cover 2-3 stories briefly, end with a sign-off
-- Hosts react to each other, add context, occasionally add light humor
-- Make it feel like NotebookLM's Audio Overview style
+- Tone: Think NPR's "Planet Money" or Bloomberg's "Odd Lots" — two smart, curious professionals who genuinely find this industry fascinating. Warm but substantive.
+- Style: Conversational but informed. Hosts can react to each other naturally ("That's a big shift", "Exactly, and what's interesting is..."), show genuine curiosity, and occasionally note surprising or counterintuitive findings.
+- Focus: Emphasize practical implications for wearers and professionals — what does this mean for someone choosing a base material, or a stylist advising a client?
+- Rule: NO dry recitation of facts. NO radio-DJ hype. Find the human angle in every story.
 
 Return ONLY a JSON array, no markdown, no preamble:
 [
-  { "speaker": "A", "text": "Hey everyone, welcome to The Hair System Daily..." },
-  { "speaker": "B", "text": "..." },
+  { "speaker": "A", "text": "Welcome to The Hair System Daily. I'm ${hostA}." },
+  { "speaker": "B", "text": "And I'm ${hostB}. Today we're analyzing..." },
   ...
 ]
 `;
-async function synthesizePodcastAudio(script) {
-    // Voice config for each host
+async function synthesizePodcastAudio(script, voiceConfig) {
     const voices = {
-        A: { languageCode: "en-US", name: "en-US-Neural2-D", ssmlGender: "MALE" },
-        B: { languageCode: "en-US", name: "en-US-Neural2-F", ssmlGender: "FEMALE" },
+        A: { languageCode: "en-US", name: voiceConfig.A.name, ssmlGender: voiceConfig.A.gender },
+        B: { languageCode: "en-US", name: voiceConfig.B.name, ssmlGender: voiceConfig.B.gender },
     };
     const audioChunks = [];
     for (const line of script) {
-        const voice = voices[line.speaker] || voices["A"];
+        // 标准化 speaker
+        const speakerKey = line.speaker === "B" || /^(sam|elena|chloe|sarah|host\s*b)/i.test(line.speaker) ? "B" : "A";
+        const voice = voices[speakerKey];
+        const ssmlText = line.text
+            .replace(/&/g, '&amp;') // 先转义 & 必须第一个
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/\. /g, '.<break time="400ms"/> ')
+            .replace(/\? /g, '?<break time="400ms"/> ')
+            .replace(/! /g, '!<break time="400ms"/> ')
+            .replace(/\.\.\. /g, '...<break time="600ms"/> ')
+            .replace(/, /g, ',<break time="150ms"/> ');
         const [response] = await ttsClient.synthesizeSpeech({
-            input: { text: line.text },
+            input: { ssml: `<speak>${ssmlText}</speak>` },
             voice,
             audioConfig: {
                 audioEncoding: "MP3",
-                speakingRate: line.speaker === "A" ? 1.0 : 0.92,
+                speakingRate: 1.05,
             },
         });
         if (response.audioContent) {
@@ -711,12 +735,16 @@ async function runPodcastGeneration() {
         throw new Error("No articles available for podcast generation");
     }
     // Generate script with Gemini
+    // 根据日期轮换主播配置
+    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
+    const dailyVoiceConfig = VOICE_POOLS[dayOfYear % VOICE_POOLS.length];
+    // Generate script with Gemini
     const genAI = new genai_1.GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     const scriptResponse = await genAI.models.generateContent({
         model: "gemini-2.5-flash",
-        contents: [{ role: "user", parts: [{ text: PODCAST_SCRIPT_PROMPT(articles) }] }],
+        contents: [{ role: "user", parts: [{ text: PODCAST_SCRIPT_PROMPT(articles, dailyVoiceConfig.A.hostName, dailyVoiceConfig.B.hostName) }] }],
         config: {
-            temperature: 0.8,
+            temperature: 0.5,
             maxOutputTokens: 4096,
             thinkingConfig: { thinkingBudget: 0 },
         },
@@ -728,7 +756,7 @@ async function runPodcastGeneration() {
         throw new Error("Failed to generate podcast script");
     }
     // Synthesize audio
-    const audioBuffer = await synthesizePodcastAudio(script);
+    const audioBuffer = await synthesizePodcastAudio(script, dailyVoiceConfig);
     // Upload to Firebase Storage
     const bucket = (0, storage_1.getStorage)().bucket();
     const fileName = `podcasts/${today}_daily.mp3`;
@@ -740,7 +768,7 @@ async function runPodcastGeneration() {
     const totalWords = script.reduce((sum, line) => sum + line.text.split(" ").length, 0);
     const estimatedDuration = Math.round((totalWords / 150) * 60);
     // Extract transcript
-    const transcript = script.map(line => `[${line.speaker === "A" ? "Alex" : "Sam"}] ${line.text}`).join("\n\n");
+    const transcript = script.map(line => `[${line.speaker === "A" ? dailyVoiceConfig.A.hostName : dailyVoiceConfig.B.hostName}] ${line.text}`).join("\n\n");
     // Save to Firestore
     await db.collection("podcasts").add({
         title: `The Hair System Daily — ${today}`,
@@ -768,7 +796,7 @@ exports.generatePodcastManual = (0, https_1.onCall)({
     region: "us-central1",
     timeoutSeconds: 540,
     memory: "512MiB",
-    secrets: ["GEMINI_API_KEY"],
+    secrets: ["GEMINI_API_KEY", "ELEVENLABS_API_KEY"],
 }, async (request) => {
     if (!request.auth?.token?.isAdmin) {
         throw new https_1.HttpsError("permission-denied", "Admin only.");
