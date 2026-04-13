@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import {
   LayoutDashboard, Users, FileText, ShieldCheck, BarChart3,
-  Settings, Rocket, LogOut, Cpu, Database, Globe, Newspaper, Video, Radio
+  Settings, Rocket, LogOut, Cpu, Database, Globe, Newspaper, Video, Radio, BookMarked
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -52,6 +52,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
             <AdminNavItem to="/admin/youtube-crawler" icon={Database} label="Signal Scraper" collapsed={collapsed} />
             <AdminNavItem to="/admin/videos" icon={Video} label="Video Desk" collapsed={collapsed} />
             <AdminNavItem to="/admin/podcast" icon={Radio} label="Podcast Desk" collapsed={collapsed} />
+            <AdminNavItem to="/admin/digest" icon={BookMarked} label="Monthly Digest" collapsed={collapsed} />
           </nav>
         </div>
 

@@ -199,5 +199,11 @@ service cloud.firestore {
       allow read: if resource.data.status == 'PUBLISHED' || isAdmin();
       allow write: if isAdmin();
     }
+
+        // ── Monthly Digests ───────────────────────
+    match /monthlyDigests/{digestId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
   }
 }

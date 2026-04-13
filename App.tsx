@@ -60,8 +60,11 @@ import { HairAnalysisFloat } from './components/HairAnalysisFloat';
 import { NewsPage } from './pages/NewsPage';
 import { AdminVideoDesk } from './pages/admin/AdminVideoDesk';
 import { PodcastPage } from './pages/PodcastPage';
+import { DigestPage } from './pages/DigestPage';
+import { DigestDetailPage } from './pages/DigestDetailPage';
 import { PodcastProvider } from './contexts/PodcastContext';
 import { AdminPodcastDesk } from './pages/admin/AdminPodcastDesk';
+import { AdminDigestDesk } from './pages/admin/AdminDigestDesk';
 import { VideosPage } from './pages/VideosPage';
 import StyleAdvisorPage from './pages/StyleAdvisorPage';
 
@@ -271,7 +274,7 @@ useEffect(() => {
 
       <CommandPalette />
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-auto h-screen">
         <header className="h-16 bg-dark-900 border-b border-dark-700 flex items-center justify-between px-6 sticky top-0 z-30">
           <div className="flex items-center gap-4">
             <button 
@@ -429,7 +432,7 @@ useEffect(() => {
           </div>
         </header>
 
-        <main className="flex-1 overflow-auto p-6 md:p-8 max-w-7xl mx-auto w-full pb-24 lg:pb-8">
+        <main className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full pb-24 lg:pb-8">
           {children}
         </main>
       </div>
@@ -471,7 +474,8 @@ const AppRoutes = () => {
       <Route path="/news" element={<NewsPage />} />
       <Route path="/videos" element={<VideosPage />} />
       <Route path="/podcast" element={<PodcastPage />} />
-      <Route path="/hair-analysis" element={<HairAnalysisPage />} />
+      <Route path="/digest" element={<DigestPage />} />
+      <Route path="/digest/:period" element={<DigestDetailPage />} />
       <Route path="/style-advisor" element={<StyleAdvisorPage />} />
       <Route path="/hair-analysis" element={<HairAnalysisPage />} />
       
@@ -488,6 +492,7 @@ const AppRoutes = () => {
       <Route path="/admin/news" element={<StaffGate><AdminNewsReview /></StaffGate>} />
       <Route path="/admin/videos" element={<StaffGate><AdminVideoDesk /></StaffGate>} />
       <Route path="/admin/podcast" element={<StaffGate><AdminPodcastDesk /></StaffGate>} />
+      <Route path="/admin/digest" element={<StaffGate><AdminDigestDesk /></StaffGate>} />
       <Route path="*" element={<Navigate to="/" replace />} />
       <Route path="/onboarding/voyager-quiz" element={<VoyagerQuizPage />} />
       <Route path="/onboarding/professional-setup" element={<ProfessionalSetupPage />} />

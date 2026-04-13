@@ -4,7 +4,7 @@ import {
   Users, FileText, Activity, Shield, ArrowRight,
   Youtube, TrendingUp, Cpu, Database, Globe,
   AlertCircle, Zap, Rocket, Loader, RefreshCw,
-  Newspaper, Video, Star, MessageSquare
+  Newspaper, Video, Star, MessageSquare, BookMarked
 } from 'lucide-react';
 import { collection, getCountFromServer, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase.config';
@@ -200,6 +200,7 @@ export const AdminDashboard: React.FC = () => {
                 { to: '/admin/news',     icon: Newspaper, color: 'emerald-500',  title: 'News Desk',         desc: 'Review and publish AI-generated news.' },
                 { to: '/admin/videos',   icon: Video,     color: 'red-500',      title: 'Video Desk',        desc: 'Manage multi-platform video content.' },
                 { to: '/admin/youtube-crawler', icon: Youtube, color: 'red-400', title: 'Signal Synthesis',  desc: 'Convert YouTube signals into KB assets.' },
+                { to: '/admin/digest',   icon: BookMarked, color: 'purple-400', title: 'Monthly Digest',    desc: 'Generate and manage monthly industry digests.' },
               ].map(({ to, icon: Icon, color, title, desc }) => (
                 <Link key={to} to={to}
                   className={`group p-5 bg-dark-900 border border-dark-700 rounded-2xl hover:border-${color} hover:bg-dark-900/50 transition-all`}>
