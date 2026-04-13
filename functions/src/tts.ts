@@ -27,7 +27,7 @@ export async function synthesizePodcastAudio(
       line.speaker === "B" || /^(sam|elena|chloe|sarah|host\s*b)/i.test(line.speaker) ? "B" : "A";
     const voice = voices[speakerKey];
 
-    const truncatedText = line.text.slice(0, 800);
+    const truncatedText = line.text.slice(0, 400);
     const ssmlText = truncatedText
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')

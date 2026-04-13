@@ -3,6 +3,8 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { GoogleGenAI } from "@google/genai";
 import { admin, db } from "./shared";
+import { synthesizePodcastAudio } from "./tts";
+import { getStorage } from "firebase-admin/storage";
 
 const MONTHLY_VOICE_CONFIG = {
   A: { name: "en-US-Neural2-D", gender: "MALE", hostName: "Alex" },
@@ -143,6 +145,22 @@ export async function runMonthlyDigestGeneration(year: number, month: number) {
   const script = await generatePodcastScript(genAI, sections, summary, year, month);
   console.info(`Podcast script: ${script.length} lines`);
 
+  // Generate TTS audio
+  let audioUrl = "";
+  let audioFileName = "";
+  try {
+    const audioBuffer = await synthesizePodcastAudio(script, MONTHLY_VOICE_CONFIG);
+    const bucket = getStorage().bucket();
+    audioFileName = `podcasts/monthly_${period}.mp3`;
+    const audioFile = bucket.file(audioFileName);
+    await audioFile.save(audioBuffer, { metadata: { contentType: "audio/mpeg" } });
+    await audioFile.makePublic();
+    audioUrl = `https://storage.googleapis.com/${bucket.name}/${audioFileName}`;
+    console.info(`Audio generated: ${audioFileName}`);
+  } catch (err) {
+    console.error("TTS failed, continuing without audio:", err);
+  }
+
   const totalWords = script.reduce((sum, line) => sum + line.text.split(" ").length, 0);
   const estimatedDuration = Math.round((totalWords / 150) * 60);
   const transcript = script.map(line =>
@@ -157,8 +175,8 @@ export async function runMonthlyDigestGeneration(year: number, month: number) {
     summary: summary || "",
     sections,
     articleCount: articles.length,
-    audioUrl: "",
-    audioPath: "",
+    audioUrl,
+    audioPath: audioFileName,
     audioDuration: estimatedDuration,
     script,
     transcript,
